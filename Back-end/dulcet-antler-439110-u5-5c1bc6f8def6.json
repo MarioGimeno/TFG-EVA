@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "dulcet-antler-439110-u5",
+  "private_key_id": "5c1bc6f8def6a0067f5cf98700f94dbc17d7a345",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC+ueAN8PSLZIPX\n3oCtBj0kWu7NUkK4DK82ANoAzuiS4oqpkxSzmD5xsdeqYxsrR5nChtIjfgW9MJgK\nGTKvnLnwGsKbabe3SKL+AO0UwhMYWL6T55WyBGsWKC+Ff1NzF00aJL93/EDZDEG0\nJ0VorBpAnkvFpRSSRdPszVgtw7tYdgVwjkC4g8iJyVZ+PpctYgzpqJhixUBLtvaq\nav/XMWfuq6xNOBEcW8zNaHNA6h5uL8x+6Z2GpPv6cECkC9oCTv0rCDp6LqM+ZV9Y\nVZnIDfM6lLQGTNxjtXhwqIphYDuOLyBKP0dA8NVwzVf1bG1yr4yBKeiJk13oOlt/\n2H1fZ1GbAgMBAAECggEAG8GOL0k1NYH7w/MgE84YIM3Q+fVyOzmxV/EYyMxTwWiR\nmGsMtLQ/xikFA0ln/0zsvggD1eF1sVo8jh+rpi3vS1eBob9pWpWKDuAQoJg70iu8\nFGc7/EuzT+aqP8nPWaz27gqSCMKfp1amyzJ54elF6sh+q3VCQKVD2a7qmcJl5dIK\nfUSXjDxHAgtZmzj2Th629SO2sUD6Tr497clzQHuFCjOg556c3GIYs91ARKNRDAYZ\navTwK0UZ1J0Mcx4ofxJJR3xy3/6RjxcDsdy7oMTn8KqF1myr4iH1X2MMTCs9qu+6\n0wvv2Xz2yc5Kd7+2x50MrXpSz9fW8pbv6YapZujo3QKBgQD1kNBC9UxD/ns1cTt1\nqEVwLnHdvlZTDvBFcxkDk9aA9rJ66lmkffAzRnY9wE9VAXycThZ52fKTuN6RTs2b\nUUNx85zpm2lcxZyz2/7qilXTNUFD5Xg6VP6/0CNw48ysmE7oJ0kLvHg9IkseU0p5\noDr5mlcQ70WE/Paz9IlLfLJ11wKBgQDG1IifPsJZMzcph+CBOIhdcXLwWlVAUa8s\nr5Ky8pT8h5/IA3lXDUbIzzDoMEr4CfyZ4JYSXqXzPDerprelQogJzoRPGaYViSDZ\nhaQfTc9MCe4jbikUz04evGWYoessVyADqugXAHFynTSh9wAT6mcJtuXyDO0hQi4M\nDYdLnHRB3QKBgQCz3rLtmMeYNlsBNkObVvolxZ9aEQUiKZsNA9WarTs9k3YAWo/2\n0NiUdlQ9vxNc7I3d38TO1Dm+wnckcFhiIBAK86pH4rI2Zfj2NXpvSYy7/BImLXr3\nHzLKRSbwlath8N47Zis3EYHxJaFoQRIYLKmGEusbWGfPlYsPHVtDk78UWQKBgBHE\nK/EOyo7t5J/xZD4nrweqe3q+l5+HrP9xMMqMooNuGvjkVpNQvGJ1IQmeRxSiz89w\nIfjCPFHfr5nG6+H4b+9wZKIsyIpkFmtZZbDmYv+IY58G2OTjITfd3bYlwb3UiyfI\nvbRQddKn+Wv/hiJBb7OOhD18qjOuli69hrla4YiBAoGASNBLau7olPB8A6KZ1wxH\naJoA1WcLAiTttO3hsFh9cFwFhcWC43U6JszRKjU9qWIJ76K9gd91kXzONshf1CZb\nB1xHVj091T4McsO0vATyh7XVXY7TWmS3B9XMsnMQXAgfMku88DQCrmaYO48TqX/U\nVqHDVVZUhHc2cvxn/ArFLdY=\n-----END PRIVATE KEY-----\n",
+  "client_email": "pruebabucket@dulcet-antler-439110-u5.iam.gserviceaccount.com",
+  "client_id": "104008800386298508388",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/pruebabucket%40dulcet-antler-439110-u5.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
