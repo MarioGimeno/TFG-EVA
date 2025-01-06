@@ -11,6 +11,23 @@ import android.view.Surface;
 import android.view.TextureView;
 import android.widget.Button;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
+import com.example.intentoandroid.ApiService;
+import com.example.intentoandroid.R;
+import com.example.intentoandroid.RetrofitClient;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.example.intentoandroid.SegundoPlano.MicrophoneService;
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -18,22 +35,11 @@ import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
-import com.example.intentoandroid.SegundoPlano.MicrophoneService;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CAMERA_PERMISSION = 200;
     private static final String TAG = "MainActivity";
-
     private CameraDevice cameraDevice;
     private TextureView textureView;
     private CameraManager cameraManager;
@@ -46,6 +52,10 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isRecording = false;
 
+    private FusedLocationProviderClient fusedLocationClient;
+    private String startLocation = "";
+    private String endLocation = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,10 +65,15 @@ public class MainActivity extends AppCompatActivity {
         startRecordingButton = findViewById(R.id.StartService);
         stopRecordingButton = findViewById(R.id.StopService);
 
+        // Inicializa el FusedLocationProviderClient
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
         cameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
 
         startRecordingButton.setOnClickListener(v -> {
             if (!isRecording) {
+                // Obtener ubicación al inicio
+                getLocation(true);
                 startMicrophoneService();
                 startVideoRecording();
             }
@@ -68,9 +83,38 @@ public class MainActivity extends AppCompatActivity {
             if (isRecording) {
                 stopVideoRecording();
                 stopMicrophoneService();
+                // Obtener ubicación al final
+                getLocation(false);
                 combineAudioAndVideo();
             }
         });
+    }
+
+    private void getLocation(boolean isStart) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CAMERA_PERMISSION);
+            return;
+        }
+
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, new OnSuccessListener<android.location.Location>() {
+                    @Override
+                    public void onSuccess(android.location.Location location) {
+                        if (location != null) {
+                            String locationData = "Lat: " + location.getLatitude() + ", Lon: " + location.getLongitude();
+                            String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+
+                            // Asigna la ubicación al inicio o al final
+                            if (isStart) {
+                                startLocation = "Inicio (" + timestamp + "): " + locationData;
+                                Log.d(TAG, "Inicio: " + startLocation);
+                            } else {
+                                endLocation = "Fin (" + timestamp + "): " + locationData;
+                                Log.d(TAG, "Fin: " + endLocation);
+                            }
+                        }
+                    }
+                });
     }
 
     private void startMicrophoneService() {
@@ -85,8 +129,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void startVideoRecording() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO}, REQUEST_CAMERA_PERMISSION);
+                ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CAMERA_PERMISSION);
             return;
         }
 
@@ -184,10 +229,12 @@ public class MainActivity extends AppCompatActivity {
             cameraDevice.close();
             cameraDevice = null;
         }
-
+        // Obtener la ubicación final
+        getLocation(false);
         isRecording = false;
         Log.d(TAG, "Video recording stopped");
     }
+
     private void combineAudioAndVideo() {
         // Rutas de los archivos de video y audio grabados
         File videoFile = new File(getExternalFilesDir(null), "recorded_video.mp4");
@@ -210,8 +257,8 @@ public class MainActivity extends AppCompatActivity {
         RequestBody audioRequestBody = RequestBody.create(MediaType.parse("audio/mp4"), audioFile);
         MultipartBody.Part audioPart = MultipartBody.Part.createFormData("audio", audioFile.getName(), audioRequestBody);
 
-        // Para la ubicación, puedes enviarla como un texto o archivo
-        String locationData = "Ubicación: XYZ"; // Este valor lo puedes obtener del servicio de ubicación
+        // Combinar ambas ubicaciones
+        String locationData = startLocation + "\n" + endLocation;
         RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), locationData);
         MultipartBody.Part locationPart = MultipartBody.Part.createFormData("location", "location.txt", locationRequestBody);
 
@@ -223,42 +270,27 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    // Usar Log para mostrar que los archivos fueron enviados correctamente
                     Log.d(TAG, "Archivos enviados correctamente!");
-
-                    // Borrar los archivos del externalFilesDir después de enviar
                     deleteFiles(videoFile, audioFile);
                 } else {
-                    // Usar Log para mostrar que hubo un error al enviar los archivos
                     Log.e(TAG, "Error al enviar los archivos. Código de respuesta: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call<ResponseBody> call, Throwable t) {
-                // Usar Log para mostrar el error de red
                 Log.e(TAG, "Error de red: " + t.getMessage());
             }
         });
     }
 
-    // Método para eliminar los archivos del externalFilesDir
+    // Método para eliminar los archivos
     private void deleteFiles(File videoFile, File audioFile) {
-        if (videoFile.exists()) {
-            if (videoFile.delete()) {
-                Log.d(TAG, "Video file deleted successfully");
-            } else {
-                Log.e(TAG, "Failed to delete video file");
-            }
+        if (videoFile.exists() && videoFile.delete()) {
+            Log.d(TAG, "Video file deleted successfully");
         }
-
-        if (audioFile.exists()) {
-            if (audioFile.delete()) {
-                Log.d(TAG, "Audio file deleted successfully");
-            } else {
-                Log.e(TAG, "Failed to delete audio file");
-            }
+        if (audioFile.exists() && audioFile.delete()) {
+            Log.d(TAG, "Audio file deleted successfully");
         }
     }
-
 }
