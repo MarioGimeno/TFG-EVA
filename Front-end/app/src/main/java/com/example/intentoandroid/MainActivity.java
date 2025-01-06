@@ -1,6 +1,5 @@
 package com.example.intentoandroid;
-import com.arthenica.ffmpegkit.FFmpegKit;
-import com.arthenica.ffmpegkit.FFmpegKitConfig;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -24,7 +23,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import com.arthenica.ffmpegkit.ReturnCode;
 import com.example.intentoandroid.SegundoPlano.MicrophoneService;
 
 import java.io.File;
@@ -190,7 +188,6 @@ public class MainActivity extends AppCompatActivity {
         isRecording = false;
         Log.d(TAG, "Video recording stopped");
     }
-
     private void combineAudioAndVideo() {
         // Rutas de los archivos de video y audio grabados
         File videoFile = new File(getExternalFilesDir(null), "recorded_video.mp4");
@@ -222,13 +219,15 @@ public class MainActivity extends AppCompatActivity {
         ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
         Call<ResponseBody> call = apiService.uploadVideoAndAudio(videoPart, audioPart, locationPart);
 
-
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     // Usar Log para mostrar que los archivos fueron enviados correctamente
                     Log.d(TAG, "Archivos enviados correctamente!");
+
+                    // Borrar los archivos del externalFilesDir después de enviar
+                    deleteFiles(videoFile, audioFile);
                 } else {
                     // Usar Log para mostrar que hubo un error al enviar los archivos
                     Log.e(TAG, "Error al enviar los archivos. Código de respuesta: " + response.code());
@@ -242,4 +241,24 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+
+    // Método para eliminar los archivos del externalFilesDir
+    private void deleteFiles(File videoFile, File audioFile) {
+        if (videoFile.exists()) {
+            if (videoFile.delete()) {
+                Log.d(TAG, "Video file deleted successfully");
+            } else {
+                Log.e(TAG, "Failed to delete video file");
+            }
+        }
+
+        if (audioFile.exists()) {
+            if (audioFile.delete()) {
+                Log.d(TAG, "Audio file deleted successfully");
+            } else {
+                Log.e(TAG, "Failed to delete audio file");
+            }
+        }
+    }
+
 }
