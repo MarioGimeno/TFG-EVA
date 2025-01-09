@@ -23,6 +23,7 @@ const fields = [
     { name: 'location', maxCount: 1 }
 ];
 ffmpeg.setFfmpegPath(path.join(__dirname, 'ffmpeg/bin/ffmpeg.exe'));
+//En EC2 ubuntu tendra que ser ffmpeg.setFfmpegPath('/usr/bin/ffmpeg');
 
 const PORT = process.env.PORT || 3000;
 
