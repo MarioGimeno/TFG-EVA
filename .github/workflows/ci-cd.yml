@@ -24,8 +24,8 @@ jobs:
         port: 22
         script: |
           # Cambia al directorio del proyecto en el servidor
-          cd /GrabacionAudioVideoConseguido/Back-End
-
+          cd /home/ubuntu/GrabacionAudioVideoConseguido/Back-End
+          
           # Actualiza el repositorio con los últimos cambios
           git pull origin main
 
