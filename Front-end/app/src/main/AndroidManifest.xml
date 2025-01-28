@@ -5,7 +5,6 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -14,7 +13,6 @@
     <!-- Permisos nuevos para foreground services a partir de Android 14 -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <!-- Indicar que la cámara no es obligatoria -->
     <uses-feature android:name="android.hardware.camera" android:required="false" />
@@ -41,10 +39,7 @@
             android:name=".SegundoPlano.MicrophoneService"
             android:exported="true"
             android:foregroundServiceType="microphone" />
-        <service
-            android:name=".Widget.FloatingWidgetService"
-            android:permission="android.permission.SYSTEM_ALERT_WINDOW"
-            android:exported="false" />
+
 
     </application>
 </manifest>

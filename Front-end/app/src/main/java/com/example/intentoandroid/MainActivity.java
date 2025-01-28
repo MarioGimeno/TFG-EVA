@@ -3,6 +3,7 @@ package com.example.intentoandroid;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.SurfaceTexture;
 import android.hardware.camera2.*;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -19,15 +20,17 @@ import androidx.core.content.ContextCompat;
 import com.example.intentoandroid.ApiService;
 import com.example.intentoandroid.R;
 import com.example.intentoandroid.RetrofitClient;
+import com.example.intentoandroid.SegundoPlano.MicrophoneService;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.example.intentoandroid.SegundoPlano.MicrophoneService;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -36,10 +39,14 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener {
 
     private static final int REQUEST_CAMERA_PERMISSION = 200;
     private static final String TAG = "MainActivity";
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
     private CameraDevice cameraDevice;
     private TextureView textureView;
     private CameraManager cameraManager;
@@ -57,11 +64,33 @@ public class MainActivity extends AppCompatActivity {
     private String endLocation = "";
 
     @Override
+    protected void onResume(){
+        super.onResume();
+        textureView = findViewById(R.id.textureView);
+
+        // Inicializa el FusedLocationProviderClient
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        cameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
+    }
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+        textureView = findViewById(R.id.textureView);
+        // Inicializa el FusedLocationProviderClient
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        cameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        textureView = findViewById(R.id.textureView);
+        if(textureView == null){
+            textureView = findViewById(R.id.textureView);
+        }
         startRecordingButton = findViewById(R.id.StartService);
         stopRecordingButton = findViewById(R.id.StopService);
 
@@ -69,6 +98,14 @@ public class MainActivity extends AppCompatActivity {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         cameraManager = (CameraManager) getSystemService(CAMERA_SERVICE);
+
+        // Inicia grabación la primera vez si no está grabando
+        if (!isRecording) {
+            // Obtener ubicación al inicio
+            getLocation(true);
+            startMicrophoneService();
+            startVideoRecording();
+        }
 
         startRecordingButton.setOnClickListener(v -> {
             if (!isRecording) {
@@ -112,6 +149,7 @@ public class MainActivity extends AppCompatActivity {
                                 endLocation = "Fin (" + timestamp + "): " + locationData;
                                 Log.d(TAG, "Fin: " + endLocation);
                             }
+
                         }
                     }
                 });
@@ -133,6 +171,12 @@ public class MainActivity extends AppCompatActivity {
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO, Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CAMERA_PERMISSION);
             return;
+        }
+
+        // *** Aquí forzamos instanciar un SurfaceTexture si es null ***
+        if (textureView.getSurfaceTexture() == null) {
+            Log.d(TAG, "surfaceTexture was null, instanciamos uno nuevo manualmente");
+            textureView.setSurfaceTexture(new SurfaceTexture(0));
         }
 
         try {
@@ -220,7 +264,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void stopVideoRecording() {
+<<<<<<< Updated upstream
         mediaRecorder.stop();
+=======
+        try {
+            mediaRecorder.stop();
+        } catch (RuntimeException e) {
+            Log.e(TAG, "Error al detener el MediaRecorder, puede que no estuviera grabando", e);
+        }
+>>>>>>> Stashed changes
         mediaRecorder.reset();
         mediaRecorder.release();
         mediaRecorder = null;
@@ -259,7 +311,10 @@ public class MainActivity extends AppCompatActivity {
 
         // Combinar ambas ubicaciones
         String locationData = startLocation + "\n" + endLocation;
-        RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), locationData);
+        Log.e("MainActivityLocatlion", "Start location "+ startLocation);
+        Log.e("MainActivityLocatlion", "End location "+ startLocation);
+
+        RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), startLocation + " " + endLocation);
         MultipartBody.Part locationPart = MultipartBody.Part.createFormData("location", "location.txt", locationRequestBody);
 
         // Llamada a la API de Retrofit
@@ -293,4 +348,55 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Audio file deleted successfully");
         }
     }
+<<<<<<< Updated upstream
+=======
+
+    private void guardarGrabacion(){
+        stopVideoRecording();
+        stopMicrophoneService();
+        // Obtener ubicación al final
+        getLocation(false);
+        combineAudioAndVideo();
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onDestroy();
+        stopVideoRecording();
+        stopMicrophoneService();
+        // Obtener ubicación al final
+        getLocation(false);
+        combineAudioAndVideo();
+    }
+
+    // Implementación de TextureView.SurfaceTextureListener
+    @Override
+    public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+        Log.d(TAG, "SurfaceTexture disponible");
+        // Obtener ubicación al inicio
+        getLocation(true);
+        startMicrophoneService();
+        startVideoRecording();
+    }
+
+    @Override
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+        Log.d(TAG, "SurfaceTexture size changed");
+        // Maneja cambios en el tamaño si es necesario
+    }
+
+    @Override
+    public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+        Log.d(TAG, "SurfaceTexture destroyed");
+        // Libera recursos si es necesario
+        return true;
+    }
+
+    @Override
+    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+        // Opcional: manejar actualizaciones
+    }
+
+
+>>>>>>> Stashed changes
 }
