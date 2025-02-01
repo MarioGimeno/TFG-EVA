@@ -40,6 +40,11 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener {
 
     private static final int REQUEST_CAMERA_PERMISSION = 200;
@@ -316,59 +321,79 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         Log.d(TAG, "Video recording stopped");
     }
     private void combineAudioAndLocation() {
-        // Encriptar el video
-        File videoFile = new File(getExternalFilesDir(null), "recorded_video.mp4");
-        File encryptedVideoFile = new File(getExternalFilesDir(null), "encrypted_video.mp4");
-        try {
-            CryptoUtils.encryptFileFlexible(videoFile, encryptedVideoFile);
-        } catch (Exception e) {
-            Log.e(TAG, "Error al encriptar el video", e);
-            return;
-        }
-        RequestBody videoRequestBody = RequestBody.create(MediaType.parse("video/mp4"), encryptedVideoFile);
-        MultipartBody.Part videoPart = MultipartBody.Part.createFormData("video", encryptedVideoFile.getName(), videoRequestBody);
-
-        // Encriptar la localización
-        String locationData = startLocation + "\n" + endLocation;
-        File locationFile = new File(getExternalFilesDir(null), "location.txt");
-        try (FileOutputStream fos = new FileOutputStream(locationFile)) {
-            fos.write(locationData.getBytes("UTF-8"));
-        } catch (IOException e) {
-            Log.e(TAG, "Error al escribir el archivo de ubicación", e);
-            return;
-        }
-        File encryptedLocationFile = new File(getExternalFilesDir(null), "encrypted_location.txt");
-        try {
-            CryptoUtils.encryptFileFlexible(locationFile, encryptedLocationFile);
-        } catch (Exception e) {
-            Log.e(TAG, "Error al encriptar la ubicación", e);
-            return;
-        }
-        RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), encryptedLocationFile);
-        MultipartBody.Part locationPart = MultipartBody.Part.createFormData("location", encryptedLocationFile.getName(), locationRequestBody);
-
-        // Llamada a la API de Retrofit
-        ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
-        Call<ResponseBody> call = apiService.uploadVideoAndLocation(videoPart, locationPart);
-
-        call.enqueue(new Callback<ResponseBody>() {
+        // Ejecutar en un hilo de fondo para no bloquear la UI
+        new Thread(new Runnable() {
             @Override
-            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                if (response.isSuccessful()) {
-                    Log.d(TAG, "Archivos enviados correctamente!");
-                    deleteFile(videoFile);
-                } else {
-                    Log.e(TAG, "Error al enviar los archivos. Código de respuesta: " + response.code());
+            public void run() {
+                try {
+                    // 1. Preparar los archivos originales
+                    File videoFile = new File(getExternalFilesDir(null), "recorded_video.mp4");
+                    // Escribir la localización en un archivo de texto
+                    String locationData = startLocation + "\n" + endLocation;
+                    File locationFile = new File(getExternalFilesDir(null), "location.txt");
+                    try (FileOutputStream fos = new FileOutputStream(locationFile)) {
+                        fos.write(locationData.getBytes("UTF-8"));
+                    }
+
+                    // 2. Usar ExecutorService para encriptar ambos archivos en paralelo
+                    ExecutorService executor = Executors.newFixedThreadPool(2);
+
+                    Future<File> encryptedVideoFuture = executor.submit(new Callable<File>() {
+                        @Override
+                        public File call() throws Exception {
+                            File encryptedVideoFile = new File(getExternalFilesDir(null), "encrypted_video.mp4");
+                            // Utiliza el método flexible de encriptación que soporta ambos formatos
+                            CryptoUtils.encryptFileFlexible(videoFile, encryptedVideoFile);
+                            return encryptedVideoFile;
+                        }
+                    });
+
+                    Future<File> encryptedLocationFuture = executor.submit(new Callable<File>() {
+                        @Override
+                        public File call() throws Exception {
+                            File encryptedLocationFile = new File(getExternalFilesDir(null), "encrypted_location.txt");
+                            CryptoUtils.encryptFileFlexible(locationFile, encryptedLocationFile);
+                            return encryptedLocationFile;
+                        }
+                    });
+
+                    // Esperar a que ambas tareas finalicen
+                    File encryptedVideoFile = encryptedVideoFuture.get();
+                    File encryptedLocationFile = encryptedLocationFuture.get();
+                    executor.shutdown();
+
+                    // 3. Preparar los RequestBody y MultipartBody.Part para Retrofit
+                    RequestBody videoRequestBody = RequestBody.create(MediaType.parse("video/mp4"), encryptedVideoFile);
+                    MultipartBody.Part videoPart = MultipartBody.Part.createFormData("video", encryptedVideoFile.getName(), videoRequestBody);
+
+                    RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), encryptedLocationFile);
+                    MultipartBody.Part locationPart = MultipartBody.Part.createFormData("location", encryptedLocationFile.getName(), locationRequestBody);
+
+                    // 4. Llamada a la API de Retrofit (la llamada en sí es asíncrona)
+                    ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
+                    Call<ResponseBody> call = apiService.uploadVideoAndLocation(videoPart, locationPart);
+                    call.enqueue(new Callback<ResponseBody>() {
+                        @Override
+                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                            if (response.isSuccessful()) {
+                                Log.d(TAG, "Archivos enviados correctamente!");
+                                deleteFile(videoFile);  // Se puede eliminar el video original, si es lo deseado
+                            } else {
+                                Log.e(TAG, "Error al enviar los archivos. Código de respuesta: " + response.code());
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<ResponseBody> call, Throwable t) {
+                            Log.e(TAG, "Error de red: " + t.getMessage());
+                        }
+                    });
+                } catch (Exception e) {
+                    Log.e(TAG, "Error en combineAudioAndLocation", e);
                 }
             }
-
-            @Override
-            public void onFailure(Call<ResponseBody> call, Throwable t) {
-                Log.e(TAG, "Error de red: " + t.getMessage());
-            }
-        });
+        }).start();
     }
-
 
     // Método para eliminar los archivos
     private void deleteFile(File videoFile) {
