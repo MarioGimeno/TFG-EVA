@@ -1,13 +1,13 @@
+// decryptWorker.js
 const { parentPort } = require('worker_threads');
 const crypto = require('crypto');
 
 const IV_SIZE = 12;    // 12 bytes para GCM
 const TAG_SIZE = 16;   // 16 bytes para el tag
-const SECRET_KEY = '1234567890123456';
+const SECRET_KEY = '1234567890123456'; // Debe coincidir con el cliente
 const MAGIC = Buffer.from("CHNK");
 
 function decryptFileFlexible(inputBuffer) {
-  // Verificamos si el buffer empieza con el magic number "CHNK"
   if (inputBuffer.slice(0, 4).equals(MAGIC)) {
     console.log("Worker: Formato chunked detectado.");
     let offset = 4;
@@ -48,12 +48,13 @@ function decryptFileFlexible(inputBuffer) {
   }
 }
 
-// Recibir el buffer encriptado desde el hilo principal
+// En lugar de enviar un string base64, transferimos el ArrayBuffer del buffer desencriptado.
 parentPort.on('message', (data) => {
   try {
     const decryptedBuffer = decryptFileFlexible(Buffer.from(data));
-    // Se envía el resultado en Base64 para evitar problemas con la transmisión de binarios
-    parentPort.postMessage({ success: true, decryptedBuffer: decryptedBuffer.toString('base64') });
+    // Extraer solo la parte relevante del ArrayBuffer
+    const ab = decryptedBuffer.buffer.slice(decryptedBuffer.byteOffset, decryptedBuffer.byteOffset + decryptedBuffer.byteLength);
+    parentPort.postMessage({ success: true, decryptedBuffer: ab }, [ab]);
   } catch (err) {
     parentPort.postMessage({ success: false, error: err.message });
   }

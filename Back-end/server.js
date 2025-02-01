@@ -24,10 +24,11 @@ const bucketName = process.env.BUCKET_NAME;
 
 function runDecryptionWorker(encryptedBuffer) {
     return new Promise((resolve, reject) => {
-      const worker = new Worker('./decryptWorker.js');  // Asegúrate de la ruta correcta
+      const worker = new Worker('./decryptWorker.js');  // Asegúrate de que la ruta sea correcta
       worker.on('message', (message) => {
         if (message.success) {
-          resolve(Buffer.from(message.decryptedBuffer, 'base64'));
+          // Convertir el ArrayBuffer recibido en un Buffer de Node.js
+          resolve(Buffer.from(message.decryptedBuffer));
         } else {
           reject(new Error(message.error));
         }
@@ -38,6 +39,7 @@ function runDecryptionWorker(encryptedBuffer) {
           reject(new Error(`Worker stopped with exit code ${code}`));
         }
       });
+      // Enviar el buffer encriptado directamente
       worker.postMessage(encryptedBuffer);
     });
   }
@@ -59,20 +61,17 @@ function runDecryptionWorker(encryptedBuffer) {
         if (!locationFiles || locationFiles.length === 0) {
           return res.status(400).send({ error: 'No location file received' });
         }
-        
+    
         // Usamos el primer archivo de ubicación para todos los videos
         const locationBuffer = locationFiles[0].buffer;
-        
-        // Procesar cada video utilizando worker threads para desencriptarlo
+    
         const uploadTasks = videoFiles.map(file => {
           return runDecryptionWorker(file.buffer).then(decryptedVideoBuffer => {
             console.log('✅ Video desencriptado correctamente.');
-            // Guardar el video desencriptado temporalmente
             const videoTemp = tmp.fileSync({ postfix: '.mp4' });
             fs.writeFileSync(videoTemp.name, decryptedVideoBuffer);
             console.log(`✅ Video guardado temporalmente en: ${videoTemp.name}`);
     
-            // Desencriptar la ubicación usando worker threads
             return runDecryptionWorker(locationBuffer).then(decryptedLocationBuffer => {
               console.log('✅ Ubicación desencriptada correctamente.');
               const locationTemp = tmp.fileSync({ postfix: '.txt' });
@@ -85,7 +84,6 @@ function runDecryptionWorker(encryptedBuffer) {
               return uploadFilesToGCS(videoTemp.name, locationTemp.name, folderName).then(url => {
                 console.log(`🎉 Subida completa: ${url}`);
     
-                // Limpiar archivos temporales
                 if (fs.existsSync(videoTemp.name)) {
                   fs.unlinkSync(videoTemp.name);
                   console.log('🗑️ Archivo de video temporal eliminado.');
@@ -100,10 +98,9 @@ function runDecryptionWorker(encryptedBuffer) {
             });
           });
         });
-        
-        // Esperar a que todas las tareas finalicen
+    
         const uploads = await Promise.all(uploadTasks);
-        
+    
         res.send({
           message: 'Files uploaded successfully',
           uploads: uploads
