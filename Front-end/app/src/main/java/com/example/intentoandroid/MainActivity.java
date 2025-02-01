@@ -332,41 +332,14 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                         fos.write(locationData.getBytes("UTF-8"));
                     }
 
-                    // 2. Usar ExecutorService para encriptar ambos archivos en paralelo
-                    ExecutorService executor = Executors.newFixedThreadPool(2);
+                    // 2. Preparar los RequestBody y MultipartBody.Part para Retrofit sin encriptar
+                    RequestBody videoRequestBody = RequestBody.create(MediaType.parse("video/mp4"), videoFile);
+                    MultipartBody.Part videoPart = MultipartBody.Part.createFormData("video", videoFile.getName(), videoRequestBody);
 
-                    Future<File> encryptedVideoFuture = executor.submit(new Callable<File>() {
-                        @Override
-                        public File call() throws Exception {
-                            File encryptedVideoFile = new File(getExternalFilesDir(null), "encrypted_video.mp4");
-                            // Utiliza el método flexible de encriptación que soporta ambos formatos
-                            CryptoUtils.encryptFileFlexible(videoFile, encryptedVideoFile);
-                            return encryptedVideoFile;
-                        }
-                    });
+                    RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), locationFile);
+                    MultipartBody.Part locationPart = MultipartBody.Part.createFormData("location", locationFile.getName(), locationRequestBody);
 
-                    Future<File> encryptedLocationFuture = executor.submit(new Callable<File>() {
-                        @Override
-                        public File call() throws Exception {
-                            File encryptedLocationFile = new File(getExternalFilesDir(null), "encrypted_location.txt");
-                            CryptoUtils.encryptFileFlexible(locationFile, encryptedLocationFile);
-                            return encryptedLocationFile;
-                        }
-                    });
-
-                    // Esperar a que ambas tareas finalicen
-                    File encryptedVideoFile = encryptedVideoFuture.get();
-                    File encryptedLocationFile = encryptedLocationFuture.get();
-                    executor.shutdown();
-
-                    // 3. Preparar los RequestBody y MultipartBody.Part para Retrofit
-                    RequestBody videoRequestBody = RequestBody.create(MediaType.parse("video/mp4"), encryptedVideoFile);
-                    MultipartBody.Part videoPart = MultipartBody.Part.createFormData("video", encryptedVideoFile.getName(), videoRequestBody);
-
-                    RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), encryptedLocationFile);
-                    MultipartBody.Part locationPart = MultipartBody.Part.createFormData("location", encryptedLocationFile.getName(), locationRequestBody);
-
-                    // 4. Llamada a la API de Retrofit (la llamada en sí es asíncrona)
+                    // 3. Llamada a la API de Retrofit (la llamada es asíncrona)
                     ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
                     Call<ResponseBody> call = apiService.uploadVideoAndLocation(videoPart, locationPart);
                     call.enqueue(new Callback<ResponseBody>() {
@@ -374,7 +347,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                             if (response.isSuccessful()) {
                                 Log.d(TAG, "Archivos enviados correctamente!");
-                                deleteFile(videoFile);  // Se puede eliminar el video original, si es lo deseado
+                                // Opcional: eliminar el video original si se desea
+                                deleteFile(videoFile);
                             } else {
                                 Log.e(TAG, "Error al enviar los archivos. Código de respuesta: " + response.code());
                             }

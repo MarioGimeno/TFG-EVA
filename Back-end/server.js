@@ -6,13 +6,12 @@ const { Storage } = require('@google-cloud/storage');
 const cors = require('cors');
 const tmp = require('tmp');
 const fs = require('fs');
-const crypto = require('crypto');
-const { parentPort } = require('worker_threads');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
-const { Worker } = require('worker_threads');
 
+// Configuración de Multer para almacenamiento en memoria
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
@@ -22,114 +21,94 @@ const gcs = new Storage({
 });
 const bucketName = process.env.BUCKET_NAME;
 
-function runDecryptionWorker(encryptedBuffer) {
-    return new Promise((resolve, reject) => {
-      const worker = new Worker('./decryptWorker.js');  // Asegúrate de que la ruta sea correcta
-      worker.on('message', (message) => {
-        if (message.success) {
-          // Convertir el ArrayBuffer recibido en un Buffer de Node.js
-          resolve(Buffer.from(message.decryptedBuffer));
-        } else {
-          reject(new Error(message.error));
-        }
-      });
-      worker.on('error', reject);
-      worker.on('exit', (code) => {
-        if (code !== 0) {
-          reject(new Error(`Worker stopped with exit code ${code}`));
-        }
-      });
-      // Enviar el buffer encriptado directamente
-      worker.postMessage(encryptedBuffer);
-    });
-  }
-  app.post(
-    '/upload-video-location',
-    upload.fields([
-      { name: 'video', maxCount: 1000 },
-      { name: 'location', maxCount: 1000 }
-    ]),
-    async (req, res) => {
-      try {
-        console.log('📥 Recibiendo archivos...');
-        const videoFiles = req.files.video;
-        const locationFiles = req.files.location;
-        
-        if (!videoFiles || videoFiles.length === 0) {
-          return res.status(400).send({ error: 'No video files received' });
-        }
-        if (!locationFiles || locationFiles.length === 0) {
-          return res.status(400).send({ error: 'No location file received' });
-        }
-    
-        // Usamos el primer archivo de ubicación para todos los videos
-        const locationBuffer = locationFiles[0].buffer;
-    
-        const uploadTasks = videoFiles.map(file => {
-          return runDecryptionWorker(file.buffer).then(decryptedVideoBuffer => {
-            console.log('✅ Video desencriptado correctamente.');
-            const videoTemp = tmp.fileSync({ postfix: '.mp4' });
-            fs.writeFileSync(videoTemp.name, decryptedVideoBuffer);
-            console.log(`✅ Video guardado temporalmente en: ${videoTemp.name}`);
-    
-            return runDecryptionWorker(locationBuffer).then(decryptedLocationBuffer => {
-              console.log('✅ Ubicación desencriptada correctamente.');
-              const locationTemp = tmp.fileSync({ postfix: '.txt' });
-              fs.writeFileSync(locationTemp.name, decryptedLocationBuffer);
-              console.log(`✅ Ubicación guardada temporalmente en: ${locationTemp.name}`);
-    
-              const folderName = uuidv4();
-              console.log(`📂 Creando carpeta en GCS: ${folderName}`);
-    
-              return uploadFilesToGCS(videoTemp.name, locationTemp.name, folderName).then(url => {
-                console.log(`🎉 Subida completa: ${url}`);
-    
-                if (fs.existsSync(videoTemp.name)) {
-                  fs.unlinkSync(videoTemp.name);
-                  console.log('🗑️ Archivo de video temporal eliminado.');
-                }
-                if (fs.existsSync(locationTemp.name)) {
-                  fs.unlinkSync(locationTemp.name);
-                  console.log('🗑️ Archivo de ubicación temporal eliminado.');
-                }
-    
-                return { folderUrl: url, folderName };
-              });
-            });
-          });
-        });
-    
-        const uploads = await Promise.all(uploadTasks);
-    
-        res.send({
-          message: 'Files uploaded successfully',
-          uploads: uploads
-        });
-      } catch (error) {
-        console.error('❌ Error en la subida:', error);
-        res.status(500).send({ error: error.message });
+/**
+ * Endpoint para subir archivos de video y ubicación sin encriptación.
+ * Permite múltiples archivos (hasta 1000, ajustable) y los procesa de forma concurrente.
+ */
+app.post(
+  '/upload-video-location',
+  upload.fields([
+    { name: 'video', maxCount: 1000 },
+    { name: 'location', maxCount: 1000 }
+  ]),
+  async (req, res) => {
+    try {
+      console.log('📥 Recibiendo archivos...');
+      const videoFiles = req.files.video;
+      const locationFiles = req.files.location;
+      
+      if (!videoFiles || videoFiles.length === 0) {
+        return res.status(400).send({ error: 'No video files received' });
       }
+      if (!locationFiles || locationFiles.length === 0) {
+        return res.status(400).send({ error: 'No location file received' });
+      }
+  
+      // Usamos el primer archivo de ubicación para todos los videos
+      const locationBuffer = locationFiles[0].buffer;
+  
+      // Procesar cada video de forma concurrente
+      const uploads = await Promise.all(videoFiles.map(async (file) => {
+        // No se realiza desencriptación, se usa directamente el buffer recibido
+        console.log('✅ Procesando video sin desencriptar.');
+  
+        // Guardar el video recibido en un archivo temporal
+        const videoTemp = tmp.fileSync({ postfix: '.mp4' });
+        fs.writeFileSync(videoTemp.name, file.buffer);
+        console.log(`✅ Video guardado temporalmente en: ${videoTemp.name}`);
+  
+        // Para la ubicación, se utiliza el primer archivo recibido (sin desencriptar)
+        console.log('✅ Procesando ubicación sin desencriptar.');
+        const locationTemp = tmp.fileSync({ postfix: '.txt' });
+        fs.writeFileSync(locationTemp.name, locationBuffer);
+        console.log(`✅ Ubicación guardada temporalmente en: ${locationTemp.name}`);
+  
+        const folderName = uuidv4();
+        console.log(`📂 Creando carpeta en GCS: ${folderName}`);
+  
+        // Subir ambos archivos a Google Cloud Storage
+        const url = await uploadFilesToGCS(videoTemp.name, locationTemp.name, folderName);
+        console.log(`🎉 Subida completa: ${url}`);
+  
+        // Limpiar archivos temporales
+        if (fs.existsSync(videoTemp.name)) {
+          fs.unlinkSync(videoTemp.name);
+          console.log('🗑️ Archivo de video temporal eliminado.');
+        }
+        if (fs.existsSync(locationTemp.name)) {
+          fs.unlinkSync(locationTemp.name);
+          console.log('🗑️ Archivo de ubicación temporal eliminado.');
+        }
+  
+        return { folderUrl: url, folderName };
+      }));
+  
+      res.send({
+        message: 'Files uploaded successfully',
+        uploads: uploads
+      });
+    } catch (error) {
+      console.error('❌ Error en la subida:', error);
+      res.status(500).send({ error: error.message });
     }
-  );
-  
-  
+  }
+);
+
+/**
+ * Función para subir archivos a Google Cloud Storage.
+ */
 async function uploadFilesToGCS(videoFilePath, textFilePath, folderName) {
   const bucket = gcs.bucket(bucketName);
-
   console.log('🚀 Iniciando subida de archivos a GCS...');
-
+  
   await Promise.all([
     new Promise((resolve, reject) => {
       console.log(`📤 Subiendo video: ${videoFilePath} a ${folderName}/video.mp4`);
       fs.createReadStream(videoFilePath)
         .pipe(
-          bucket
-            .file(`${folderName}/video.mp4`)
-            .createWriteStream({
-              metadata: {
-                contentType: 'video/mp4'
-              }
-            })
+          bucket.file(`${folderName}/video.mp4`).createWriteStream({
+            metadata: { contentType: 'video/mp4' }
+          })
         )
         .on('finish', () => {
           console.log('✅ Video subido correctamente.');
@@ -144,13 +123,9 @@ async function uploadFilesToGCS(videoFilePath, textFilePath, folderName) {
       console.log(`📤 Subiendo ubicación: ${textFilePath} a ${folderName}/location.txt`);
       fs.createReadStream(textFilePath)
         .pipe(
-          bucket
-            .file(`${folderName}/location.txt`)
-            .createWriteStream({
-              metadata: {
-                contentType: 'text/plain'
-              }
-            })
+          bucket.file(`${folderName}/location.txt`).createWriteStream({
+            metadata: { contentType: 'text/plain' }
+          })
         )
         .on('finish', () => {
           console.log('✅ Ubicación subida correctamente.');
@@ -162,7 +137,7 @@ async function uploadFilesToGCS(videoFilePath, textFilePath, folderName) {
         });
     })
   ]);
-
+  
   console.log('🎯 Todos los archivos han sido subidos.');
   return `https://storage.googleapis.com/${bucketName}/${folderName}/`;
 }
