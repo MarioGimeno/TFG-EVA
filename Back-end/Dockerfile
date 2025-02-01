@@ -9,9 +9,6 @@ COPY package*.json ./
 # Instala dependencias de npm
 RUN npm install
 
-# Instala FFmpeg en el contenedor
-RUN apt-get update && apt-get install -y ffmpeg
-
 # Copia el resto de los archivos
 COPY . .
 
