@@ -14,4 +14,10 @@ public interface ApiService {
             @Part MultipartBody.Part audio,
             @Part MultipartBody.Part location
     );
+    @Multipart
+    @POST("/upload-video-location")
+    Call<ResponseBody> uploadVideoAndLocation(
+            @Part MultipartBody.Part video,
+              @Part MultipartBody.Part location
+    );
 }

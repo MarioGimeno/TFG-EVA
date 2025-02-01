@@ -26,6 +26,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -43,10 +44,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     private static final int REQUEST_CAMERA_PERMISSION = 200;
     private static final String TAG = "MainActivity";
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
     private CameraDevice cameraDevice;
     private TextureView textureView;
     private CameraManager cameraManager;
@@ -102,57 +100,74 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         // Inicia grabación la primera vez si no está grabando
         if (!isRecording) {
             // Obtener ubicación al inicio
-            getLocation(true);
-            startMicrophoneService();
-            startVideoRecording();
+            getLocation(true, new LocationCallback() {
+                @Override
+                public void onLocationReceived() {
+                    startMicrophoneService();
+                    startVideoRecording();
+                }
+            });
+
         }
 
         startRecordingButton.setOnClickListener(v -> {
             if (!isRecording) {
-                // Obtener ubicación al inicio
-                getLocation(true);
-                startMicrophoneService();
-                startVideoRecording();
+                getLocation(true, new LocationCallback() {
+                    @Override
+                    public void onLocationReceived() {
+                        startMicrophoneService();
+                        startVideoRecording();
+                    }
+                });
             }
         });
 
         stopRecordingButton.setOnClickListener(v -> {
             if (isRecording) {
                 stopVideoRecording();
-                stopMicrophoneService();
-                // Obtener ubicación al final
-                getLocation(false);
-                combineAudioAndVideo();
+                getLocation(false, new LocationCallback() {
+                    @Override
+                    public void onLocationReceived() {
+                        //combineAudioAndVideo();
+                        combineAudioAndLocation();
+                    }
+                });
             }
         });
     }
 
-    private void getLocation(boolean isStart) {
+    private void getLocation(boolean isStart, LocationCallback callback) {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CAMERA_PERMISSION);
             return;
         }
 
         fusedLocationClient.getLastLocation()
-                .addOnSuccessListener(this, new OnSuccessListener<android.location.Location>() {
-                    @Override
-                    public void onSuccess(android.location.Location location) {
-                        if (location != null) {
-                            String locationData = "Lat: " + location.getLatitude() + ", Lon: " + location.getLongitude();
-                            String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+                .addOnSuccessListener(this, location -> {
+                    if (location != null) {
+                        String locationData = "Lat: " + location.getLatitude() + ", Lon: " + location.getLongitude();
+                        String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 
-                            // Asigna la ubicación al inicio o al final
-                            if (isStart) {
-                                startLocation = "Inicio (" + timestamp + "): " + locationData;
-                                Log.d(TAG, "Inicio: " + startLocation);
-                            } else {
-                                endLocation = "Fin (" + timestamp + "): " + locationData;
-                                Log.d(TAG, "Fin: " + endLocation);
-                            }
+                        if (isStart) {
+                            startLocation = "Inicio (" + timestamp + "): " + locationData;
+                            Log.d(TAG, "Inicio: " + startLocation);
+                        } else {
+                            endLocation = "Fin (" + timestamp + "): " + locationData;
+                            Log.d(TAG, "Fin: " + endLocation);
+                        }
 
+                        if (callback != null) {
+                            callback.onLocationReceived();
+                        }
+                    }else {
+                        Log.e(TAG, "La ubicación es null");
+                        // Asegúrate de llamar al callback incluso si la ubicación es null
+                        if (callback != null) {
+                            callback.onLocationReceived();
                         }
                     }
                 });
+
     }
 
     private void startMicrophoneService() {
@@ -208,19 +223,38 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     private void setupMediaRecorder() throws IOException {
         mediaRecorder = new MediaRecorder();
+
+        // Configurar la fuente de audio (por ejemplo, MIC)
+        mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        // Configurar la fuente de video
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
+
+        // Establecer el formato de salida
         mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4);
 
+        // Archivo de salida
         File outputFile = new File(getExternalFilesDir(null), "recorded_video.mp4");
         mediaRecorder.setOutputFile(outputFile.getAbsolutePath());
 
+        // Configurar parámetros de audio
+        mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+        mediaRecorder.setAudioEncodingBitRate(96000); // Tasa de bits de audio
+        mediaRecorder.setAudioSamplingRate(44100);    // Frecuencia de muestreo en Hz
+
+        // Configurar parámetros de video
+        mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
         mediaRecorder.setVideoEncodingBitRate(10000000);
         mediaRecorder.setVideoFrameRate(30);
         mediaRecorder.setVideoSize(1920, 1080);
-        mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
 
+        // Girar el video 90 grados
+        mediaRecorder.setOrientationHint(90);
+
+        // Preparar el MediaRecorder
         mediaRecorder.prepare();
     }
+
+
 
     private void createCaptureSession() {
         try {
@@ -264,15 +298,11 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
     private void stopVideoRecording() {
-<<<<<<< Updated upstream
-        mediaRecorder.stop();
-=======
         try {
             mediaRecorder.stop();
         } catch (RuntimeException e) {
             Log.e(TAG, "Error al detener el MediaRecorder, puede que no estuviera grabando", e);
         }
->>>>>>> Stashed changes
         mediaRecorder.reset();
         mediaRecorder.release();
         mediaRecorder = null;
@@ -282,51 +312,51 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             cameraDevice = null;
         }
         // Obtener la ubicación final
-        getLocation(false);
         isRecording = false;
         Log.d(TAG, "Video recording stopped");
     }
-
-    private void combineAudioAndVideo() {
-        // Rutas de los archivos de video y audio grabados
+    private void combineAudioAndLocation() {
+        // Encriptar el video
         File videoFile = new File(getExternalFilesDir(null), "recorded_video.mp4");
-        File audioFile = new File(getExternalFilesDir(null), "audio_record.mp4");
-
-        if (!videoFile.exists()) {
-            Log.e(TAG, "Video file does not exist.");
+        File encryptedVideoFile = new File(getExternalFilesDir(null), "encrypted_video.mp4");
+        try {
+            CryptoUtils.encryptFile(videoFile, encryptedVideoFile);
+        } catch (Exception e) {
+            Log.e(TAG, "Error al encriptar el video", e);
             return;
         }
+        RequestBody videoRequestBody = RequestBody.create(MediaType.parse("video/mp4"), encryptedVideoFile);
+        MultipartBody.Part videoPart = MultipartBody.Part.createFormData("video", encryptedVideoFile.getName(), videoRequestBody);
 
-        if (!audioFile.exists()) {
-            Log.e(TAG, "Audio file does not exist.");
-            return;
-        }
-
-        // Crear los objetos RequestBody para los archivos
-        RequestBody videoRequestBody = RequestBody.create(MediaType.parse("video/mp4"), videoFile);
-        MultipartBody.Part videoPart = MultipartBody.Part.createFormData("video", videoFile.getName(), videoRequestBody);
-
-        RequestBody audioRequestBody = RequestBody.create(MediaType.parse("audio/mp4"), audioFile);
-        MultipartBody.Part audioPart = MultipartBody.Part.createFormData("audio", audioFile.getName(), audioRequestBody);
-
-        // Combinar ambas ubicaciones
+        // Encriptar la localización
         String locationData = startLocation + "\n" + endLocation;
-        Log.e("MainActivityLocatlion", "Start location "+ startLocation);
-        Log.e("MainActivityLocatlion", "End location "+ startLocation);
-
-        RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), startLocation + " " + endLocation);
-        MultipartBody.Part locationPart = MultipartBody.Part.createFormData("location", "location.txt", locationRequestBody);
+        File locationFile = new File(getExternalFilesDir(null), "location.txt");
+        try (FileOutputStream fos = new FileOutputStream(locationFile)) {
+            fos.write(locationData.getBytes("UTF-8"));
+        } catch (IOException e) {
+            Log.e(TAG, "Error al escribir el archivo de ubicación", e);
+            return;
+        }
+        File encryptedLocationFile = new File(getExternalFilesDir(null), "encrypted_location.txt");
+        try {
+            CryptoUtils.encryptFile(locationFile, encryptedLocationFile);
+        } catch (Exception e) {
+            Log.e(TAG, "Error al encriptar la ubicación", e);
+            return;
+        }
+        RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), encryptedLocationFile);
+        MultipartBody.Part locationPart = MultipartBody.Part.createFormData("location", encryptedLocationFile.getName(), locationRequestBody);
 
         // Llamada a la API de Retrofit
         ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
-        Call<ResponseBody> call = apiService.uploadVideoAndAudio(videoPart, audioPart, locationPart);
+        Call<ResponseBody> call = apiService.uploadVideoAndLocation(videoPart, locationPart);
 
         call.enqueue(new Callback<ResponseBody>() {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     Log.d(TAG, "Archivos enviados correctamente!");
-                    deleteFiles(videoFile, audioFile);
+                    deleteFile(videoFile);
                 } else {
                     Log.e(TAG, "Error al enviar los archivos. Código de respuesta: " + response.code());
                 }
@@ -339,25 +369,16 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         });
     }
 
+
     // Método para eliminar los archivos
-    private void deleteFiles(File videoFile, File audioFile) {
+    private void deleteFile(File videoFile) {
         if (videoFile.exists() && videoFile.delete()) {
             Log.d(TAG, "Video file deleted successfully");
         }
-        if (audioFile.exists() && audioFile.delete()) {
-            Log.d(TAG, "Audio file deleted successfully");
-        }
     }
-<<<<<<< Updated upstream
-=======
 
-    private void guardarGrabacion(){
-        stopVideoRecording();
-        stopMicrophoneService();
-        // Obtener ubicación al final
-        getLocation(false);
-        combineAudioAndVideo();
-    }
+
+
 
     @Override
     protected void onDestroy(){
@@ -365,8 +386,12 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         stopVideoRecording();
         stopMicrophoneService();
         // Obtener ubicación al final
-        getLocation(false);
-        combineAudioAndVideo();
+        getLocation(false, new LocationCallback() {
+            @Override
+            public void onLocationReceived() {
+                combineAudioAndLocation();
+            }
+        });
     }
 
     // Implementación de TextureView.SurfaceTextureListener
@@ -374,9 +399,14 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         Log.d(TAG, "SurfaceTexture disponible");
         // Obtener ubicación al inicio
-        getLocation(true);
-        startMicrophoneService();
-        startVideoRecording();
+        getLocation(true, new LocationCallback() {
+            @Override
+            public void onLocationReceived() {
+                startMicrophoneService();
+                startVideoRecording();
+            }
+        });
+
     }
 
     @Override
@@ -398,5 +428,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
 
->>>>>>> Stashed changes
+    public interface LocationCallback {
+        void onLocationReceived();
+    }
 }
