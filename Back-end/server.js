@@ -11,6 +11,7 @@ const { parentPort } = require('worker_threads');
 const app = express();
 app.use(cors());
 app.use(express.json());
+const { Worker } = require('worker_threads');
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
