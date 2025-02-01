@@ -320,7 +320,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         File videoFile = new File(getExternalFilesDir(null), "recorded_video.mp4");
         File encryptedVideoFile = new File(getExternalFilesDir(null), "encrypted_video.mp4");
         try {
-            CryptoUtils.encryptFile(videoFile, encryptedVideoFile);
+            CryptoUtils.encryptFileFlexible(videoFile, encryptedVideoFile);
         } catch (Exception e) {
             Log.e(TAG, "Error al encriptar el video", e);
             return;
@@ -339,7 +339,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
         File encryptedLocationFile = new File(getExternalFilesDir(null), "encrypted_location.txt");
         try {
-            CryptoUtils.encryptFile(locationFile, encryptedLocationFile);
+            CryptoUtils.encryptFileFlexible(locationFile, encryptedLocationFile);
         } catch (Exception e) {
             Log.e(TAG, "Error al encriptar la ubicación", e);
             return;

@@ -21,40 +21,81 @@ const gcs = new Storage({
 });
 const bucketName = process.env.BUCKET_NAME;
 const IV_SIZE = 12;    // 12 bytes para GCM
-const TAG_SIZE = 16;   // 16 bytes (128 bits) para el tag
-const SECRET_KEY = '1234567890123456'; // La misma clave usada en Android
+const TAG_SIZE = 16;   // 16 bytes para el tag
+const SECRET_KEY = '1234567890123456'; // Debe coincidir con el cliente
+const MAGIC = Buffer.from("CHNK"); // Magic number para archivos chunked
 
 /**
- * Función para desencriptar un buffer encriptado con AES-128-GCM.
- * Se espera que el buffer tenga el siguiente formato:
- * [ IV (12 bytes) | Ciphertext | Auth Tag (16 bytes) ]
+ * Función para desencriptar un buffer que puede estar en formato streaming o chunked.
+ * Para formato chunked se espera que el buffer comience con la cabecera MAGIC ("CHNK")
+ * seguida de un entero que indica el tamaño de chunk, y luego, para cada chunk:
+ * - Un entero con la longitud del IV
+ * - El IV (12 bytes generalmente)
+ * - Un entero con la longitud del segmento encriptado
+ * - El segmento encriptado (que incluye el tag al final)
+ *
+ * Para formato streaming se espera:
+ * - Los primeros 12 bytes son el IV
+ * - El resto es el ciphertext con el tag (últimos 16 bytes)
  */
-function decryptFile(inputBuffer) {
+function decryptFileFlexible(inputBuffer) {
   try {
-    const algorithm = 'aes-128-gcm';
-    const key = Buffer.from(SECRET_KEY, 'utf8');
+    // Verificamos si el buffer empieza con el magic number "CHNK"
+    if (inputBuffer.slice(0, 4).equals(MAGIC)) {
+      // --- Formato chunked ---
+      console.log("Formato chunked detectado.");
+      let offset = 4;
+      // Leer el tamaño de chunk (int32) que escribiste en el header
+      const chunkSize = inputBuffer.readInt32BE(offset);
+      offset += 4;
+      const decryptedChunks = [];
+      while (offset < inputBuffer.length) {
+        // Leer la longitud del IV
+        const ivLength = inputBuffer.readInt32BE(offset);
+        offset += 4;
+        const iv = inputBuffer.slice(offset, offset + ivLength);
+        offset += ivLength;
 
-    if (inputBuffer.length < IV_SIZE + TAG_SIZE) {
-      throw new Error("El buffer es demasiado corto para contener un IV y tag válidos.");
+        // Leer la longitud del chunk encriptado
+        const encChunkLength = inputBuffer.readInt32BE(offset);
+        offset += 4;
+        const encryptedChunk = inputBuffer.slice(offset, offset + encChunkLength);
+        offset += encChunkLength;
+
+        // En el modo chunked, cada encryptedChunk se generó con doFinal(),
+        // por lo que incluye el tag al final (últimos TAG_SIZE bytes)
+        if (encryptedChunk.length < TAG_SIZE) {
+          throw new Error("Encrypted chunk too short to contain auth tag");
+        }
+        const authTag = encryptedChunk.slice(encryptedChunk.length - TAG_SIZE);
+        const ciphertext = encryptedChunk.slice(0, encryptedChunk.length - TAG_SIZE);
+
+        const decipher = crypto.createDecipheriv('aes-128-gcm', Buffer.from(SECRET_KEY, 'utf8'), iv);
+        decipher.setAuthTag(authTag);
+        const decryptedChunk = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+        decryptedChunks.push(decryptedChunk);
+      }
+      return Buffer.concat(decryptedChunks);
+    } else {
+      // --- Formato streaming ---
+      console.log("Formato streaming detectado.");
+      if (inputBuffer.length < IV_SIZE + TAG_SIZE) {
+        throw new Error("Buffer demasiado corto para encriptación streaming");
+      }
+      const iv = inputBuffer.slice(0, IV_SIZE);
+      const tag = inputBuffer.slice(inputBuffer.length - TAG_SIZE);
+      const ciphertext = inputBuffer.slice(IV_SIZE, inputBuffer.length - TAG_SIZE);
+
+      const decipher = crypto.createDecipheriv('aes-128-gcm', Buffer.from(SECRET_KEY, 'utf8'), iv);
+      decipher.setAuthTag(tag);
+      return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
     }
-
-    // Extraer el IV (primeros 12 bytes)
-    const iv = inputBuffer.slice(0, IV_SIZE);
-    // Extraer el tag de autenticación (últimos 16 bytes)
-    const tag = inputBuffer.slice(inputBuffer.length - TAG_SIZE);
-    // Extraer el ciphertext (entre el IV y el tag)
-    const ciphertext = inputBuffer.slice(IV_SIZE, inputBuffer.length - TAG_SIZE);
-
-    const decipher = crypto.createDecipheriv(algorithm, key, iv);
-    decipher.setAuthTag(tag);
-
-    const decryptedBuffer = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
-    return decryptedBuffer;
   } catch (error) {
     console.error("❌ Error durante la desencriptación:", error);
     throw error;
   }
 }
+
 app.post(
     '/upload-video-location',
     upload.fields([
@@ -70,7 +111,7 @@ app.post(
         const encryptedVideoBuffer = req.files.video[0].buffer;
         let decryptedVideoBuffer;
         try {
-          decryptedVideoBuffer = decryptFile(encryptedVideoBuffer);
+          decryptedVideoBuffer = decryptFileFlexible(encryptedVideoBuffer);
           console.log('✅ Video desencriptado correctamente.');
         } catch (err) {
           throw new Error("La desencriptación del video falló. Verifica que la encriptación se realizó correctamente en el cliente.");
@@ -85,7 +126,7 @@ app.post(
         const encryptedLocationBuffer = req.files.location[0].buffer;
         let decryptedLocationBuffer;
         try {
-          decryptedLocationBuffer = decryptFile(encryptedLocationBuffer);
+          decryptedLocationBuffer = decryptFileFlexible(encryptedLocationBuffer);
           console.log('✅ Ubicación desencriptada correctamente.');
         } catch (err) {
           throw new Error("La desencriptación de la ubicación falló. Verifica que la encriptación se realizó correctamente en el cliente.");
