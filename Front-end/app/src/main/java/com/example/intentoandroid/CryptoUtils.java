@@ -20,40 +20,32 @@ public class CryptoUtils {
     // Longitud del tag en bits (16 bytes = 128 bits)
     private static final int TAG_LENGTH_BIT = 128;
     private static final String SECRET_KEY = "1234567890123456"; // Debe ser de 16 bytes para AES-128
-
     public static File encryptFile(File inputFile, File outputFile) throws Exception {
-        Log.d(TAG, "Iniciando encriptación para: " + inputFile.getAbsolutePath());
-
-        // Crear Cipher para AES/GCM/NoPadding
         Cipher cipher = Cipher.getInstance(AES_TRANSFORMATION);
         SecretKeySpec keySpec = new SecretKeySpec(SECRET_KEY.getBytes("UTF-8"), AES_ALGORITHM);
-
-        // Generar un IV de 12 bytes
         byte[] iv = new byte[IV_SIZE];
         new SecureRandom().nextBytes(iv);
-        // Configurar GCM con un tag de 128 bits
         GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(TAG_LENGTH_BIT, iv);
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmParameterSpec);
-        Log.d(TAG, "Cipher inicializado en modo ENCRYPT_MODE con IV: " + bytesToHex(iv));
 
         try (FileInputStream fis = new FileInputStream(inputFile);
              FileOutputStream fos = new FileOutputStream(outputFile)) {
 
-            // Escribir el IV al inicio del archivo (necesario para la desencriptación)
+            // Escribe el IV al inicio del archivo de salida
             fos.write(iv);
-            Log.d(TAG, "IV escrito en el archivo de salida.");
 
-            // Escribir el contenido encriptado (el tag se adjunta al final automáticamente)
-            CipherOutputStream cos = new CipherOutputStream(fos, cipher);
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[1024];  // Ajusta el tamaño del buffer según tus pruebas
             int bytesRead;
-            int totalBytes = 0;
             while ((bytesRead = fis.read(buffer)) != -1) {
-                cos.write(buffer, 0, bytesRead);
-                totalBytes += bytesRead;
+                byte[] output = cipher.update(buffer, 0, bytesRead);
+                if (output != null) {
+                    fos.write(output);
+                }
             }
-            cos.close();
-            Log.d(TAG, "Encriptación completada. Total de bytes procesados: " + totalBytes);
+            byte[] finalBytes = cipher.doFinal();
+            if (finalBytes != null) {
+                fos.write(finalBytes);
+            }
         }
         return outputFile;
     }
