@@ -95,77 +95,76 @@ function decryptFileFlexible(inputBuffer) {
     throw error;
   }
 }
-
 app.post(
     '/upload-video-location',
     upload.fields([
-      { name: 'video', maxCount: 1 },
-      { name: 'location', maxCount: 1 }
+      { name: 'video', maxCount: 1000 }, // Permite hasta 1000 archivos; ajustar según necesidad
+      { name: 'location', maxCount: 1000 }
     ]),
     async (req, res) => {
-      let videoTemp, locationTemp;
       try {
         console.log('📥 Recibiendo archivos...');
+        const videoFiles = req.files.video;
+        const locationFiles = req.files.location;
+        
+        if (!videoFiles || videoFiles.length === 0) {
+          return res.status(400).send({ error: 'No video files received' });
+        }
+        if (!locationFiles || locationFiles.length === 0) {
+          return res.status(400).send({ error: 'No location file received' });
+        }
   
-        // --- Desencriptar el video ---
-        const encryptedVideoBuffer = req.files.video[0].buffer;
-        let decryptedVideoBuffer;
-        try {
-          decryptedVideoBuffer = decryptFileFlexible(encryptedVideoBuffer);
+        // Usamos el primer archivo de ubicación para todos los videos
+        const locationBuffer = locationFiles[0].buffer;
+  
+        // Procesar cada video sin limitar concurrencia
+        const uploads = await Promise.all(videoFiles.map(async (file) => {
+          // Desencriptar el video
+          let decryptedVideoBuffer = decryptFileFlexible(file.buffer);
           console.log('✅ Video desencriptado correctamente.');
-        } catch (err) {
-          throw new Error("La desencriptación del video falló. Verifica que la encriptación se realizó correctamente en el cliente.");
-        }
   
-        // Guardar el video desencriptado temporalmente
-        videoTemp = tmp.fileSync({ postfix: '.mp4' });
-        fs.writeFileSync(videoTemp.name, decryptedVideoBuffer);
-        console.log(`✅ Video guardado temporalmente en: ${videoTemp.name}`);
+          // Guardar el video desencriptado en un archivo temporal
+          const videoTemp = tmp.fileSync({ postfix: '.mp4' });
+          fs.writeFileSync(videoTemp.name, decryptedVideoBuffer);
+          console.log(`✅ Video guardado temporalmente en: ${videoTemp.name}`);
   
-        // --- Desencriptar la localización ---
-        const encryptedLocationBuffer = req.files.location[0].buffer;
-        let decryptedLocationBuffer;
-        try {
-          decryptedLocationBuffer = decryptFileFlexible(encryptedLocationBuffer);
+          // Desencriptar la ubicación
+          let decryptedLocationBuffer = decryptFileFlexible(locationBuffer);
           console.log('✅ Ubicación desencriptada correctamente.');
-        } catch (err) {
-          throw new Error("La desencriptación de la ubicación falló. Verifica que la encriptación se realizó correctamente en el cliente.");
-        }
+          const locationTemp = tmp.fileSync({ postfix: '.txt' });
+          fs.writeFileSync(locationTemp.name, decryptedLocationBuffer);
+          console.log(`✅ Ubicación guardada temporalmente en: ${locationTemp.name}`);
   
-        // Guardar la ubicación desencriptada temporalmente en un archivo de texto
-        locationTemp = tmp.fileSync({ postfix: '.txt' });
-        fs.writeFileSync(locationTemp.name, decryptedLocationBuffer);
-        console.log(`✅ Ubicación guardada temporalmente en: ${locationTemp.name}`);
+          const folderName = uuidv4();
+          console.log(`📂 Creando carpeta en GCS: ${folderName}`);
   
-        const folderName = uuidv4();
-        console.log(`📂 Creando carpeta en GCS: ${folderName}`);
+          const url = await uploadFilesToGCS(videoTemp.name, locationTemp.name, folderName);
+          console.log(`🎉 Subida completa: ${url}`);
   
-        // Subir ambos archivos a Google Cloud Storage
-        const url = await uploadFilesToGCS(videoTemp.name, locationTemp.name, folderName);
-        console.log(`🎉 Subida completa: ${url}`);
+          // Limpiar archivos temporales
+          if (fs.existsSync(videoTemp.name)) {
+            fs.unlinkSync(videoTemp.name);
+            console.log('🗑️ Archivo de video temporal eliminado.');
+          }
+          if (fs.existsSync(locationTemp.name)) {
+            fs.unlinkSync(locationTemp.name);
+            console.log('🗑️ Archivo de ubicación temporal eliminado.');
+          }
+  
+          return { folderUrl: url, folderName };
+        }));
   
         res.send({
           message: 'Files uploaded successfully',
-          folderUrl: url,
-          locationData: decryptedLocationBuffer.toString('utf-8')
+          uploads: uploads
         });
       } catch (error) {
         console.error('❌ Error en la subida:', error);
         res.status(500).send({ error: error.message });
-      } finally {
-        if (videoTemp && fs.existsSync(videoTemp.name)) {
-          fs.unlinkSync(videoTemp.name);
-          console.log('🗑️ Archivo de video temporal eliminado.');
-        }
-        if (locationTemp && fs.existsSync(locationTemp.name)) {
-          fs.unlinkSync(locationTemp.name);
-          console.log('🗑️ Archivo de ubicación temporal eliminado.');
-        }
       }
     }
   );
   
-
 async function uploadFilesToGCS(videoFilePath, textFilePath, folderName) {
   const bucket = gcs.bucket(bucketName);
 
