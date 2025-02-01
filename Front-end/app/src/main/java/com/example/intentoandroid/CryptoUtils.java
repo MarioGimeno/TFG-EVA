@@ -1,12 +1,13 @@
 package com.example.intentoandroid;
 
-import android.util.Log;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.security.SecureRandom;
 import javax.crypto.Cipher;
-import javax.crypto.CipherOutputStream;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -20,6 +21,8 @@ public class CryptoUtils {
     // Longitud del tag en bits (16 bytes = 128 bits)
     private static final int TAG_LENGTH_BIT = 128;
     private static final String SECRET_KEY = "1234567890123456"; // Debe ser de 16 bytes para AES-128
+
+
     public static File encryptFile(File inputFile, File outputFile) throws Exception {
         Cipher cipher = Cipher.getInstance(AES_TRANSFORMATION);
         SecretKeySpec keySpec = new SecretKeySpec(SECRET_KEY.getBytes("UTF-8"), AES_ALGORITHM);
@@ -28,23 +31,33 @@ public class CryptoUtils {
         GCMParameterSpec gcmParameterSpec = new GCMParameterSpec(TAG_LENGTH_BIT, iv);
         cipher.init(Cipher.ENCRYPT_MODE, keySpec, gcmParameterSpec);
 
-        try (FileInputStream fis = new FileInputStream(inputFile);
-             FileOutputStream fos = new FileOutputStream(outputFile)) {
+        try (FileChannel inChannel = new FileInputStream(inputFile).getChannel();
+             FileChannel outChannel = new FileOutputStream(outputFile).getChannel()) {
 
-            // Escribe el IV al inicio del archivo de salida
-            fos.write(iv);
+            // Escribir el IV al inicio del archivo de salida
+            ByteBuffer ivBuffer = ByteBuffer.wrap(iv);
+            outChannel.write(ivBuffer);
 
-            byte[] buffer = new byte[1024];  // Ajusta el tamaño del buffer según tus pruebas
-            int bytesRead;
-            while ((bytesRead = fis.read(buffer)) != -1) {
-                byte[] output = cipher.update(buffer, 0, bytesRead);
-                if (output != null) {
-                    fos.write(output);
+            long fileSize = inChannel.size();
+            long chunkSize = 1024 * 1024; // 1 MB por chunk (ajusta según convenga)
+            long position = 0;
+            while (position < fileSize) {
+                long remaining = fileSize - position;
+                long mapSize = Math.min(chunkSize, remaining);
+                // Mapea el siguiente chunk del archivo
+                MappedByteBuffer buffer = inChannel.map(FileChannel.MapMode.READ_ONLY, position, mapSize);
+                byte[] inputChunk = new byte[(int) mapSize];
+                buffer.get(inputChunk);
+                byte[] outputChunk = cipher.update(inputChunk);
+                if (outputChunk != null) {
+                    outChannel.write(ByteBuffer.wrap(outputChunk));
                 }
+                position += mapSize;
             }
+            // Procesar el bloque final
             byte[] finalBytes = cipher.doFinal();
             if (finalBytes != null) {
-                fos.write(finalBytes);
+                outChannel.write(ByteBuffer.wrap(finalBytes));
             }
         }
         return outputFile;
