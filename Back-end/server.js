@@ -6,7 +6,6 @@ const { Storage } = require('@google-cloud/storage');
 const cors = require('cors');
 const tmp = require('tmp');
 const fs = require('fs');
-const crypto = require('crypto');
 const { Worker } = require('worker_threads');
 const path = require('path');
 
@@ -25,6 +24,7 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
+    // Genera un nombre único para cada archivo
     cb(null, Date.now() + '-' + file.originalname);
   }
 });
@@ -70,9 +70,8 @@ function runDecryptionWorker(encryptedBuffer) {
 
 /**
  * Endpoint para subir archivos de video y ubicación encriptados.
- * Se permite la recepción de múltiples archivos, que se procesan usando Worker Threads.
- * Los archivos se leen desde disco (por multer.diskStorage()) y luego se desencriptan.
- * Los archivos temporales (desencriptados) se crean en /mnt/uploads para evitar problemas de espacio.
+ * Se permite la recepción de múltiples archivos y se procesan usando Worker Threads para desencriptarlos.
+ * Los archivos se leen desde disco (por multer.diskStorage()) y se usan archivos temporales en TMPDIR.
  */
 app.post(
   '/upload-video-location',
@@ -104,16 +103,17 @@ app.post(
         const decryptedVideoBuffer = await runDecryptionWorker(encryptedVideoBuffer);
         console.log('✅ Video desencriptado correctamente.');
   
-        // Guardar el video desencriptado en un archivo temporal en /mnt/uploads
+        // Guardar el video desencriptado en un archivo temporal en TMPDIR
+        // Asegúrate de que TMPDIR esté configurado para usar un disco con suficiente espacio, por ejemplo: /mnt/uploads/tmp
         const videoTemp = tmp.fileSync({ postfix: '.mp4', dir: process.env.TMPDIR });
-             fs.writeFileSync(videoTemp.name, decryptedVideoBuffer);
+        fs.writeFileSync(videoTemp.name, decryptedVideoBuffer);
         console.log(`✅ Video guardado temporalmente en: ${videoTemp.name}`);
   
-        // Desencriptar la ubicación (para este ejemplo, se utiliza el mismo archivo para todos)
+        // Desencriptar la ubicación (usando el mismo archivo para todos)
         const decryptedLocationBuffer = await runDecryptionWorker(locationBuffer);
         console.log('✅ Ubicación desencriptada correctamente.');
         const locationTemp = tmp.fileSync({ postfix: '.txt', dir: process.env.TMPDIR });
-                fs.writeFileSync(locationTemp.name, decryptedLocationBuffer);
+        fs.writeFileSync(locationTemp.name, decryptedLocationBuffer);
         console.log(`✅ Ubicación guardada temporalmente en: ${locationTemp.name}`);
   
         const folderName = uuidv4();
@@ -151,7 +151,7 @@ app.post(
 );
 
 /**
- * Función para subir archivos a Google Cloud Storage utilizando streams.
+ * Función para subir archivos a Google Cloud Storage usando streams.
  */
 async function uploadFilesToGCS(videoFilePath, textFilePath, folderName) {
   const bucket = gcs.bucket(bucketName);
