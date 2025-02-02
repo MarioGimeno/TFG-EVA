@@ -6,7 +6,7 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class RetrofitClient {
-    private static final String BASE_URL = "http://52.72.247.217:3000"; // Cambia esto a tu URL del backend
+    private static final String BASE_URL = "http://54.86.59.106:3000"; // Cambia esto a tu URL del backend
 
     private static Retrofit retrofit;
     static OkHttpClient okHttpClient = new OkHttpClient.Builder()

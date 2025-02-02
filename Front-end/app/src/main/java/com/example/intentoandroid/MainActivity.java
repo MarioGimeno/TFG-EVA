@@ -318,59 +318,77 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         Log.d(TAG, "Video recording stopped");
     }
     private void combineAudioAndLocation() {
-        // Ejecutar en un hilo de fondo para no bloquear la UI
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    // 1. Preparar los archivos originales
+                    // Ruta del archivo de video grabado
                     File videoFile = new File(getExternalFilesDir(null), "recorded_video.mp4");
-                    // Crear un archivo para el video encriptado
+
+                    // Verificar si el archivo de video existe antes de encriptarlo
+                    if (!videoFile.exists()) {
+                        Log.e(TAG, "❌ Error: Archivo de video no encontrado. No se puede encriptar.");
+                        return;
+                    }
+
+                    // Archivo encriptado
                     File encryptedVideoFile = new File(getExternalFilesDir(null), "encrypted_video.mp4");
-                    // Encriptar el video usando la clase CryptoUtils
+
+                    // Encriptar el video usando CryptoUtils
                     CryptoUtils.encryptFileFlexible(videoFile, encryptedVideoFile);
 
-                    // Preparar el archivo de ubicación: se escribe el texto y luego se encripta
+                    // Preparar archivo de ubicación
                     String locationData = startLocation + "\n" + endLocation;
                     File locationFile = new File(getExternalFilesDir(null), "location.txt");
+
                     try (FileOutputStream fos = new FileOutputStream(locationFile)) {
                         fos.write(locationData.getBytes("UTF-8"));
                     }
+
+                    // Verificar si la ubicación fue escrita correctamente
+                    if (!locationFile.exists()) {
+                        Log.e(TAG, "❌ Error: Archivo de ubicación no encontrado.");
+                        return;
+                    }
+
+                    // Encriptar ubicación
                     File encryptedLocationFile = new File(getExternalFilesDir(null), "encrypted_location.txt");
                     CryptoUtils.encryptFileFlexible(locationFile, encryptedLocationFile);
 
-                    // 2. Preparar los RequestBody y MultipartBody.Part para Retrofit
+                    // Enviar archivos al servidor
                     RequestBody videoRequestBody = RequestBody.create(MediaType.parse("video/mp4"), encryptedVideoFile);
                     MultipartBody.Part videoPart = MultipartBody.Part.createFormData("video", encryptedVideoFile.getName(), videoRequestBody);
+
                     RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), encryptedLocationFile);
                     MultipartBody.Part locationPart = MultipartBody.Part.createFormData("location", encryptedLocationFile.getName(), locationRequestBody);
 
-                    // 3. Llamada a la API de Retrofit (la llamada es asíncrona)
                     ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
                     Call<ResponseBody> call = apiService.uploadVideoAndLocation(videoPart, locationPart);
+
                     call.enqueue(new Callback<ResponseBody>() {
                         @Override
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                             if (response.isSuccessful()) {
-                                Log.d(TAG, "Archivos enviados correctamente!");
-                                // Opcional: elimina el archivo original o encriptado si se desea
+                                Log.d(TAG, "✅ Archivos enviados correctamente.");
                                 deleteFile(videoFile);
                             } else {
-                                Log.e(TAG, "Error al enviar los archivos. Código de respuesta: " + response.code());
+                                Log.e(TAG, "❌ Error al enviar los archivos. Código: " + response.code());
                             }
                         }
 
                         @Override
                         public void onFailure(Call<ResponseBody> call, Throwable t) {
-                            Log.e(TAG, "Error de red: " + t.getMessage());
+                            Log.e(TAG, "❌ Error de red: " + t.getMessage());
                         }
                     });
+
                 } catch (Exception e) {
-                    Log.e(TAG, "Error en combineAudioAndLocation", e);
+                    Log.e(TAG, "❌ Error en combineAudioAndLocation", e);
                 }
             }
         }).start();
     }
+
 
 
     // Método para eliminar los archivos
