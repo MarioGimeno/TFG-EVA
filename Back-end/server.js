@@ -6,6 +6,7 @@ const { Storage } = require('@google-cloud/storage');
 const cors = require('cors');
 const tmp = require('tmp');
 const fs = require('fs');
+const { Worker } = require('worker_threads');
 
 const app = express();
 app.use(cors());
@@ -21,6 +22,25 @@ const gcs = new Storage({
 });
 const bucketName = process.env.BUCKET_NAME;
 
+function runDecryptionWorker(encryptedBuffer) {
+    return new Promise((resolve, reject) => {
+      const worker = new Worker('./decryptWorker.js');
+      worker.on('message', (message) => {
+        if (message.success) {
+          resolve(Buffer.from(message.decryptedBuffer));
+        } else {
+          reject(new Error(message.error));
+        }
+      });
+      worker.on('error', reject);
+      worker.on('exit', (code) => {
+        if (code !== 0) {
+          reject(new Error(`Worker stopped with exit code ${code}`));
+        }
+      });
+      worker.postMessage(encryptedBuffer);
+    });
+  }
 /**
  * Endpoint para subir archivos de video y ubicación sin encriptación.
  * Permite múltiples archivos (hasta 1000, ajustable) y los procesa de forma concurrente.
