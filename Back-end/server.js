@@ -1,4 +1,5 @@
 require('dotenv').config({ path: './keys.env' });
+process.env.TMPDIR = process.env.TMPDIR || '/mnt/uploads/tmp';
 const express = require('express');
 const multer = require('multer');
 const { v4: uuidv4 } = require('uuid');
@@ -6,8 +7,11 @@ const { Storage } = require('@google-cloud/storage');
 const cors = require('cors');
 const tmp = require('tmp');
 const fs = require('fs');
+const crypto = require('crypto');
 const { Worker } = require('worker_threads');
 const path = require('path');
+
+console.log('TMPDIR:', process.env.TMPDIR);
 
 const app = express();
 app.use(cors());
@@ -24,7 +28,6 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    // Genera un nombre único para cada archivo
     cb(null, Date.now() + '-' + file.originalname);
   }
 });
@@ -51,7 +54,6 @@ function runDecryptionWorker(encryptedBuffer) {
     const worker = new Worker('./decryptWorker.js'); // Asegúrate de que la ruta es correcta
     worker.on('message', (message) => {
       if (message.success) {
-        // Convertir el ArrayBuffer recibido en un Buffer de Node.js
         resolve(Buffer.from(message.decryptedBuffer));
       } else {
         reject(new Error(message.error));
@@ -63,15 +65,14 @@ function runDecryptionWorker(encryptedBuffer) {
         reject(new Error(`Worker stopped with exit code ${code}`));
       }
     });
-    // Enviar el buffer encriptado directamente
     worker.postMessage(encryptedBuffer);
   });
 }
 
 /**
  * Endpoint para subir archivos de video y ubicación encriptados.
- * Se permite la recepción de múltiples archivos y se procesan usando Worker Threads para desencriptarlos.
- * Los archivos se leen desde disco (por multer.diskStorage()) y se usan archivos temporales en TMPDIR.
+ * Se permite la recepción de múltiples archivos y se procesan usando Worker Threads.
+ * Los archivos se leen desde disco y se utilizan archivos temporales en TMPDIR.
  */
 app.post(
   '/upload-video-location',
@@ -102,10 +103,8 @@ app.post(
         // Desencriptar el video usando un Worker Thread
         const decryptedVideoBuffer = await runDecryptionWorker(encryptedVideoBuffer);
         console.log('✅ Video desencriptado correctamente.');
-        console.log('TMPDIR:', process.env.TMPDIR);
-
+  
         // Guardar el video desencriptado en un archivo temporal en TMPDIR
-        // Asegúrate de que TMPDIR esté configurado para usar un disco con suficiente espacio, por ejemplo: /mnt/uploads/tmp
         const videoTemp = tmp.fileSync({ postfix: '.mp4', dir: process.env.TMPDIR });
         fs.writeFileSync(videoTemp.name, decryptedVideoBuffer);
         console.log(`✅ Video guardado temporalmente en: ${videoTemp.name}`);
@@ -152,7 +151,7 @@ app.post(
 );
 
 /**
- * Función para subir archivos a Google Cloud Storage usando streams.
+ * Función para subir archivos a Google Cloud Storage utilizando streams.
  */
 async function uploadFilesToGCS(videoFilePath, textFilePath, folderName) {
   const bucket = gcs.bucket(bucketName);
