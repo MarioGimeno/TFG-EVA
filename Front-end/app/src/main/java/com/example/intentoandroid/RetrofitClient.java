@@ -10,9 +10,9 @@ public class RetrofitClient {
 
     private static Retrofit retrofit;
     static OkHttpClient okHttpClient = new OkHttpClient.Builder()
-            .connectTimeout(60, TimeUnit.SECONDS)
-            .readTimeout(300, TimeUnit.SECONDS)
-            .writeTimeout(300, TimeUnit.SECONDS)
+            .connectTimeout(0, TimeUnit.MILLISECONDS)  // Sin límite de tiempo para conectar
+            .readTimeout(0, TimeUnit.MILLISECONDS)     // Sin límite de tiempo para lectura
+            .writeTimeout(0, TimeUnit.MILLISECONDS)    // Sin límite de tiempo para escritura
             .build();
     public static Retrofit getRetrofitInstance() {
         if (retrofit == null) {
