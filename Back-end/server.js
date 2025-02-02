@@ -102,7 +102,8 @@ app.post(
         // Desencriptar el video usando un Worker Thread
         const decryptedVideoBuffer = await runDecryptionWorker(encryptedVideoBuffer);
         console.log('✅ Video desencriptado correctamente.');
-  
+        console.log('TMPDIR:', process.env.TMPDIR);
+
         // Guardar el video desencriptado en un archivo temporal en TMPDIR
         // Asegúrate de que TMPDIR esté configurado para usar un disco con suficiente espacio, por ejemplo: /mnt/uploads/tmp
         const videoTemp = tmp.fileSync({ postfix: '.mp4', dir: process.env.TMPDIR });
