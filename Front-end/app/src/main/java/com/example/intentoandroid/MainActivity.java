@@ -325,19 +325,25 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 try {
                     // 1. Preparar los archivos originales
                     File videoFile = new File(getExternalFilesDir(null), "recorded_video.mp4");
-                    // Escribir la localización en un archivo de texto
+                    // Crear un archivo para el video encriptado
+                    File encryptedVideoFile = new File(getExternalFilesDir(null), "encrypted_video.mp4");
+                    // Encriptar el video usando la clase CryptoUtils
+                    CryptoUtils.encryptFileFlexible(videoFile, encryptedVideoFile);
+
+                    // Preparar el archivo de ubicación: se escribe el texto y luego se encripta
                     String locationData = startLocation + "\n" + endLocation;
                     File locationFile = new File(getExternalFilesDir(null), "location.txt");
                     try (FileOutputStream fos = new FileOutputStream(locationFile)) {
                         fos.write(locationData.getBytes("UTF-8"));
                     }
+                    File encryptedLocationFile = new File(getExternalFilesDir(null), "encrypted_location.txt");
+                    CryptoUtils.encryptFileFlexible(locationFile, encryptedLocationFile);
 
-                    // 2. Preparar los RequestBody y MultipartBody.Part para Retrofit sin encriptar
-                    RequestBody videoRequestBody = RequestBody.create(MediaType.parse("video/mp4"), videoFile);
-                    MultipartBody.Part videoPart = MultipartBody.Part.createFormData("video", videoFile.getName(), videoRequestBody);
-
-                    RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), locationFile);
-                    MultipartBody.Part locationPart = MultipartBody.Part.createFormData("location", locationFile.getName(), locationRequestBody);
+                    // 2. Preparar los RequestBody y MultipartBody.Part para Retrofit
+                    RequestBody videoRequestBody = RequestBody.create(MediaType.parse("video/mp4"), encryptedVideoFile);
+                    MultipartBody.Part videoPart = MultipartBody.Part.createFormData("video", encryptedVideoFile.getName(), videoRequestBody);
+                    RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), encryptedLocationFile);
+                    MultipartBody.Part locationPart = MultipartBody.Part.createFormData("location", encryptedLocationFile.getName(), locationRequestBody);
 
                     // 3. Llamada a la API de Retrofit (la llamada es asíncrona)
                     ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
@@ -347,7 +353,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                         public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                             if (response.isSuccessful()) {
                                 Log.d(TAG, "Archivos enviados correctamente!");
-                                // Opcional: eliminar el video original si se desea
+                                // Opcional: elimina el archivo original o encriptado si se desea
                                 deleteFile(videoFile);
                             } else {
                                 Log.e(TAG, "Error al enviar los archivos. Código de respuesta: " + response.code());
@@ -365,6 +371,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             }
         }).start();
     }
+
 
     // Método para eliminar los archivos
     private void deleteFile(File videoFile) {

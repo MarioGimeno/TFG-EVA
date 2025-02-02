@@ -8,6 +8,10 @@ const SECRET_KEY = '1234567890123456'; // Debe coincidir con el cliente
 const MAGIC = Buffer.from("CHNK");
 
 function decryptFileFlexible(inputBuffer) {
+    console.log("Tamaño del buffer recibido:", inputBuffer.length);
+console.log("IV:", inputBuffer.slice(0, IV_SIZE).toString('hex'));
+console.log("Tag:", inputBuffer.slice(inputBuffer.length - TAG_SIZE).toString('hex'));
+
   if (inputBuffer.slice(0, 4).equals(MAGIC)) {
     console.log("Worker: Formato chunked detectado.");
     let offset = 4;

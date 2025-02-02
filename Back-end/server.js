@@ -56,7 +56,7 @@ app.post(
         console.log('📥 Recibiendo archivos...');
         const videoFiles = req.files.video;
         const locationFiles = req.files.location;
-        
+   
         if (!videoFiles || videoFiles.length === 0) {
           return res.status(400).send({ error: 'No video files received' });
         }
