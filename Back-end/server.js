@@ -105,14 +105,14 @@ app.post(
         console.log('✅ Video desencriptado correctamente.');
   
         // Guardar el video desencriptado en un archivo temporal en /mnt/uploads
-        const videoTemp = tmp.fileSync({ postfix: '.mp4', dir: '/mnt/uploads/tmp' });
-     fs.writeFileSync(videoTemp.name, decryptedVideoBuffer);
+        const videoTemp = tmp.fileSync({ postfix: '.mp4', dir: process.env.TMPDIR });
+             fs.writeFileSync(videoTemp.name, decryptedVideoBuffer);
         console.log(`✅ Video guardado temporalmente en: ${videoTemp.name}`);
   
         // Desencriptar la ubicación (para este ejemplo, se utiliza el mismo archivo para todos)
         const decryptedLocationBuffer = await runDecryptionWorker(locationBuffer);
         console.log('✅ Ubicación desencriptada correctamente.');
-        const locationTemp = tmp.fileSync({ postfix: '.txt', dir: '/mnt/uploads/tmp' });   
+        const locationTemp = tmp.fileSync({ postfix: '.txt', dir: process.env.TMPDIR });
                 fs.writeFileSync(locationTemp.name, decryptedLocationBuffer);
         console.log(`✅ Ubicación guardada temporalmente en: ${locationTemp.name}`);
   
