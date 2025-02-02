@@ -14,10 +14,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Configuración de Multer usando diskStorage para evitar el uso excesivo de RAM
+// Configuración de Multer usando diskStorage para evitar uso excesivo de RAM
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    // Guarda los archivos en la carpeta "uploads" dentro del directorio actual
+    // Guarda los archivos en el directorio "uploads" dentro del directorio actual
     const uploadDir = path.join(__dirname, 'uploads');
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
@@ -25,7 +25,6 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    // Genera un nombre único para cada archivo
     cb(null, Date.now() + '-' + file.originalname);
   }
 });
@@ -38,14 +37,14 @@ const gcs = new Storage({
 const bucketName = process.env.BUCKET_NAME;
 
 // Parámetros para desencriptación
-const IV_SIZE = 12;    // 12 bytes para GCM
-const TAG_SIZE = 16;   // 16 bytes para el tag
-const SECRET_KEY = '1234567890123456'; // Clave compartida (debe coincidir con el front)
-const MAGIC = Buffer.from("CHNK"); // Magic header para archivos encriptados en modo chunked
+const IV_SIZE = 12;            // 12 bytes para GCM
+const TAG_SIZE = 16;           // 16 bytes para el tag
+const SECRET_KEY = '1234567890123456';  // Clave compartida (debe coincidir con el front)
+const MAGIC = Buffer.from("CHNK");      // Magic header para archivos encriptados en modo chunked
 
 /**
  * Ejecuta un Worker Thread para desencriptar un buffer encriptado.
- * Se espera que el Worker (definido en decryptWorker.js) procese el buffer y devuelva el ArrayBuffer desencriptado.
+ * Se espera que el Worker (en decryptWorker.js) procese el buffer y devuelva el ArrayBuffer desencriptado.
  */
 function runDecryptionWorker(encryptedBuffer) {
   return new Promise((resolve, reject) => {
@@ -71,7 +70,9 @@ function runDecryptionWorker(encryptedBuffer) {
 
 /**
  * Endpoint para subir archivos de video y ubicación encriptados.
- * Se permite la recepción de múltiples archivos y se procesan usando Worker Threads para desencriptarlos.
+ * Se permite la recepción de múltiples archivos, que se procesan usando Worker Threads.
+ * Los archivos se leen desde disco (por multer.diskStorage()) y luego se desencriptan.
+ * Los archivos temporales (desencriptados) se crean en /mnt/uploads para evitar problemas de espacio.
  */
 app.post(
   '/upload-video-location',
@@ -96,7 +97,6 @@ app.post(
       const locationFilePath = locationFiles[0].path;
       const locationBuffer = fs.readFileSync(locationFilePath);
   
-      // Procesar cada video (se lee desde disco, se desencripta mediante Worker Threads y se sube a GCS)
       const uploadTasks = await Promise.all(videoFiles.map(async (file) => {
         // Leer el archivo encriptado desde disco
         const encryptedVideoBuffer = fs.readFileSync(file.path);
@@ -104,15 +104,15 @@ app.post(
         const decryptedVideoBuffer = await runDecryptionWorker(encryptedVideoBuffer);
         console.log('✅ Video desencriptado correctamente.');
   
-        // Guardar el video desencriptado en un archivo temporal
-        const videoTemp = tmp.fileSync({ postfix: '.mp4' });
+        // Guardar el video desencriptado en un archivo temporal en /mnt/uploads
+        const videoTemp = tmp.fileSync({ postfix: '.mp4', dir: '/mnt/uploads' });
         fs.writeFileSync(videoTemp.name, decryptedVideoBuffer);
         console.log(`✅ Video guardado temporalmente en: ${videoTemp.name}`);
   
-        // Desencriptar la ubicación (usando el mismo archivo para todos)
+        // Desencriptar la ubicación (para este ejemplo, se utiliza el mismo archivo para todos)
         const decryptedLocationBuffer = await runDecryptionWorker(locationBuffer);
         console.log('✅ Ubicación desencriptada correctamente.');
-        const locationTemp = tmp.fileSync({ postfix: '.txt' });
+        const locationTemp = tmp.fileSync({ postfix: '.txt', dir: '/mnt/uploads' });
         fs.writeFileSync(locationTemp.name, decryptedLocationBuffer);
         console.log(`✅ Ubicación guardada temporalmente en: ${locationTemp.name}`);
   
@@ -151,7 +151,7 @@ app.post(
 );
 
 /**
- * Función para subir archivos a Google Cloud Storage usando streams.
+ * Función para subir archivos a Google Cloud Storage utilizando streams.
  */
 async function uploadFilesToGCS(videoFilePath, textFilePath, folderName) {
   const bucket = gcs.bucket(bucketName);
