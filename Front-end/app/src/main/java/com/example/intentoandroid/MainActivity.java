@@ -23,9 +23,11 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -37,6 +39,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -318,78 +321,66 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         Log.d(TAG, "Video recording stopped");
     }
     private void combineAudioAndLocation() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    // Ruta del archivo de video grabado
-                    File videoFile = new File(getExternalFilesDir(null), "recorded_video.mp4");
+        new Thread(() -> {
+            try {
+                // Ruta del archivo de video grabado
+                File videoFile = new File(getExternalFilesDir(null), "recorded_video.mp4");
 
-                    // Verificar si el archivo de video existe antes de encriptarlo
-                    if (!videoFile.exists()) {
-                        Log.e(TAG, "❌ Error: Archivo de video no encontrado. No se puede encriptar.");
-                        return;
-                    }
-
-                    // Archivo encriptado
-                    File encryptedVideoFile = new File(getExternalFilesDir(null), "encrypted_video.mp4");
-
-                    // Encriptar el video usando CryptoUtils
-                    CryptoUtils.encryptFileFlexible(videoFile, encryptedVideoFile);
-
-                    // Preparar archivo de ubicación
-                    String locationData = startLocation + "\n" + endLocation;
-                    File locationFile = new File(getExternalFilesDir(null), "location.txt");
-
-                    try (FileOutputStream fos = new FileOutputStream(locationFile)) {
-                        fos.write(locationData.getBytes("UTF-8"));
-                    }
-
-                    // Verificar si la ubicación fue escrita correctamente
-                    if (!locationFile.exists()) {
-                        Log.e(TAG, "❌ Error: Archivo de ubicación no encontrado.");
-                        return;
-                    }
-
-                    // Encriptar ubicación
-                    File encryptedLocationFile = new File(getExternalFilesDir(null), "encrypted_location.txt");
-                    CryptoUtils.encryptFileFlexible(locationFile, encryptedLocationFile);
-
-                    // Enviar archivos al servidor
-                    RequestBody videoRequestBody = RequestBody.create(MediaType.parse("video/mp4"), encryptedVideoFile);
-                    MultipartBody.Part videoPart = MultipartBody.Part.createFormData("video", encryptedVideoFile.getName(), videoRequestBody);
-
-                    RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), encryptedLocationFile);
-                    MultipartBody.Part locationPart = MultipartBody.Part.createFormData("location", encryptedLocationFile.getName(), locationRequestBody);
-
-                    ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
-                    Call<ResponseBody> call = apiService.uploadVideoAndLocation(videoPart, locationPart);
-
-                    call.enqueue(new Callback<ResponseBody>() {
-                        @Override
-                        public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                            if (response.isSuccessful()) {
-                                Log.d(TAG, "✅ Archivos enviados correctamente.");
-                                deleteFile(videoFile);
-                            } else {
-                                Log.e(TAG, "❌ Error al enviar los archivos. Código: " + response.code());
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<ResponseBody> call, Throwable t) {
-                            Log.e(TAG, "❌ Error de red: " + t.getMessage());
-                        }
-                    });
-
-                } catch (Exception e) {
-                    Log.e(TAG, "❌ Error en combineAudioAndLocation", e);
+                if (!videoFile.exists()) {
+                    Log.e(TAG, "❌ Error: Archivo de video no encontrado.");
+                    return;
                 }
+
+                // Encriptar el video completo
+                File encryptedVideoFile = new File(getExternalFilesDir(null), "encrypted_video.mp4");
+                CryptoUtils.encryptFileFlexible(videoFile, encryptedVideoFile);
+
+                // Preparar archivo de ubicación
+                String locationData = startLocation + "\n" + endLocation;
+                File locationFile = new File(getExternalFilesDir(null), "location.txt");
+                try (FileOutputStream fos = new FileOutputStream(locationFile)) {
+                    fos.write(locationData.getBytes("UTF-8"));
+                }
+                if (!locationFile.exists()) {
+                    Log.e(TAG, "❌ Error: Archivo de ubicación no encontrado.");
+                    return;
+                }
+
+                // Encriptar ubicación
+                File encryptedLocationFile = new File(getExternalFilesDir(null), "encrypted_location.txt");
+                CryptoUtils.encryptFileFlexible(locationFile, encryptedLocationFile);
+
+                // Enviar la ubicación (encriptada) en un único request
+                RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), encryptedLocationFile);
+                MultipartBody.Part locationPart = MultipartBody.Part.createFormData("location", encryptedLocationFile.getName(), locationRequestBody);
+                ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
+                Call<ResponseBody> callLocation = apiService.uploadVideoAndLocation(locationPart);
+                callLocation.enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            Log.d(TAG, "✅ Archivo de ubicación enviado correctamente.");
+                        } else {
+                            Log.e(TAG, "❌ Error al enviar ubicación. Código: " + response.code());
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Log.e(TAG, "❌ Error de red al enviar ubicación: " + t.getMessage());
+                    }
+                });
+
+                // Enviar el video en chunks (el video ya está encriptado)
+                uploadVideoChunks(encryptedVideoFile);
+
+                // (Opcional) Eliminar el archivo original si es necesario
+                deleteFile(videoFile);
+
+            } catch (Exception e) {
+                Log.e(TAG, "❌ Error en combineAudioAndLocation", e);
             }
         }).start();
     }
-
-
 
     // Método para eliminar los archivos
     private void deleteFile(File videoFile) {
@@ -399,7 +390,67 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     }
 
 
+    public List<byte[]> splitFileIntoChunks(File file, int chunkSize) throws IOException {
+        List<byte[]> chunks = new ArrayList<>();
+        try (FileInputStream fis = new FileInputStream(file)) {
+            byte[] buffer = new byte[chunkSize];
+            int bytesRead;
+            while ((bytesRead = fis.read(buffer)) != -1) {
+                if (bytesRead < chunkSize) {
+                    byte[] lastChunk = Arrays.copyOf(buffer, bytesRead);
+                    chunks.add(lastChunk);
+                } else {
+                    chunks.add(buffer.clone());
+                }
+            }
+        }
+        return chunks;
+    }
 
+    public void uploadVideoChunks(File encryptedVideoFile) {
+        int chunkSize = 1024 * 1024; // 1 MB por chunk (ajustable)
+        List<byte[]> chunks;
+        try {
+            chunks = splitFileIntoChunks(encryptedVideoFile, chunkSize);
+        } catch (IOException e) {
+            Log.e(TAG, "Error al dividir el archivo: " + e.getMessage());
+            return;
+        }
+
+        String fileId = UUID.randomUUID().toString(); // Identificador único para este archivo
+        int totalChunks = chunks.size();
+
+        ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
+
+        for (int i = 0; i < totalChunks; i++) {
+            int chunkIndex = i;
+            byte[] chunkData = chunks.get(i);
+
+            // Crear RequestBody para cada parámetro
+            RequestBody fileIdBody = RequestBody.create(MediaType.parse("text/plain"), fileId);
+            RequestBody chunkIndexBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(chunkIndex));
+            RequestBody totalChunksBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(totalChunks));
+            RequestBody chunkRequestBody = RequestBody.create(MediaType.parse("application/octet-stream"), chunkData);
+            MultipartBody.Part chunkPart = MultipartBody.Part.createFormData("chunkData", "chunk_" + chunkIndex, chunkRequestBody);
+
+            // Enviar cada chunk de forma asíncrona
+            Call<ResponseBody> call = apiService.uploadChunk(fileIdBody, chunkIndexBody, totalChunksBody, chunkPart);
+            call.enqueue(new Callback<ResponseBody>() {
+                @Override
+                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                    if (response.isSuccessful()) {
+                        Log.d(TAG, "Chunk " + chunkIndex + " enviado correctamente.");
+                    } else {
+                        Log.e(TAG, "Error al enviar chunk " + chunkIndex + ": " + response.code());
+                    }
+                }
+                @Override
+                public void onFailure(Call<ResponseBody> call, Throwable t) {
+                    Log.e(TAG, "Fallo al enviar chunk " + chunkIndex + ": " + t.getMessage());
+                }
+            });
+        }
+    }
 
     @Override
     protected void onDestroy(){

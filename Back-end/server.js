@@ -12,7 +12,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Configurar TMPDIR: Asegúrate de que apunta a un disco con suficiente espacio, por ejemplo, /mnt/uploads/tmp.
+// Configurar TMPDIR: Asegúrate de que apunta a un disco con suficiente espacio.
 process.env.TMPDIR = process.env.TMPDIR || '/mnt/uploads/tmp';
 if (!fs.existsSync(process.env.TMPDIR)) {
   fs.mkdirSync(process.env.TMPDIR, { recursive: true });
@@ -34,23 +34,11 @@ const PORT = process.env.PORT || 3000;
 const gcs = new Storage({ keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS });
 const bucketName = process.env.BUCKET_NAME;
 
-// Parámetros para desencriptación
+// Parámetros para desencriptación (deben coincidir con el front)
 const IV_SIZE = 12;            // 12 bytes para GCM
 const TAG_SIZE = 16;           // 16 bytes para el tag
 const SECRET_KEY = '1234567890123456';  // Debe coincidir con el front
 const MAGIC = Buffer.from("CHNK");      // Magic header para archivos encriptados en modo chunked
-
-/**
- * Función para determinar si un archivo encriptado es de modo chunked.
- * Lee los primeros 4 bytes y los compara con MAGIC.
- */
-function isChunked(filePath) {
-  const fd = fs.openSync(filePath, 'r');
-  const header = Buffer.alloc(4);
-  fs.readSync(fd, header, 0, 4, 0);
-  fs.closeSync(fd);
-  return header.equals(MAGIC);
-}
 
 /**
  * Ejecuta un Worker Thread para desencriptar un archivo.
@@ -59,7 +47,7 @@ function isChunked(filePath) {
 function runDecryptionWorker(inputFilePath, outputFilePath) {
   return new Promise((resolve, reject) => {
     const worker = new Worker('./decryptWorker.js', {
-      workerData: { inputFilePath, outputFilePath }
+      workerData: { inputFilePath, outputFilePath, SECRET_KEY, IV_SIZE, TAG_SIZE }
     });
     worker.on('message', (message) => {
       if (message.success) {
@@ -78,110 +66,144 @@ function runDecryptionWorker(inputFilePath, outputFilePath) {
 }
 
 /**
- * Endpoint para subir archivos de video y ubicación encriptados.
- * Se permiten múltiples archivos.
- * Los archivos se procesan con Worker Threads para desencriptarlos y se suben a GCS usando streams y subidas reanudables.
+ * Función que une los chunks recibidos en un único archivo encriptado, lo desencripta y luego lo sube a GCS.
+ * Se espera que los chunks se hayan guardado en "uploads/<fileId>/chunk_0, chunk_1, …".
  */
-app.post(
-  '/upload-video-location',
-  upload.fields([
-    { name: 'video', maxCount: 1000 },
-    { name: 'location', maxCount: 1000 }
-  ]),
-  async (req, res) => {
-    try {
-      console.log('📥 Recibiendo archivos...');
-      const videoFiles = req.files.video;
-      const locationFiles = req.files.location;
+function assembleFile(fileId, totalChunks) {
+  const fileDir = path.join('uploads', fileId);
+  // El archivo ensamblado (encriptado) se guardará con este nombre:
+  const encryptedFilePath = path.join('uploads', `${fileId}-encrypted.mp4`);
+  // Una vez desencriptado se guardará aquí:
+  const decryptedFilePath = path.join('uploads', `${fileId}-decrypted.mp4`);
+  const writeStream = fs.createWriteStream(encryptedFilePath);
+  
+  let currentChunk = 0;
+  
+  function appendNextChunk() {
+    if (currentChunk >= totalChunks) {
+      writeStream.end();
+      console.log('Archivo ensamblado correctamente:', encryptedFilePath);
       
-      if (!videoFiles || videoFiles.length === 0) {
-        return res.status(400).send({ error: 'No video files received' });
-      }
-      if (!locationFiles || locationFiles.length === 0) {
-        return res.status(400).send({ error: 'No location file received' });
-      }
-      
-      // Procesar el archivo de ubicación (usar el primer archivo recibido)
-      const locationFilePath = locationFiles[0].path;
-      const decryptedLocationPath = path.join(process.env.TMPDIR, `decrypted-${uuidv4()}.txt`);
-      await runDecryptionWorker(locationFilePath, decryptedLocationPath);
-      console.log(`✅ Ubicación desencriptada y guardada en: ${decryptedLocationPath}`);
-      
-      // Procesar cada video
-      const uploadTasks = await Promise.all(videoFiles.map(async (file) => {
-        const decryptedVideoPath = path.join(process.env.TMPDIR, `decrypted-${uuidv4()}.mp4`);
-        await runDecryptionWorker(file.path, decryptedVideoPath);
-        console.log(`✅ Video desencriptado y guardado en: ${decryptedVideoPath}`);
-  
-        const folderName = uuidv4();
-        console.log(`📂 Creando carpeta en GCS: ${folderName}`);
-        const url = await uploadFilesToGCS(decryptedVideoPath, decryptedLocationPath, folderName);
-        console.log(`🎉 Subida completa: ${url}`);
-  
-        // Eliminar archivos temporales (original encriptado y desencriptado)
-        [file.path, decryptedVideoPath].forEach(fp => {
-          if (fs.existsSync(fp)) {
-            fs.unlinkSync(fp);
-            console.log(`🗑️ Archivo eliminado: ${fp}`);
-          }
-        });
-  
-        return { folderUrl: url, folderName };
-      }));
-  
-      // Eliminar el archivo de ubicación desencriptado (usado para todos)
-      if (fs.existsSync(decryptedLocationPath)) {
-        fs.unlinkSync(decryptedLocationPath);
-        console.log(`🗑️ Archivo de ubicación temporal eliminado: ${decryptedLocationPath}`);
-      }
-  
-      res.send({ message: 'Files uploaded successfully', uploads: uploadTasks });
-    } catch (error) {
-      console.error('❌ Error en la subida:', error);
-      res.status(500).send({ error: error.message });
+      // Una vez ensamblado, ejecutamos el Worker para desencriptar
+      runDecryptionWorker(encryptedFilePath, decryptedFilePath)
+        .then(() => {
+          console.log('Archivo desencriptado correctamente:', decryptedFilePath);
+          // Después de desencriptar, subimos el archivo desencriptado al bucket
+          uploadVideoToGCS(decryptedFilePath, fileId)
+            .then((url) => {
+              console.log('Video subido correctamente:', url);
+              // (Opcional) Limpieza de archivos temporales
+              cleanupFiles(fileDir, encryptedFilePath, decryptedFilePath);
+            })
+            .catch(err => console.error('Error subiendo video a GCS:', err));
+        })
+        .catch(err => console.error('Error al desencriptar el archivo:', err));
+      return;
     }
+    
+    const chunkPath = path.join(fileDir, `chunk_${currentChunk}`);
+    const readStream = fs.createReadStream(chunkPath);
+    
+    readStream.pipe(writeStream, { end: false });
+    readStream.on('end', () => {
+      console.log(`Chunk ${currentChunk} agregado.`);
+      currentChunk++;
+      appendNextChunk();
+    });
+    readStream.on('error', (err) => {
+      console.error('Error al leer chunk:', err);
+      writeStream.close();
+    });
   }
-);
+  
+  appendNextChunk();
+}
 
 /**
- * Función para subir archivos a Google Cloud Storage usando streams y subidas reanudables.
+ * Función para subir el video desencriptado a GCS.
+ * Se sube dentro de una carpeta identificada con el fileId.
  */
-async function uploadFilesToGCS(videoFilePath, textFilePath, folderName) {
-  const bucket = gcs.bucket(bucketName);
-  console.log('🚀 Iniciando subida de archivos a GCS...');
-  
-  await Promise.all([
-    new Promise((resolve, reject) => {
-      console.log(`📤 Subiendo video: ${videoFilePath} a ${folderName}/video.mp4`);
-      fs.createReadStream(videoFilePath)
-        .pipe(bucket.file(`${folderName}/video.mp4`).createWriteStream({
-          metadata: { contentType: 'video/mp4' },
-          resumable: true
-        }))
-        .on('finish', () => {
-          console.log('✅ Video subido correctamente.');
-          resolve();
-        })
-        .on('error', reject);
-    }),
-    new Promise((resolve, reject) => {
-      console.log(`📤 Subiendo ubicación: ${textFilePath} a ${folderName}/location.txt`);
-      fs.createReadStream(textFilePath)
-        .pipe(bucket.file(`${folderName}/location.txt`).createWriteStream({
-          metadata: { contentType: 'text/plain' },
-          resumable: true
-        }))
-        .on('finish', () => {
-          console.log('✅ Ubicación subida correctamente.');
-          resolve();
-        })
-        .on('error', reject);
-    })
-  ]);
-  
-  console.log('🎯 Todos los archivos han sido subidos.');
-  return `https://storage.googleapis.com/${bucketName}/${folderName}/`;
+function uploadVideoToGCS(videoFilePath, fileId) {
+  return new Promise((resolve, reject) => {
+    const bucket = gcs.bucket(bucketName);
+    const destination = `${fileId}/video.mp4`;
+    console.log(`Iniciando subida del video desencriptado: ${videoFilePath} a ${destination}`);
+    
+    fs.createReadStream(videoFilePath)
+      .pipe(bucket.file(destination).createWriteStream({
+        metadata: { contentType: 'video/mp4' },
+        resumable: true
+      }))
+      .on('finish', () => {
+        const url = `https://storage.googleapis.com/${bucketName}/${destination}`;
+        console.log('Video subido correctamente.');
+        resolve(url);
+      })
+      .on('error', reject);
+  });
 }
+
+/**
+ * Función para limpiar archivos temporales.
+ */
+function cleanupFiles(chunksDir, encryptedFilePath, decryptedFilePath) {
+  // Eliminar la carpeta de chunks
+  if (fs.existsSync(chunksDir)) {
+    fs.readdirSync(chunksDir).forEach(file => {
+      fs.unlinkSync(path.join(chunksDir, file));
+    });
+    fs.rmdirSync(chunksDir);
+    console.log('Carpeta de chunks eliminada:', chunksDir);
+  }
+  // Eliminar el archivo encriptado ensamblado
+  if (fs.existsSync(encryptedFilePath)) {
+    fs.unlinkSync(encryptedFilePath);
+    console.log('Archivo encriptado temporal eliminado:', encryptedFilePath);
+  }
+  // Eliminar el archivo desencriptado (opcional, si ya fue subido)
+  if (fs.existsSync(decryptedFilePath)) {
+    fs.unlinkSync(decryptedFilePath);
+    console.log('Archivo desencriptado temporal eliminado:', decryptedFilePath);
+  }
+}
+
+/**
+ * Endpoint para recibir cada chunk.
+ * Se espera que el cliente envíe en el body: fileId, chunkIndex, totalChunks,
+ * y en el campo 'chunkData' el archivo correspondiente.
+ */
+app.post('/upload-chunk', upload.single('chunkData'), (req, res) => {
+  try {
+    // Obtener metadatos enviados en el body
+    const fileId = req.body.fileId;
+    const chunkIndex = req.body.chunkIndex;
+    const totalChunks = req.body.totalChunks;
+    
+    // Crear carpeta específica para los chunks de este archivo
+    const fileDir = path.join('uploads', fileId);
+    if (!fs.existsSync(fileDir)) {
+      fs.mkdirSync(fileDir, { recursive: true });
+    }
+    
+    // Renombrar el archivo recibido para identificar el número de chunk
+    const chunkFilename = path.join(fileDir, `chunk_${chunkIndex}`);
+    fs.renameSync(req.file.path, chunkFilename);
+    
+    console.log(`Chunk ${chunkIndex} del archivo ${fileId} recibido.`);
+    
+    // Verificar si ya se han recibido todos los chunks
+    const receivedChunks = fs.readdirSync(fileDir).filter(name => name.startsWith('chunk_')).length;
+    if (parseInt(totalChunks) === receivedChunks) {
+      console.log('Todos los chunks recibidos. Iniciando el ensamblado.');
+      assembleFile(fileId, totalChunks);
+    }
+    
+    res.status(200).send({ message: 'Chunk recibido' });
+  } catch (error) {
+    console.error('Error en /upload-chunk:', error);
+    res.status(500).send({ error: error.message });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);

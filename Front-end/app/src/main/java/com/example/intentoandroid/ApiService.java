@@ -1,5 +1,7 @@
 package com.example.intentoandroid;
+
 import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Multipart;
@@ -8,16 +10,18 @@ import retrofit2.http.Part;
 
 public interface ApiService {
     @Multipart
-    @POST("/upload")
-    Call<ResponseBody> uploadVideoAndAudio(
-            @Part MultipartBody.Part video,
-            @Part MultipartBody.Part audio,
-            @Part MultipartBody.Part location
+    @POST("upload-chunk")
+    Call<ResponseBody> uploadChunk(
+            @Part("fileId") RequestBody fileId,
+            @Part("chunkIndex") RequestBody chunkIndex,
+            @Part("totalChunks") RequestBody totalChunks,
+            @Part MultipartBody.Part chunkData
     );
+
+    // Si sigues enviando la ubicación completa, puedes conservar el método original
     @Multipart
-    @POST("/upload-video-location")
+    @POST("upload-video-location")
     Call<ResponseBody> uploadVideoAndLocation(
-            @Part MultipartBody.Part video,
-              @Part MultipartBody.Part location
+            @Part MultipartBody.Part location
     );
 }
