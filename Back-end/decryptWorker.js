@@ -12,7 +12,7 @@ const MAGIC = Buffer.from("CHNK");
 
 /**
  * Función para desencriptar un archivo en modo streaming.
- * Se asume el formato: [ IV (12 bytes) | Ciphertext | Auth Tag (16 bytes) ]
+ * Se asume que el archivo tiene el formato: [ IV (12 bytes) | Ciphertext ... | Auth Tag (16 bytes) ]
  */
 async function decryptFileStreaming(inputFilePath, outputFilePath) {
   const stats = fs.statSync(inputFilePath);
@@ -20,7 +20,7 @@ async function decryptFileStreaming(inputFilePath, outputFilePath) {
   if (fileSize < IV_SIZE + TAG_SIZE) {
     throw new Error("Archivo demasiado corto para desencriptación streaming");
   }
-  // Leer IV y Tag
+  // Leer IV y Auth Tag
   const fd = fs.openSync(inputFilePath, 'r');
   const iv = Buffer.alloc(IV_SIZE);
   fs.readSync(fd, iv, 0, IV_SIZE, 0);
@@ -28,11 +28,10 @@ async function decryptFileStreaming(inputFilePath, outputFilePath) {
   fs.readSync(fd, tag, 0, TAG_SIZE, fileSize - TAG_SIZE);
   fs.closeSync(fd);
 
-  // Crear el decipher stream
   const decipher = crypto.createDecipheriv('aes-128-gcm', Buffer.from(SECRET_KEY, 'utf8'), iv);
   decipher.setAuthTag(tag);
 
-  // Crear streams: saltamos los primeros 12 bytes y no leemos el último TAG_SIZE bytes
+  // Crear stream de lectura: omite los primeros IV_SIZE bytes y no incluye el Auth Tag final
   const readStream = fs.createReadStream(inputFilePath, { start: IV_SIZE, end: fileSize - TAG_SIZE - 1 });
   const writeStream = fs.createWriteStream(outputFilePath);
 
@@ -42,11 +41,11 @@ async function decryptFileStreaming(inputFilePath, outputFilePath) {
 /**
  * Función para desencriptar un archivo en modo chunked.
  * Se espera el formato: [ MAGIC (4 bytes) | chunkSize (int32) | ... ]
- * Procesa el archivo en memoria.
+ * Se procesa en memoria (nota: para archivos muy grandes, idealmente se debería usar un enfoque basado en streams).
  */
 function decryptFileChunked(inputFilePath, outputFilePath) {
   const data = fs.readFileSync(inputFilePath);
-  let offset = 4; // Saltamos MAGIC
+  let offset = 4; // Saltar MAGIC
   const chunkSize = data.readInt32BE(offset);
   offset += 4;
   const decryptedChunks = [];
@@ -76,7 +75,7 @@ function decryptFileChunked(inputFilePath, outputFilePath) {
 (async () => {
   try {
     const { inputFilePath, outputFilePath } = workerData;
-    // Verificar si el archivo está en formato chunked o streaming
+    // Verificar el header para determinar el modo de encriptación
     const fd = fs.openSync(inputFilePath, 'r');
     const header = Buffer.alloc(4);
     fs.readSync(fd, header, 0, 4, 0);
