@@ -40,6 +40,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -406,35 +407,37 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
         return chunks;
     }
-
     public void uploadVideoChunks(File encryptedVideoFile) {
-        int chunkSize = 1024 * 1024; // 1 MB por chunk (ajustable)
-        List<byte[]> chunks;
-        try {
-            chunks = splitFileIntoChunks(encryptedVideoFile, chunkSize);
-        } catch (IOException e) {
-            Log.e(TAG, "Error al dividir el archivo: " + e.getMessage());
-            return;
-        }
-
-        String fileId = UUID.randomUUID().toString(); // Identificador único para este archivo
-        int totalChunks = chunks.size();
+        // Tamaño del chunk en bytes (50 MB)
+        long chunkSize = 50L * 1024L * 1024L;
+        long fileLength = encryptedVideoFile.length();
+        int totalChunks = (int) ((fileLength + chunkSize - 1) / chunkSize); // redondeo hacia arriba
+        String fileId = UUID.randomUUID().toString();
 
         ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
 
         for (int i = 0; i < totalChunks; i++) {
-            int chunkIndex = i;
-            byte[] chunkData = chunks.get(i);
+            long offset = i * chunkSize;
+            long length = Math.min(chunkSize, fileLength - offset);
 
-            // Crear RequestBody para cada parámetro
+            // Crear un RequestBody que lea desde el archivo sin cargar todo el chunk en memoria
+            ChunkedRequestBody chunkBody = new ChunkedRequestBody(
+                    encryptedVideoFile,
+                    offset,
+                    length,
+                    MediaType.parse("application/octet-stream")
+            );
+
+            // Crear RequestBody para los parámetros de texto
             RequestBody fileIdBody = RequestBody.create(MediaType.parse("text/plain"), fileId);
-            RequestBody chunkIndexBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(chunkIndex));
+            RequestBody chunkIndexBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(i));
             RequestBody totalChunksBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(totalChunks));
-            RequestBody chunkRequestBody = RequestBody.create(MediaType.parse("application/octet-stream"), chunkData);
-            MultipartBody.Part chunkPart = MultipartBody.Part.createFormData("chunkData", "chunk_" + chunkIndex, chunkRequestBody);
+
+            MultipartBody.Part chunkPart = MultipartBody.Part.createFormData("chunkData", "chunk_" + i, chunkBody);
 
             // Enviar cada chunk de forma asíncrona
             Call<ResponseBody> call = apiService.uploadChunk(fileIdBody, chunkIndexBody, totalChunksBody, chunkPart);
+            final int chunkIndex = i;
             call.enqueue(new Callback<ResponseBody>() {
                 @Override
                 public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {

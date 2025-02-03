@@ -75,21 +75,32 @@ function decryptFileChunked(inputFilePath, outputFilePath) {
 (async () => {
   try {
     const { inputFilePath, outputFilePath } = workerData;
-    // Verificar el header para determinar el modo de encriptación
-    const fd = fs.openSync(inputFilePath, 'r');
-    const header = Buffer.alloc(4);
-    fs.readSync(fd, header, 0, 4, 0);
-    fs.closeSync(fd);
-
-    if (header.equals(MAGIC)) {
-      console.log("Worker: Formato chunked detectado.");
-      decryptFileChunked(inputFilePath, outputFilePath);
-    } else {
-      console.log("Worker: Formato streaming detectado.");
+    const stats = fs.statSync(inputFilePath);
+    const fileSize = stats.size;
+    
+    // Si el archivo es mayor a 2 GiB, forzamos el modo streaming
+    if (fileSize > 2 * 1024 * 1024 * 1024) {
+      console.log("Worker: Archivo mayor a 2 GiB detectado. Forzando modo streaming.");
       await decryptFileStreaming(inputFilePath, outputFilePath);
+    } else {
+      // Si es menor a 2 GiB, se puede detectar el formato normalmente
+      const fd = fs.openSync(inputFilePath, 'r');
+      const header = Buffer.alloc(4);
+      fs.readSync(fd, header, 0, 4, 0);
+      fs.closeSync(fd);
+    
+      if (header.equals(MAGIC)) {
+        console.log("Worker: Formato chunked detectado.");
+        decryptFileChunked(inputFilePath, outputFilePath);
+      } else {
+        console.log("Worker: Formato streaming detectado.");
+        await decryptFileStreaming(inputFilePath, outputFilePath);
+      }
     }
+    
     parentPort.postMessage({ success: true, outputFilePath });
   } catch (err) {
     parentPort.postMessage({ success: false, error: err.message });
   }
 })();
+
