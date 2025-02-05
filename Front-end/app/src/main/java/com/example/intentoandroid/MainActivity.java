@@ -413,14 +413,16 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         long fileLength = encryptedVideoFile.length();
         int totalChunks = (int) ((fileLength + chunkSize - 1) / chunkSize); // redondeo hacia arriba
         String fileId = UUID.randomUUID().toString();
+        Log.d("ChunkUpload", "Total de chunks: " + totalChunks);
 
         ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
 
         for (int i = 0; i < totalChunks; i++) {
-            long offset = i * chunkSize;
+            final int chunkIndex = i;
+            long offset = chunkIndex * chunkSize;
             long length = Math.min(chunkSize, fileLength - offset);
 
-            // Crear un RequestBody que lea desde el archivo sin cargar todo el chunk en memoria
+            // Crear el RequestBody para el chunk
             ChunkedRequestBody chunkBody = new ChunkedRequestBody(
                     encryptedVideoFile,
                     offset,
@@ -430,28 +432,30 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
             // Crear RequestBody para los parámetros de texto
             RequestBody fileIdBody = RequestBody.create(MediaType.parse("text/plain"), fileId);
-            RequestBody chunkIndexBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(i));
+            RequestBody chunkIndexBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(chunkIndex));
             RequestBody totalChunksBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(totalChunks));
 
-            MultipartBody.Part chunkPart = MultipartBody.Part.createFormData("chunkData", "chunk_" + i, chunkBody);
+            MultipartBody.Part chunkPart = MultipartBody.Part.createFormData("chunkData", "chunk_" + chunkIndex, chunkBody);
 
-            // Enviar cada chunk de forma asíncrona
-            Call<ResponseBody> call = apiService.uploadChunk(fileIdBody, chunkIndexBody, totalChunksBody, chunkPart);
-            final int chunkIndex = i;
-            call.enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                    if (response.isSuccessful()) {
-                        Log.d(TAG, "Chunk " + chunkIndex + " enviado correctamente.");
-                    } else {
-                        Log.e(TAG, "Error al enviar chunk " + chunkIndex + ": " + response.code());
+            // Envolver la llamada en un hilo
+            new Thread(() -> {
+                Call<ResponseBody> call = apiService.uploadChunk(fileIdBody, chunkIndexBody, totalChunksBody, chunkPart);
+                call.enqueue(new Callback<ResponseBody>() {
+                    @Override
+                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                        if (response.isSuccessful()) {
+                            Log.d(TAG, "Chunk " + chunkIndex + " enviado correctamente.");
+                        } else {
+                            Log.e(TAG, "Error al enviar chunk " + chunkIndex + ": " + response.code());
+                        }
                     }
-                }
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    Log.e(TAG, "Fallo al enviar chunk " + chunkIndex + ": " + t.getMessage());
-                }
-            });
+
+                    @Override
+                    public void onFailure(Call<ResponseBody> call, Throwable t) {
+                        Log.e(TAG, "Fallo al enviar chunk " + chunkIndex + ": " + t.getMessage());
+                    }
+                });
+            }).start();
         }
     }
 

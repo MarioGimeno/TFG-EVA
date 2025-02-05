@@ -1,5 +1,7 @@
 package com.example.intentoandroid;
 
+import android.util.Log;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -32,6 +34,7 @@ public class ChunkedRequestBody extends RequestBody {
 
     @Override
     public void writeTo(BufferedSink sink) throws IOException {
+        Log.d("ChunkUpload", "Enviando chunk - Offset: " + offset + ", Tamaño: " + length);
         // Usamos RandomAccessFile para leer desde un offset específico
         RandomAccessFile raf = new RandomAccessFile(file, "r");
         try {
