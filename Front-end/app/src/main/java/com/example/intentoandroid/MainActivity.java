@@ -230,9 +230,8 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     private void setupMediaRecorder() throws IOException {
         mediaRecorder = new MediaRecorder();
 
-        // Configurar la fuente de audio (por ejemplo, MIC)
+        // Configurar la fuente de audio y video
         mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        // Configurar la fuente de video
         mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
 
         // Establecer el formato de salida
@@ -255,6 +254,24 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
         // Girar el video 90 grados
         mediaRecorder.setOrientationHint(90);
+
+        // Limitar la grabación a 20 minutos (20 * 60 * 1000 ms)
+        mediaRecorder.setMaxDuration(15 * 60 * 1000);
+
+        // Configurar el listener para el límite de duración
+        mediaRecorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
+            @Override
+            public void onInfo(MediaRecorder mr, int what, int extra) {
+                if (what == MediaRecorder.MEDIA_RECORDER_INFO_MAX_DURATION_REACHED) {
+                    Log.d(TAG, "Se alcanzó el límite de 20 minutos, deteniendo la grabación.");
+                    runOnUiThread(() -> {
+                        stopVideoRecording();
+                        stopMicrophoneService();
+                        combineAudioAndLocation();
+                    });
+                }
+            }
+        });
 
         // Preparar el MediaRecorder
         mediaRecorder.prepare();

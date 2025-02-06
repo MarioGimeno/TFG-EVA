@@ -7,7 +7,7 @@ const pipelineAsync = promisify(pipeline);
 
 const IV_SIZE = 12;             // 12 bytes para GCM
 const TAG_SIZE = 16;            // 16 bytes para el Auth Tag
-const SECRET_KEY = '1234567890123456'; // Debe coincidir con el front
+const SECRET_KEY = '1234567890123456'; // Debe coincidir con el front (AES-128-GCM requiere 16 bytes)
 const MAGIC = "CHNK";           // Magic header para archivos chunked
 
 /**
@@ -72,47 +72,60 @@ async function decryptFileStreaming(inputFilePath, outputFilePath) {
 }
 
 /**
- * Desencripta un archivo en modo chunked.
+ * Desencripta un archivo en modo chunked sin cargar todo el archivo en memoria.
  * Se asume el formato:
  *   [ MAGIC (4 bytes) | chunkSize (4 bytes) | (para cada chunk: [ ivLength (4 bytes) | IV | encryptedChunkLength (4 bytes) | encryptedChunk (ciphertext + Auth Tag) ] )
  *
- * Se separa el Auth Tag de cada chunk (se asume que es de 16 bytes y se encuentra al final del chunk encriptado).
+ * En este refactor se procesa el archivo de forma secuencial leyendo cada parte en memoria y escribiendo el resultado en un stream de salida.
  */
 async function decryptChunkedFile(inputFilePath, outputFilePath) {
-  const fileBuffer = fs.readFileSync(inputFilePath);
+  // Abrir el archivo en modo lectura utilizando promesas
+  const fd = await fs.promises.open(inputFilePath, 'r');
   let offset = 0;
 
-  // Leer el magic header (4 bytes)
-  const magicHeader = fileBuffer.slice(offset, offset + 4).toString('utf8');
+  // Leer el header: MAGIC (4 bytes) y chunkSize (4 bytes)
+  const headerBuffer = Buffer.alloc(8);
+  await fd.read(headerBuffer, 0, 8, offset);
+  offset += 8;
+
+  const magicHeader = headerBuffer.slice(0, 4).toString('utf8');
   if (magicHeader !== MAGIC) {
+    await fd.close();
     throw new Error("Archivo no tiene el magic header esperado.");
   }
-  offset += 4;
+  const declaredChunkSize = headerBuffer.readInt32BE(4);
+  console.log("Tamaño de chunk declarado:", declaredChunkSize);
 
-  // Leer el tamaño de chunk (4 bytes, entero Big Endian)
-  const chunkSize = fileBuffer.readInt32BE(offset);
-  offset += 4;
-  console.log("Tamaño de chunk declarado:", chunkSize);
+  // Crear un stream de escritura para el archivo desencriptado
+  const writeStream = fs.createWriteStream(outputFilePath);
 
-  const outputBuffers = [];
-
-  // Procesar cada chunk
-  while (offset < fileBuffer.length) {
+  // Procesar cada chunk secuencialmente
+  while (true) {
     // Leer la longitud del IV (4 bytes)
-    const ivLength = fileBuffer.readInt32BE(offset);
+    const ivLengthBuffer = Buffer.alloc(4);
+    const { bytesRead: br1 } = await fd.read(ivLengthBuffer, 0, 4, offset);
+    if (br1 < 4) break; // Fin del archivo
     offset += 4;
+    const ivLength = ivLengthBuffer.readInt32BE(0);
+
     // Leer el IV
-    const iv = fileBuffer.slice(offset, offset + ivLength);
+    const iv = Buffer.alloc(ivLength);
+    await fd.read(iv, 0, ivLength, offset);
     offset += ivLength;
 
     // Leer la longitud del chunk encriptado (4 bytes)
-    const encryptedChunkLength = fileBuffer.readInt32BE(offset);
+    const encChunkLengthBuffer = Buffer.alloc(4);
+    await fd.read(encChunkLengthBuffer, 0, 4, offset);
     offset += 4;
-    // Leer el chunk encriptado (contiene ciphertext + Auth Tag)
-    const encryptedChunk = fileBuffer.slice(offset, offset + encryptedChunkLength);
+    const encryptedChunkLength = encChunkLengthBuffer.readInt32BE(0);
+
+    // Leer el chunk encriptado (ciphertext + Auth Tag)
+    const encryptedChunk = Buffer.alloc(encryptedChunkLength);
+    await fd.read(encryptedChunk, 0, encryptedChunkLength, offset);
     offset += encryptedChunkLength;
 
     if (encryptedChunk.length < TAG_SIZE) {
+      await fd.close();
       throw new Error("Chunk encriptado demasiado corto para tener Auth Tag");
     }
     // Separar el Auth Tag del ciphertext
@@ -122,12 +135,17 @@ async function decryptChunkedFile(inputFilePath, outputFilePath) {
     // Crear el objeto decipher para este chunk
     const decipher = crypto.createDecipheriv('aes-128-gcm', Buffer.from(SECRET_KEY, 'utf8'), iv);
     decipher.setAuthTag(authTag);
+
+    // Desencriptar el chunk
     const decryptedChunk = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
-    outputBuffers.push(decryptedChunk);
+
+    // Escribir el chunk desencriptado en el stream de salida
+    writeStream.write(decryptedChunk);
   }
 
-  // Escribir el resultado final
-  fs.writeFileSync(outputFilePath, Buffer.concat(outputBuffers));
+  await fd.close();
+  writeStream.end();
+  console.log(`Archivo ensamblado y desencriptado correctamente: ${outputFilePath}`);
 }
 
 (async () => {
