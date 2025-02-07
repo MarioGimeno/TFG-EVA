@@ -84,18 +84,18 @@ function assembleFile(fileId, totalChunks) {
       writeStream.end();
       console.log('Archivo ensamblado correctamente:', encryptedFilePath);
       
-      // Una vez ensamblado, ejecutamos el Worker para desencriptar
+      // Ejecutar el Worker para desencriptar el archivo
       runDecryptionWorker(encryptedFilePath, decryptedFilePath)
         .then(() => {
           console.log('Archivo desencriptado correctamente:', decryptedFilePath);
-          // Después de desencriptar, subimos el archivo desencriptado al bucket
-          uploadVideoToGCS(decryptedFilePath, fileId)
+          // Subir video y ubicación al bucket
+          uploadVideoAndLocationToGCS(decryptedFilePath, fileId)
             .then((url) => {
-              console.log('Video subido correctamente:', url);
+              console.log('Video y ubicación subidos correctamente:', url);
               // (Opcional) Limpieza de archivos temporales
               cleanupFiles(fileDir, encryptedFilePath, decryptedFilePath);
             })
-            .catch(err => console.error('Error subiendo video a GCS:', err));
+            .catch(err => console.error('Error subiendo video/ubicación a GCS:', err));
         })
         .catch(err => console.error('Error al desencriptar el archivo:', err));
       return;
@@ -119,25 +119,46 @@ function assembleFile(fileId, totalChunks) {
   appendNextChunk();
 }
 
+
 /**
  * Función para subir el video desencriptado a GCS.
  * Se sube dentro de una carpeta identificada con el fileId.
  */
-function uploadVideoToGCS(videoFilePath, fileId) {
+function uploadVideoAndLocationToGCS(videoFilePath, fileId) {
   return new Promise((resolve, reject) => {
     const bucket = gcs.bucket(bucketName);
-    const destination = `${fileId}/video.mp4`;
-    console.log(`Iniciando subida del video desencriptado: ${videoFilePath} a ${destination}`);
+    const videoDestination = `${fileId}/video.mp4`;
+    const locationDestination = `${fileId}/location.txt`; // O "encrypted_location.txt" si lo prefieres
+    console.log(`Iniciando subida del video desencriptado: ${videoFilePath} a ${videoDestination}`);
     
+    // Primero, subir el video
     fs.createReadStream(videoFilePath)
-      .pipe(bucket.file(destination).createWriteStream({
+      .pipe(bucket.file(videoDestination).createWriteStream({
         metadata: { contentType: 'video/mp4' },
         resumable: true
       }))
       .on('finish', () => {
-        const url = `https://storage.googleapis.com/${bucketName}/${destination}`;
         console.log('Video subido correctamente.');
-        resolve(url);
+        // Luego, buscar y subir el archivo de ubicación (si existe)
+        const locationFilePath = path.join('uploads', fileId, 'location.txt');
+        if (fs.existsSync(locationFilePath)) {
+          console.log(`Ubicación encontrada en ${locationFilePath}. Iniciando su subida.`);
+          fs.createReadStream(locationFilePath)
+            .pipe(bucket.file(locationDestination).createWriteStream({
+              metadata: { contentType: 'text/plain' },
+              resumable: true
+            }))
+            .on('finish', () => {
+              const baseUrl = `https://storage.googleapis.com/${bucketName}/${fileId}/`;
+              console.log('Video y ubicación subidos correctamente.');
+              resolve(baseUrl);
+            })
+            .on('error', reject);
+        } else {
+          console.log('No se encontró archivo de ubicación. Se subirá solo el video.');
+          const videoUrl = `https://storage.googleapis.com/${bucketName}/${videoDestination}`;
+          resolve(videoUrl);
+        }
       })
       .on('error', reject);
   });
@@ -176,25 +197,31 @@ app.post('/upload-chunk', upload.single('chunkData'), (req, res) => {
   try {
     // Obtener metadatos enviados en el body
     const fileId = req.body.fileId;
-    const chunkIndex = req.body.chunkIndex;
-    const totalChunks = req.body.totalChunks;
-    
+    const chunkIndexStr = req.body.chunkIndex; // recibimos un String
+    const totalChunks = req.body.totalChunks;   // para los video chunks, este valor es el total esperado
     // Crear carpeta específica para los chunks de este archivo
     const fileDir = path.join('uploads', fileId);
     if (!fs.existsSync(fileDir)) {
       fs.mkdirSync(fileDir, { recursive: true });
     }
     
-    // Renombrar el archivo recibido para identificar el número de chunk
-    const chunkFilename = path.join(fileDir, `chunk_${chunkIndex}`);
-    fs.renameSync(req.file.path, chunkFilename);
+    if ("-1".equals(chunkIndexStr) || chunkIndexStr.equals("-1")) {
+      // Caso especial: se trata de la ubicación
+      const locationFilename = path.join(fileDir, "location.txt");
+      fs.renameSync(req.file.path, locationFilename);
+      console.log(`Ubicación recibida para fileId ${fileId}. Guardada en ${locationFilename}`);
+    } else {
+      // Caso normal: se trata de un chunk de video
+      const chunkFilename = path.join(fileDir, `chunk_${chunkIndexStr}`);
+      fs.renameSync(req.file.path, chunkFilename);
+      console.log(`Chunk ${chunkIndexStr} del archivo ${fileId} recibido.`);
+    }
     
-    console.log(`Chunk ${chunkIndex} del archivo ${fileId} recibido.`);
-    
-    // Verificar si ya se han recibido todos los chunks
+    // Verificar si ya se han recibido todos los chunks del video (ignorar la ubicación)
+    // Sólo se cuentan los archivos que empiecen con "chunk_"
     const receivedChunks = fs.readdirSync(fileDir).filter(name => name.startsWith('chunk_')).length;
     if (parseInt(totalChunks) === receivedChunks) {
-      console.log('Todos los chunks recibidos. Iniciando el ensamblado.');
+      console.log('Todos los chunks del video recibidos. Iniciando el ensamblado.');
       assembleFile(fileId, totalChunks);
     }
     

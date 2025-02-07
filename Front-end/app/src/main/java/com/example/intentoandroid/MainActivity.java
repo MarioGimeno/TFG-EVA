@@ -17,10 +17,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import com.example.intentoandroid.pojo.ChunkedRequestBody;
 import com.example.intentoandroid.encriptación.CryptoUtils;
-import com.example.intentoandroid.segundoPlano.MicrophoneService;
+
 import com.example.intentoandroid.utils.ApiService;
 import com.example.intentoandroid.utils.RetrofitClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -343,7 +345,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             try {
                 // Ruta del archivo de video grabado
                 File videoFile = new File(getExternalFilesDir(null), "recorded_video.mp4");
-
                 if (!videoFile.exists()) {
                     Log.e(TAG, "❌ Error: Archivo de video no encontrado.");
                     return;
@@ -355,6 +356,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
                 // Preparar archivo de ubicación
                 String locationData = startLocation + "\n" + endLocation;
+                Log.d(TAG, "Localización a enviar:\n" + locationData);
                 File locationFile = new File(getExternalFilesDir(null), "location.txt");
                 try (FileOutputStream fos = new FileOutputStream(locationFile)) {
                     fos.write(locationData.getBytes("UTF-8"));
@@ -368,28 +370,31 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                 File encryptedLocationFile = new File(getExternalFilesDir(null), "encrypted_location.txt");
                 CryptoUtils.encryptFileFlexible(locationFile, encryptedLocationFile);
 
-                // Enviar la ubicación (encriptada) en un único request
-                RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), encryptedLocationFile);
-                MultipartBody.Part locationPart = MultipartBody.Part.createFormData("location", encryptedLocationFile.getName(), locationRequestBody);
-                ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
-                Call<ResponseBody> callLocation = apiService.uploadVideoAndLocation(locationPart);
-                callLocation.enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-                        if (response.isSuccessful()) {
-                            Log.d(TAG, "✅ Archivo de ubicación enviado correctamente.");
-                        } else {
-                            Log.e(TAG, "❌ Error al enviar ubicación. Código: " + response.code());
-                        }
-                    }
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Log.e(TAG, "❌ Error de red al enviar ubicación: " + t.getMessage());
-                    }
-                });
+                // Generar un fileId único para la subida completa (localización + video)
+                String fileId = UUID.randomUUID().toString();
 
-                // Enviar el video en chunks (el video ya está encriptado)
-                uploadVideoChunks(encryptedVideoFile);
+                // --- Enviar la ubicación al endpoint "upload-chunk" ---
+                // Indicamos chunkIndex = -1 y totalChunks = 0 para identificar que es la ubicación.
+                RequestBody fileIdBody = RequestBody.create(MediaType.parse("text/plain"), fileId);
+                RequestBody chunkIndexBody = RequestBody.create(MediaType.parse("text/plain"), "-1");
+                RequestBody totalChunksBody = RequestBody.create(MediaType.parse("text/plain"), "0");
+
+                // Usamos el contenido del archivo de ubicación encriptada como el cuerpo del "chunk"
+                RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), encryptedLocationFile);
+                MultipartBody.Part locationPart = MultipartBody.Part.createFormData("chunkData", encryptedLocationFile.getName(), locationRequestBody);
+
+                ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
+                Call<ResponseBody> callLocation = apiService.uploadChunk(fileIdBody, chunkIndexBody, totalChunksBody, locationPart);
+
+                // Enviar de forma síncrona (o bien, puedes hacerlo asíncrono con reintentos)
+                Response<ResponseBody> locationResponse = callLocation.execute();
+                if (locationResponse.isSuccessful()) {
+                    Log.d(TAG, "✅ Ubicación enviada correctamente.");
+                    // Ahora se envían los chunks del video, usando el mismo fileId
+                    uploadVideoChunks(fileId, encryptedVideoFile);
+                } else {
+                    Log.e(TAG, "❌ Error al enviar ubicación. Código: " + locationResponse.code());
+                }
 
                 // (Opcional) Eliminar el archivo original si es necesario
                 deleteFile(videoFile);
@@ -399,6 +404,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             }
         }).start();
     }
+
 
     // Método para eliminar los archivos
     private void deleteFile(File videoFile) {
@@ -424,15 +430,18 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
         return chunks;
     }
-    public void uploadVideoChunks(File encryptedVideoFile) {
+    public void uploadVideoChunks(String fileId, File encryptedVideoFile) {
         // Tamaño del chunk en bytes (50 MB)
         long chunkSize = 50L * 1024L * 1024L;
         long fileLength = encryptedVideoFile.length();
         int totalChunks = (int) ((fileLength + chunkSize - 1) / chunkSize); // redondeo hacia arriba
-        String fileId = UUID.randomUUID().toString();
         Log.d("ChunkUpload", "Total de chunks: " + totalChunks);
 
         ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
+
+        final int maxConcurrentUploads = 3; // Limitar a 3 subidas concurrentes
+        final int maxRetries = 3;             // Número máximo de reintentos por chunk
+        ExecutorService executor = Executors.newFixedThreadPool(maxConcurrentUploads);
 
         for (int i = 0; i < totalChunks; i++) {
             final int chunkIndex = i;
@@ -447,32 +456,56 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                     MediaType.parse("application/octet-stream")
             );
 
-            // Crear RequestBody para los parámetros de texto
+            // Crear RequestBody para los parámetros de texto usando el fileId recibido
             RequestBody fileIdBody = RequestBody.create(MediaType.parse("text/plain"), fileId);
             RequestBody chunkIndexBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(chunkIndex));
             RequestBody totalChunksBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(totalChunks));
 
             MultipartBody.Part chunkPart = MultipartBody.Part.createFormData("chunkData", "chunk_" + chunkIndex, chunkBody);
 
-            // Envolver la llamada en un hilo
-            new Thread(() -> {
-                Call<ResponseBody> call = apiService.uploadChunk(fileIdBody, chunkIndexBody, totalChunksBody, chunkPart);
-                call.enqueue(new Callback<ResponseBody>() {
-                    @Override
-                    public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+            // Enviar la tarea de subida a la pool de hilos
+            executor.submit(() -> {
+                int attempt = 0;
+                boolean uploaded = false;
+                while (!uploaded && attempt < maxRetries) {
+                    attempt++;
+                    try {
+                        // Realizamos la llamada de forma síncrona para poder controlar reintentos
+                        Call<ResponseBody> call = apiService.uploadChunk(fileIdBody, chunkIndexBody, totalChunksBody, chunkPart);
+                        Response<ResponseBody> response = call.execute();
                         if (response.isSuccessful()) {
                             Log.d(TAG, "Chunk " + chunkIndex + " enviado correctamente.");
+                            uploaded = true;
                         } else {
-                            Log.e(TAG, "Error al enviar chunk " + chunkIndex + ": " + response.code());
+                            Log.e(TAG, "Error al enviar chunk " + chunkIndex + ": " + response.code()
+                                    + ". Reintento " + attempt);
+                            Thread.sleep(2000); // esperar 2 segundos antes del reintento
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Fallo al enviar chunk " + chunkIndex + ": " + e.getMessage()
+                                + ". Reintento " + attempt);
+                        try {
+                            Thread.sleep(2000);
+                        } catch (InterruptedException ie) {
+                            // Si se interrumpe el sueño, se puede volver a intentar o salir
                         }
                     }
+                }
+                if (!uploaded) {
+                    Log.e(TAG, "No se pudo enviar el chunk " + chunkIndex + " después de "
+                            + maxRetries + " intentos.");
+                }
+            });
+        }
 
-                    @Override
-                    public void onFailure(Call<ResponseBody> call, Throwable t) {
-                        Log.e(TAG, "Fallo al enviar chunk " + chunkIndex + ": " + t.getMessage());
-                    }
-                });
-            }).start();
+        // Finalizar el executor y esperar a que todas las tareas terminen
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(30, TimeUnit.MINUTES)) {
+                Log.e(TAG, "Tiempo de espera excedido para la subida de chunks.");
+            }
+        } catch (InterruptedException e) {
+            Log.e(TAG, "Error esperando la finalización de la subida de chunks", e);
         }
     }
 

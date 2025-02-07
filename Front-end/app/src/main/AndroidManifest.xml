@@ -37,7 +37,7 @@
         </activity>
 
         <service
-            android:name=".segundoPlano.MicrophoneService"
+            android:name=".MicrophoneService"
             android:exported="true"
             android:foregroundServiceType="microphone" />
 

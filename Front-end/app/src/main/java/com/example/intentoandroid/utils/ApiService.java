@@ -17,11 +17,4 @@ public interface ApiService {
             @Part("totalChunks") RequestBody totalChunks,
             @Part MultipartBody.Part chunkData
     );
-
-    // Si sigues enviando la ubicación completa, puedes conservar el método original
-    @Multipart
-    @POST("upload-video-location")
-    Call<ResponseBody> uploadVideoAndLocation(
-            @Part MultipartBody.Part location
-    );
 }

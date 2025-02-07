@@ -1,4 +1,4 @@
-package com.example.intentoandroid.segundoPlano;
+package com.example.intentoandroid;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -11,8 +11,6 @@ import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
-
-import com.example.intentoandroid.R;
 
 import java.io.File;
 import java.io.IOException;
