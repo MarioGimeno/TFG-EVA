@@ -197,15 +197,16 @@ app.post('/upload-chunk', upload.single('chunkData'), (req, res) => {
   try {
     // Obtener metadatos enviados en el body
     const fileId = req.body.fileId;
-    const chunkIndexStr = req.body.chunkIndex; // recibimos un String
+    const chunkIndexStr = req.body.chunkIndex; // se recibe como String
     const totalChunks = req.body.totalChunks;   // para los video chunks, este valor es el total esperado
+
     // Crear carpeta específica para los chunks de este archivo
     const fileDir = path.join('uploads', fileId);
     if (!fs.existsSync(fileDir)) {
       fs.mkdirSync(fileDir, { recursive: true });
     }
     
-    if ("-1".equals(chunkIndexStr) || chunkIndexStr.equals("-1")) {
+    if (chunkIndexStr === "-1") { // comparamos correctamente
       // Caso especial: se trata de la ubicación
       const locationFilename = path.join(fileDir, "location.txt");
       fs.renameSync(req.file.path, locationFilename);
@@ -217,8 +218,8 @@ app.post('/upload-chunk', upload.single('chunkData'), (req, res) => {
       console.log(`Chunk ${chunkIndexStr} del archivo ${fileId} recibido.`);
     }
     
-    // Verificar si ya se han recibido todos los chunks del video (ignorar la ubicación)
-    // Sólo se cuentan los archivos que empiecen con "chunk_"
+    // Verificar si ya se han recibido todos los chunks del video (ignoramos la ubicación)
+    // Solo se cuentan los archivos que empiecen con "chunk_"
     const receivedChunks = fs.readdirSync(fileDir).filter(name => name.startsWith('chunk_')).length;
     if (parseInt(totalChunks) === receivedChunks) {
       console.log('Todos los chunks del video recibidos. Iniciando el ensamblado.');
