@@ -1,4 +1,4 @@
-package com.example.intentoandroid.SegundoPlano;
+package com.example.intentoandroid.segundoPlano;
 
 import android.app.Notification;
 import android.app.NotificationChannel;

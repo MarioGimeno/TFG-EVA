@@ -1,4 +1,4 @@
-package com.example.intentoandroid;
+package com.example.intentoandroid.encriptación;
 
 import java.io.*;
 import java.security.SecureRandom;

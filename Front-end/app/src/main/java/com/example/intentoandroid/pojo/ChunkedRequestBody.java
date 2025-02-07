@@ -1,4 +1,4 @@
-package com.example.intentoandroid;
+package com.example.intentoandroid.pojo;
 
 import android.util.Log;
 

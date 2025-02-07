@@ -18,7 +18,11 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 
-import com.example.intentoandroid.SegundoPlano.MicrophoneService;
+import com.example.intentoandroid.pojo.ChunkedRequestBody;
+import com.example.intentoandroid.encriptación.CryptoUtils;
+import com.example.intentoandroid.segundoPlano.MicrophoneService;
+import com.example.intentoandroid.utils.ApiService;
+import com.example.intentoandroid.utils.RetrofitClient;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
@@ -41,10 +45,6 @@ import retrofit2.Response;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener {
 

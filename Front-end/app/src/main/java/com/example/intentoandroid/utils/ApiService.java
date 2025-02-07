@@ -1,4 +1,4 @@
-package com.example.intentoandroid;
+package com.example.intentoandroid.utils;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;

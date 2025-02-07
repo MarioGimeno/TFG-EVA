@@ -1,4 +1,4 @@
-package com.example.intentoandroid;
+package com.example.intentoandroid.utils;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
