@@ -3,4 +3,5 @@
     android:shape="oval">
     <!-- Se usa un gris oscuro similar al de la calculadora del iPhone -->
     <solid android:color="#A5A5A5"/> <!-- Fondo gris -->
+
 </shape>
