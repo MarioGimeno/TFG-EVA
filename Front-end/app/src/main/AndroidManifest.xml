@@ -25,7 +25,7 @@
         android:supportsRtl="true"
         android:icon="@mipmap/ic_launcher"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:theme="@style/Theme.IntentoAndroid">
+        android:theme="@style/Theme.Calculadora_Front">
 
         <activity
             android:name=".MainActivity"
