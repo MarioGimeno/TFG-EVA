@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <!-- Se usa un gris oscuro similar al de la calculadora del iPhone -->
+    <solid android:color="#A5A5A5"/> <!-- Fondo gris -->
+</shape>

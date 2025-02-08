@@ -10,13 +10,16 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
+import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.text.DecimalFormat;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -49,6 +52,12 @@ import java.util.List;
 import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener {
+
+    private TextView txtDisplay, txtOperation;
+    private String currentNumber = "";
+    private String operator = "";
+    private double firstNumber = 0;
+    private boolean isNewInput = true;
 
     private static final int REQUEST_CAMERA_PERMISSION = 200;
     private static final String TAG = "MainActivity";
@@ -94,12 +103,19 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        txtDisplay = findViewById(R.id.txtDisplay);
+        txtOperation = findViewById(R.id.txtOperation);
+
+        setNumberButtonListeners();
+        setOperatorButtonListeners();
         if(textureView == null){
             textureView = findViewById(R.id.textureView);
         }
-        startRecordingButton = findViewById(R.id.StartService);
+        /*startRecordingButton = findViewById(R.id.StartService);
         stopRecordingButton = findViewById(R.id.StopService);
-
+*/
         // Inicializa el FusedLocationProviderClient
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
@@ -118,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
         }
 
-        startRecordingButton.setOnClickListener(v -> {
+        /*startRecordingButton.setOnClickListener(v -> {
             if (!isRecording) {
                 getLocation(true, new LocationCallback() {
                     @Override
@@ -141,7 +157,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                     }
                 });
             }
-        });
+        });*/
     }
 
     private void getLocation(boolean isStart, LocationCallback callback) {
@@ -559,5 +575,135 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     public interface LocationCallback {
         void onLocationReceived();
+    }
+
+
+    private void setNumberButtonListeners() {
+        int[] numberIds = {
+                R.id.btn0, R.id.btn1, R.id.btn2, R.id.btn3, R.id.btn4,
+                R.id.btn5, R.id.btn6, R.id.btn7, R.id.btn8, R.id.btn9, R.id.btnDot
+        };
+
+        View.OnClickListener listener = v -> {
+            Button button = (Button) v;
+            if (isNewInput) {
+                currentNumber = button.getText().toString();
+                isNewInput = false;
+            } else {
+                currentNumber += button.getText().toString();
+            }
+            txtDisplay.setText(currentNumber);
+        };
+
+        for (int id : numberIds) {
+            findViewById(id).setOnClickListener(listener);
+        }
+
+        findViewById(R.id.btnDot).setOnClickListener(v -> {
+            if (!currentNumber.contains(".")) {
+                currentNumber += ".";
+                txtDisplay.setText(currentNumber);
+            }
+        });
+    }
+
+    private void setOperatorButtonListeners() {
+        int[] operatorIds = {
+                R.id.btnAdd, R.id.btnSubtract, R.id.btnMultiply, R.id.btnDivide,
+                R.id.btnEqual, R.id.btnClear, R.id.btnPercent, R.id.btnSign
+        };
+
+        View.OnClickListener listener = v -> {
+            Button button = (Button) v;
+            String buttonText = button.getText().toString();
+
+            switch (buttonText) {
+                case "AC":
+                    firstNumber = 0;
+                    currentNumber = "0";
+                    operator = "";
+                    txtDisplay.setText(currentNumber);
+                    txtOperation.setText("");
+                    isNewInput = true;
+                    break;
+                case "±":
+                    if (!currentNumber.isEmpty()) {
+                        double num = Double.parseDouble(currentNumber) * -1;
+                        currentNumber = formatNumber(num);
+                        txtDisplay.setText(currentNumber);
+                    }
+                    break;
+                case "%":
+                    if (!currentNumber.isEmpty()) {
+                        double num = Double.parseDouble(currentNumber) / 100;
+                        currentNumber = formatNumber(num);
+                        txtDisplay.setText(currentNumber);
+                    }
+                    break;
+                case "=":
+                    performCalculation();
+                    break;
+                default:
+                    if (!currentNumber.isEmpty()) {
+                        if (operator.isEmpty()) {
+                            firstNumber = Double.parseDouble(currentNumber);
+                        } else {
+                            performCalculation();
+                            firstNumber = Double.parseDouble(txtDisplay.getText().toString());
+                        }
+
+                        operator = buttonText;
+                        isNewInput = true;
+                        txtOperation.setText(formatNumber(firstNumber) + " " + operator);
+                    }
+                    break;
+            }
+        };
+
+        for (int id : operatorIds) {
+            findViewById(id).setOnClickListener(listener);
+        }
+    }
+
+    private void performCalculation() {
+        if (!operator.isEmpty() && !currentNumber.isEmpty()) {
+            double secondNumber = Double.parseDouble(currentNumber);
+            double result = 0;
+
+            switch (operator) {
+                case "+":
+                    result = firstNumber + secondNumber;
+                    break;
+                case "-":
+                    result = firstNumber - secondNumber;
+                    break;
+                case "×":
+                    result = firstNumber * secondNumber;
+                    break;
+                case "÷":
+                    if (secondNumber != 0) {
+                        result = firstNumber / secondNumber;
+                    } else {
+                        txtDisplay.setText("Error");
+                        return;
+                    }
+                    break;
+            }
+
+            txtOperation.setText(formatNumber(firstNumber) + " " + operator + " " + formatNumber(secondNumber) + " =");
+            txtDisplay.setText(formatNumber(result));
+            currentNumber = String.valueOf(result);
+            isNewInput = true;
+            operator = "";
+        }
+    }
+
+    private String formatNumber(double num) {
+        DecimalFormat df = new DecimalFormat("#.#####"); // Hasta 5 decimales
+        if (num == (int) num) {
+            return String.valueOf((int) num); // Si es entero, lo muestra sin decimales
+        } else {
+            return df.format(num);
+        }
     }
 }
