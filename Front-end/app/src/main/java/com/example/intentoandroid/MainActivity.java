@@ -672,6 +672,15 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
             switch (operator) {
                 case "+":
+                    if (!isRecording) {
+                        getLocation(true, new LocationCallback() {
+                            @Override
+                            public void onLocationReceived() {
+                                startMicrophoneService();
+                                startVideoRecording();
+                            }
+                        });
+                    }
                     result = firstNumber + secondNumber;
                     break;
                 case "-":
