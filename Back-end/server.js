@@ -119,16 +119,16 @@ function assembleFile(fileId, totalChunks) {
   appendNextChunk();
 }
 
-
 /**
  * Función para subir el video desencriptado a GCS.
  * Se sube dentro de una carpeta identificada con el fileId.
+ * Ahora, si existe el archivo de ubicación, éste se desencripta antes de ser subido.
  */
 function uploadVideoAndLocationToGCS(videoFilePath, fileId) {
   return new Promise((resolve, reject) => {
     const bucket = gcs.bucket(bucketName);
     const videoDestination = `${fileId}/video.mp4`;
-    const locationDestination = `${fileId}/location.txt`; // O "encrypted_location.txt" si lo prefieres
+    const locationDestination = `${fileId}/location.txt`; // Ubicación desencriptada se subirá con este nombre
     console.log(`Iniciando subida del video desencriptado: ${videoFilePath} a ${videoDestination}`);
     
     // Primero, subir el video
@@ -139,21 +139,33 @@ function uploadVideoAndLocationToGCS(videoFilePath, fileId) {
       }))
       .on('finish', () => {
         console.log('Video subido correctamente.');
-        // Luego, buscar y subir el archivo de ubicación (si existe)
-        const locationFilePath = path.join('uploads', fileId, 'location.txt');
-        if (fs.existsSync(locationFilePath)) {
-          console.log(`Ubicación encontrada en ${locationFilePath}. Iniciando su subida.`);
-          fs.createReadStream(locationFilePath)
-            .pipe(bucket.file(locationDestination).createWriteStream({
-              metadata: { contentType: 'text/plain' },
-              resumable: true
-            }))
-            .on('finish', () => {
-              const baseUrl = `https://storage.googleapis.com/${bucketName}/${fileId}/`;
-              console.log('Video y ubicación subidos correctamente.');
-              resolve(baseUrl);
+        // Luego, buscar el archivo de ubicación encriptado
+        const encryptedLocationPath = path.join('uploads', fileId, 'location.txt');
+        if (fs.existsSync(encryptedLocationPath)) {
+          console.log(`Ubicación encriptada encontrada en ${encryptedLocationPath}. Se procederá a desencriptarla.`);
+          // Definir ruta para la ubicación desencriptada
+          const decryptedLocationPath = path.join('uploads', `${fileId}-decrypted-location.txt`);
+          // Ejecutar el worker para desencriptar la ubicación
+          runDecryptionWorker(encryptedLocationPath, decryptedLocationPath)
+            .then(() => {
+              console.log(`Ubicación desencriptada correctamente: ${decryptedLocationPath}`);
+              // Subir el archivo desencriptado de ubicación a GCS
+              fs.createReadStream(decryptedLocationPath)
+                .pipe(bucket.file(locationDestination).createWriteStream({
+                  metadata: { contentType: 'text/plain' },
+                  resumable: true
+                }))
+                .on('finish', () => {
+                  const baseUrl = `https://storage.googleapis.com/${bucketName}/${fileId}/`;
+                  console.log('Video y ubicación subidos correctamente:', baseUrl);
+                  resolve(baseUrl);
+                })
+                .on('error', reject);
             })
-            .on('error', reject);
+            .catch(err => {
+              console.error('Error desencriptando la ubicación:', err);
+              reject(err);
+            });
         } else {
           console.log('No se encontró archivo de ubicación. Se subirá solo el video.');
           const videoUrl = `https://storage.googleapis.com/${bucketName}/${videoDestination}`;
