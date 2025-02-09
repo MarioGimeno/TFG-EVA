@@ -23,8 +23,8 @@
         android:allowBackup="true"
         android:label="Calculadora"
         android:supportsRtl="true"
-        android:icon="@drawable/calculadora_logo"
-        android:roundIcon="@drawable/calculadora_logo"
+        android:icon="@drawable/miniatura"
+        android:roundIcon="@drawable/miniatura"
         android:theme="@style/Theme.Calculadora_Front">
 
         <activity
