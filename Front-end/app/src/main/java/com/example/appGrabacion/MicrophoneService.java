@@ -70,7 +70,7 @@ public class MicrophoneService extends Service {
         Notification notification = new Notification.Builder(this, CHANNEL_ID)
                 .setContentTitle("Recording Audio")
                 .setContentText("The microphone is active")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setSmallIcon(R.drawable.ic_launcher_background)
                 .build();
 
         startForeground(1, notification); // Notificación persistente para evitar que el sistema mate el servicio

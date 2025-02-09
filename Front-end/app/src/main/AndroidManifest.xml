@@ -23,8 +23,8 @@
         android:allowBackup="true"
         android:label="Calculadora"
         android:supportsRtl="true"
-        android:icon="@drawable/miniatura"
-        android:roundIcon="@drawable/miniatura">
+        android:icon="@mipmap/miniatura"
+        android:roundIcon="@mipmap/miniatura">
 
         <activity
             android:name="com.example.appGrabacion.MainActivity"
