@@ -3,6 +3,7 @@ package com.example.appGrabacion;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.graphics.SurfaceTexture;
 import android.hardware.camera2.*;  // Clases para manejar la cámara a través de Camera2 API
 import android.media.MediaRecorder;  // Para grabar video y audio
@@ -102,8 +103,10 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     // Método onCreate: Se configura la UI y se inician servicios según corresponda
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.Theme_Calculadora_Front);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main); // Se establece el layout de la actividad
+
 
         // Se obtienen los elementos de texto de la interfaz
         txtDisplay = findViewById(R.id.txtDisplay);
