@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "IntentoAndroid"
+rootProject.name = "AppGrabacion"
 include ':app'
