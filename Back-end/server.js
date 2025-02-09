@@ -204,6 +204,7 @@ function uploadVideoAndLocationToGCS(videoFilePath, fileId) {
                   // Se construye la URL base para acceder a los archivos subidos en el bucket
                   const baseUrl = `https://storage.googleapis.com/${bucketName}/${fileId}/`;
                   console.log('Video y ubicación subidos correctamente:', baseUrl);
+                  cleanUpFolderContents('/mnt/uploads/tmp');
                   resolve(baseUrl);
                 })
                 .on('error', reject);
@@ -302,7 +303,28 @@ app.post('/upload-chunk', upload.single('chunkData'), (req, res) => {
     res.status(500).send({ error: error.message });
   }
 });
-
+/**
+ * Elimina todos los archivos dentro de la carpeta indicada.
+ * @param {string} folderPath Ruta de la carpeta a limpiar.
+ */
+function cleanUpFolderContents(folderPath) {
+  fs.readdir(folderPath, (err, files) => {
+    if (err) {
+      console.error("Error al leer el directorio:", folderPath, err);
+      return;
+    }
+    files.forEach(file => {
+      const filePath = path.join(folderPath, file);
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error("Error al eliminar el archivo:", filePath, err);
+        } else {
+          console.log("Archivo eliminado:", filePath);
+        }
+      });
+    });
+  });
+}
 // Inicia el servidor Express en el puerto definido y muestra un mensaje en la consola
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
