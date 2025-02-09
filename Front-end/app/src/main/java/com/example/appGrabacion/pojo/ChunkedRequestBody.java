@@ -1,4 +1,4 @@
-package com.example.intentoandroid.pojo;
+package com.example.appGrabacion.pojo;
 
 import android.util.Log;
 

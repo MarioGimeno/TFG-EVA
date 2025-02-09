@@ -1,4 +1,4 @@
-package com.example.intentoandroid;
+package com.example.appGrabacion;
 
 import org.junit.Test;
 

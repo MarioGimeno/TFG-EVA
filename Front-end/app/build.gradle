@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.intentoandroid'
+    namespace 'com.example.appGrabacion'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.intentoandroid"
+        applicationId "com.example.appGrabacion"
         minSdk 29
         targetSdk 34
         versionCode 1
