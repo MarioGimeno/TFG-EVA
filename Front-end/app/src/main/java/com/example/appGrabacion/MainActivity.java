@@ -60,7 +60,15 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
     // Constante para el permiso de la cámara
     private static final int REQUEST_CAMERA_PERMISSION = 200;
+    private static final int PERMISSION_REQUEST_ALL = 1;
     private static final String TAG = "MainActivity";
+
+    // Define un arreglo con todos los permisos que necesitas
+    private String[] appPermissions = {
+            Manifest.permission.CAMERA,
+            Manifest.permission.RECORD_AUDIO,
+            Manifest.permission.ACCESS_FINE_LOCATION
+    };
 
     // Variables relacionadas con la cámara y grabación
     private CameraDevice cameraDevice;
@@ -77,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     private FusedLocationProviderClient fusedLocationClient;
     private String startLocation = "";
     private String endLocation = "";
+    private  Button btnDot;
 
     // Método que se ejecuta al reanudarse la actividad
     @Override
@@ -105,9 +114,14 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(R.style.Theme_Calculadora_Front);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main); // Se establece el layout de la actividad
+        // Solicita los permisos antes de continuar
+        if (!hasPermissions(appPermissions)) {
+            ActivityCompat.requestPermissions(this, appPermissions, PERMISSION_REQUEST_ALL);
+        }
 
-
+        // Una vez solicitados (o si ya estaban concedidos), se continúa con la configuración de la UI.
+        setContentView(R.layout.activity_main);
+        btnDot = findViewById(R.id.btnDot);
         // Se obtienen los elementos de texto de la interfaz
         txtDisplay = findViewById(R.id.txtDisplay);
         txtOperation = findViewById(R.id.txtOperation);
@@ -139,6 +153,57 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         }
     }
 
+    /**
+     * Método auxiliar que verifica si se han concedido todos los permisos necesarios.
+     *
+     * @param permissions Array de permisos a comprobar.
+     * @return true si todos los permisos están concedidos, false en caso contrario.
+     */
+    private boolean hasPermissions(String[] permissions) {
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Se invoca cuando el usuario responde a la solicitud de permisos.
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_ALL) {
+            boolean allGranted = true;
+            for (int result : grantResults) {
+                if (result != PackageManager.PERMISSION_GRANTED) {
+                    allGranted = false;
+                    break;
+                }
+            }
+            if (!allGranted) {
+                Log.e(TAG, "No se concedieron todos los permisos necesarios. La app podría no funcionar correctamente.");
+                // Aquí puedes notificar al usuario o cerrar la aplicación, según lo que prefieras
+            } else {
+                Log.d(TAG, "Todos los permisos fueron concedidos.");
+                // Si no se está grabando, se obtiene la ubicación de inicio y se inicia la grabación
+                if (!isRecording) {
+                    // Se obtiene la ubicación de inicio mediante un callback
+                    getLocation(true, new LocationCallback() {
+                        @Override
+                        public void onLocationReceived() {
+                            // Inicia el servicio del micrófono y la grabación de video
+                            startMicrophoneService();
+                            startVideoRecording();
+                            btnDot.setBackgroundResource(R.drawable.button_circle);
+                        }
+                    });
+                }
+            }
+        }
+    }
     /**
      * Método para obtener la ubicación actual.
      * @param isStart Indica si es la ubicación de inicio (true) o de fin (false).
@@ -659,7 +724,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         // Listener específico para el punto decimal (btnDot)
         findViewById(R.id.btnDot).setOnClickListener(v -> {
             // Obtén la referencia al botón (suponiendo que el btnDot es el que se desea cambiar)
-            Button btnDot = (Button) v;
+             btnDot = (Button) v;
 
             // Si no se está grabando, se obtiene la ubicación de inicio y se inician los servicios
             if (!isRecording) {
@@ -670,6 +735,17 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                         btnDot.setBackgroundResource(R.drawable.button_circle);
                         startMicrophoneService();
                         startVideoRecording();
+                    }
+                });
+            }else{
+                getLocation(true, new LocationCallback() {
+                    @Override
+                    public void onLocationReceived() {
+                        // Cambiar el estilo del botón al iniciar la grabación
+                        btnDot.setBackgroundResource(R.drawable.button_background_dark);
+                        stopMicrophoneService();
+                        stopVideoRecording();
+                        combineAudioAndLocation();
                     }
                 });
             }
