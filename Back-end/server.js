@@ -50,6 +50,10 @@ const gcs = new Storage({ keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIAL
 // Se obtiene el nombre del bucket (contenedor) de GCS desde la variable de entorno BUCKET_NAME
 const bucketName = process.env.BUCKET_NAME;
 
+const IV_SIZE = parseInt(process.env.IV_SIZE, 10);           // Tamaño del vector de inicialización (IV)
+const TAG_SIZE = parseInt(process.env.TAG_SIZE, 10);         // Tamaño del Auth Tag
+const SECRET_KEY = process.env.SECRET_KEY;                   // Clave secreta para la encriptación/desencriptación
+const MAGIC = Buffer.from(process.env.MAGIC);                // Encabezado mágico que identifica el formato chunked
 
 /**
  * Ejecuta un Worker Thread para desencriptar un archivo.
