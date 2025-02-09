@@ -10,7 +10,8 @@ const { pipeline } = require('stream');
 const { promisify } = require('util');
 // Crea una versión asíncrona de pipeline para trabajar con promesas
 const pipelineAsync = promisify(pipeline);
-
+// Cargar las variables de entorno desde el archivo keys.env
+require('dotenv').config({ path: './keys.env' });
 // Configuración de parámetros de desencriptación obtenidos desde las variables de entorno
 const IV_SIZE = parseInt(process.env.IV_SIZE, 10);           // Tamaño del vector de inicialización (IV)
 const TAG_SIZE = parseInt(process.env.TAG_SIZE, 10);         // Tamaño del Auth Tag

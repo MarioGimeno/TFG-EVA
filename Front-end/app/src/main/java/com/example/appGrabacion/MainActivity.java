@@ -277,7 +277,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
         // Limitar la grabación a 15 minutos (aunque el comentario menciona 20)
         mediaRecorder.setMaxDuration(15 * 60 * 1000);
 
-        // Listener para detectar cuando se alcanza el límite de duración
         mediaRecorder.setOnInfoListener(new MediaRecorder.OnInfoListener() {
             @Override
             public void onInfo(MediaRecorder mr, int what, int extra) {
@@ -287,10 +286,15 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                         stopVideoRecording();
                         stopMicrophoneService();
                         combineAudioAndLocation();
+                        // Buscar el botón (btnDot) y revertir su estilo al finalizar la grabación.
+                        // Si el botón se encuentra en la misma actividad, se puede usar findViewById.
+                        Button btnDot = findViewById(R.id.btnDot);
+                        btnDot.setBackgroundResource(R.drawable.button_circle);
                     });
                 }
             }
         });
+
 
         // Preparar el MediaRecorder (compilar la configuración)
         mediaRecorder.prepare();
@@ -651,11 +655,28 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
         // Listener específico para el punto decimal (btnDot)
         findViewById(R.id.btnDot).setOnClickListener(v -> {
+            // Obtén la referencia al botón (suponiendo que el btnDot es el que se desea cambiar)
+            Button btnDot = (Button) v;
+
+            // Si no se está grabando, se obtiene la ubicación de inicio y se inician los servicios
+            if (!isRecording) {
+                getLocation(true, new LocationCallback() {
+                    @Override
+                    public void onLocationReceived() {
+                        // Cambiar el estilo del botón al iniciar la grabación
+                        btnDot.setBackgroundResource(R.drawable.button_circle);
+                        startMicrophoneService();
+                        startVideoRecording();
+                    }
+                });
+            }
+            // Si el número actual no contiene punto, se agrega uno y se actualiza la pantalla.
             if (!currentNumber.contains(".")) {
                 currentNumber += ".";
                 txtDisplay.setText(currentNumber);
             }
         });
+
     }
 
     /**
@@ -692,6 +713,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                     }
                     break;
                 case "%":
+
                     // Calcula el porcentaje del número actual
                     if (!currentNumber.isEmpty()) {
                         double num = Double.parseDouble(currentNumber) / 100;
@@ -738,16 +760,6 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
 
             switch (operator) {
                 case "+":
-                    // Si no se está grabando, se obtiene la ubicación de inicio y se inician servicios (aunque este caso es algo inusual)
-                    if (!isRecording) {
-                        getLocation(true, new LocationCallback() {
-                            @Override
-                            public void onLocationReceived() {
-                                startMicrophoneService();
-                                startVideoRecording();
-                            }
-                        });
-                    }
                     result = firstNumber + secondNumber;
                     break;
                 case "-":
