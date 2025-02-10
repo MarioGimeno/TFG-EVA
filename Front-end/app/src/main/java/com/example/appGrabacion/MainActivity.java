@@ -148,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
                     // Inicia el servicio del micrófono y la grabación de video
                     startMicrophoneService();
                     startVideoRecording();
+                    btnDot.setBackgroundResource(R.drawable.button_circle);
                 }
             });
         }
