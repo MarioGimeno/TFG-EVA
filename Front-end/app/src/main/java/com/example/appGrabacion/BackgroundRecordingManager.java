@@ -17,7 +17,6 @@ import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
