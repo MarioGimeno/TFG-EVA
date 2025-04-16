@@ -8,7 +8,6 @@ import android.util.Log;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,66 +24,55 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             Manifest.permission.ACCESS_FINE_LOCATION
     };
 
-    // UI: Header con un botón y el TextureView para la previsualización.
+    // UI: TextureView para previsualización y btn.dot (que usamos como indicador)
     private TextureView textureView;
-    private Button btnRecord;
+    private Button btnDot;
 
-    // Estado de grabación y objeto que maneja la grabación en segundo plano.
-    private boolean isRecording = false;
+    // Objeto que maneja la grabación en segundo plano y bandera para saber si se está grabando
     private BackgroundRecordingManager recordingManager;
+    private boolean isRecording = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Puedes cambiar el tema si lo deseas; aquí se usa uno por defecto.
         setContentView(R.layout.activity_main);
 
-        // Solicita los permisos necesarios.
+        // Solicita permisos si es necesario.
         if (!hasPermissions(appPermissions)) {
             ActivityCompat.requestPermissions(this, appPermissions, PERMISSION_REQUEST_ALL);
         }
 
-        // Se asume que el layout activity_main.xml tiene un botón con id btnRecord y un TextureView con id textureView.
-        btnRecord = findViewById(R.id.btnDot);
+        // Asigna los componentes de la interfaz (asegúrate de que en tu layout activity_main.xml existan)
+        btnDot = findViewById(R.id.btnDot);
         textureView = findViewById(R.id.textureView);
         if (textureView != null) {
             textureView.setSurfaceTextureListener(this);
         }
 
-        // Inicializa el BackgroundRecordingManager.
+        // Inicializa la lógica de grabación
         recordingManager = new BackgroundRecordingManager(this, textureView);
 
-        // Configura el botón para iniciar/detener la grabación.
-        btnRecord.setOnClickListener(new View.OnClickListener() {
+        // Si la actividad se abrió con el extra "autoStartRecording" (por ejemplo, desde el widget), inicia la grabación
+        boolean autoStart = getIntent().getBooleanExtra("autoStartRecording", false);
+        if (autoStart) {
+            startRecording();
+        }
+
+        // Configura el btn.dot para que al pulsarlo alterne la grabación (la actualización de fondo será la única indicación visual)
+        btnDot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (!isRecording) {
-                    // Inicia la grabación.
-                    recordingManager.startRecording(new BackgroundRecordingManager.LocationCallback() {
-                        @Override
-                        public void onLocationReceived() {
-                            // Actualiza la UI: por ejemplo, cambiar el texto del botón.
-                            btnRecord.setText("Detener Grabación");
-                        }
-                    });
-                    isRecording = true;
+                    startRecording();
                 } else {
-                    // Detiene la grabación.
-                    recordingManager.stopRecording(new BackgroundRecordingManager.LocationCallback() {
-                        @Override
-                        public void onLocationReceived() {
-                            // Actualiza la UI: por ejemplo, cambiar el texto del botón.
-                            btnRecord.setText("Iniciar Grabación");
-                        }
-                    });
-                    isRecording = false;
+                    stopRecording();
                 }
             }
         });
     }
 
     /**
-     * Verifica que se tengan los permisos necesarios.
+     * Comprueba que se tengan los permisos requeridos.
      */
     private boolean hasPermissions(String[] permissions) {
         for (String permission : permissions) {
@@ -94,6 +82,34 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             }
         }
         return true;
+    }
+
+    /**
+     * Inicia la grabación y, mediante el callback, actualiza el botón para reflejar el estado activo.
+     */
+    private void startRecording() {
+        recordingManager.startRecording(new BackgroundRecordingManager.LocationCallback() {
+            @Override
+            public void onLocationReceived() {
+                // En lugar de modificar el texto, se cambia el fondo para indicar grabación activa.
+                // Asegúrate de tener definidos en res/drawable los recursos "button_circle_active" y "button_circle_inactive"
+                btnDot.setBackgroundResource(R.drawable.button_circle_dark);
+            }
+        });
+        isRecording = true;
+    }
+
+    /**
+     * Detiene la grabación y actualiza el botón para reflejar el estado inactivo.
+     */
+    private void stopRecording() {
+        recordingManager.stopRecording(new BackgroundRecordingManager.LocationCallback() {
+            @Override
+            public void onLocationReceived() {
+                btnDot.setBackgroundResource(R.drawable.button_circle_orange);
+            }
+        });
+        isRecording = false;
     }
 
     @Override
@@ -110,9 +126,12 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
             }
             if (!allGranted) {
                 Log.e(TAG, "No se concedieron todos los permisos necesarios.");
-                Toast.makeText(this, "Se requieren permisos para grabar", Toast.LENGTH_SHORT).show();
             } else {
                 Log.d(TAG, "Todos los permisos fueron concedidos.");
+                // Si la actividad ya tenía el extra autoStart, inicia la grabación
+                if (getIntent().getBooleanExtra("autoStartRecording", false)) {
+                    startRecording();
+                }
             }
         }
     }
@@ -120,28 +139,27 @@ public class MainActivity extends AppCompatActivity implements TextureView.Surfa
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Si la app se cierra y estaba grabando, se detiene la grabación.
-        if (isRecording && recordingManager != null) {
+        if (recordingManager != null) {
             recordingManager.stopRecording(null);
         }
     }
 
-    // Métodos de TextureView.SurfaceTextureListener
+    // Métodos del TextureView.SurfaceTextureListener
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
         Log.d(TAG, "SurfaceTexture disponible");
+        // Puedes iniciar la grabación aquí si así lo deseas, aunque en este ejemplo la iniciamos con el extra.
     }
 
     @Override
-    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-    }
+    public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) { }
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+        Log.d(TAG, "SurfaceTexture destruido");
         return true;
     }
 
     @Override
-    public void onSurfaceTextureUpdated(SurfaceTexture surface) {
-    }
+    public void onSurfaceTextureUpdated(SurfaceTexture surface) { }
 }
