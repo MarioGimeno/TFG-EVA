@@ -25,6 +25,25 @@
         android:supportsRtl="true"
         android:icon="@mipmap/miniatura"
         android:roundIcon="@mipmap/miniatura">
+        <receiver android:name=".widget.RecordingWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/recording_widget_info" />
+        </receiver>
+        <receiver android:name=".widget.RecordingWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.example.appGrabacion.ACTION_TOGGLE_RECORDING" />
+            </intent-filter>
+        </receiver>
+
+        <service
+            android:name=".widget.RecordingService"
+            android:exported="false" />
 
         <activity
             android:name="com.example.appGrabacion.MainActivity"

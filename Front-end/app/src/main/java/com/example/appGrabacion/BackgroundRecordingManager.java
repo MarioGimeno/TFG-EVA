@@ -59,14 +59,13 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
 
     private Context context;
     private TextureView textureView;
-    private CameraManager cameraManager;
     private FusedLocationProviderClient fusedLocationClient;
+    protected CameraManager cameraManager;
+    protected CameraDevice cameraDevice;
+    protected MediaRecorder mediaRecorder;
+    protected CameraCaptureSession captureSession;
 
-    private CameraDevice cameraDevice;
-    private MediaRecorder mediaRecorder;
-    private CameraCaptureSession captureSession;
-
-    private boolean isRecording = false;
+    public boolean isRecording = false;
     private String startLocation = "";
     private String endLocation = "";
 
@@ -81,6 +80,7 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
             this.textureView.setSurfaceTextureListener(this);
         }
     }
+
 
     /**
      * Interfaz para el callback de la obtención de la ubicación.
@@ -190,7 +190,7 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
     /**
      * Inicia la grabación de video (se asume que ya se tienen los permisos necesarios).
      */
-    private void startVideoRecording() {
+    protected void startVideoRecording() {
         // Verifica que el SurfaceTexture no sea nulo.
         if (textureView.getSurfaceTexture() == null) {
             Log.d(TAG, "SurfaceTexture era null, se instancia uno nuevo manualmente");
@@ -232,7 +232,7 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
     /**
      * Configura el MediaRecorder con los parámetros necesarios.
      */
-    private void setupMediaRecorder() throws IOException {
+    protected void setupMediaRecorder() throws IOException {
         mediaRecorder = new MediaRecorder();
 
         // Configuración de las fuentes de audio y video.
@@ -307,7 +307,7 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
     /**
      * Inicia la previsualización y la grabación del video.
      */
-    private void startPreviewAndRecording(CameraCaptureSession session) {
+    protected void startPreviewAndRecording(CameraCaptureSession session) {
         try {
             CaptureRequest.Builder captureRequestBuilder = cameraDevice.createCaptureRequest(CameraDevice.TEMPLATE_RECORD);
             captureRequestBuilder.addTarget(new Surface(textureView.getSurfaceTexture()));

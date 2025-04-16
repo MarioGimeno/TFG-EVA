@@ -20,7 +20,7 @@ import java.io.IOException;
 public class MicrophoneService extends Service {
 
     private static final String TAG = "MicrophoneService";
-    private static final String CHANNEL_ID = "MicrophoneChannel";
+    public static final String CHANNEL_ID = "MicrophoneChannel";
 
     private MediaRecorder mediaRecorder;
 
