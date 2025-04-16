@@ -1,12 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <!-- Tema personalizado sin ActionBar -->
     <style name="Theme.Calculadora_Front" parent="Theme.AppCompat.NoActionBar">
-        <!-- Define el color de fondo deseado (en este ejemplo, negro) -->
         <item name="android:windowBackground">#000000</item>
-        <!-- Define otros colores si lo deseas -->
         <item name="colorPrimary">#000000</item>
         <item name="colorPrimaryDark">#000000</item>
         <item name="colorAccent">#FFFFFF</item>
     </style>
+
+    <!-- Tema “normal” de tu app, debe heredar de AppCompat -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">#3F51B5</item>
+        <item name="colorPrimaryDark">#303F9F</item>
+        <item name="colorAccent">#FF4081</item>
+    </style>
+
+
 </resources>

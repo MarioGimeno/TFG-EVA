@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.example.appGrabacion.screens.CalculadoraScreen;
+
 public class RecordingWidgetReceiver extends BroadcastReceiver {
 
     public static final String ACTION_TOGGLE_RECORDING = "com.example.appGrabacion.ACTION_TOGGLE_RECORDING";
@@ -13,14 +15,12 @@ public class RecordingWidgetReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (intent != null && ACTION_TOGGLE_RECORDING.equals(intent.getAction())) {
             Log.d("RecordingWidgetReceiver", "Se pulsó el widget, acción recibida.");
-            // Creamos un intent para abrir MainActivity
-            Intent activityIntent = new Intent(context, com.example.appGrabacion.MainActivity.class);
-            // Enviamos el extra para que la MainActivity inicie la grabación automáticamente
+            Intent activityIntent = new Intent(context, CalculadoraScreen.class);
+            // Pasamos el extra para que la nueva actividad inicie la grabación automáticamente
             activityIntent.putExtra("autoStartRecording", true);
-            // Al iniciar una actividad desde un BroadcastReceiver es obligatorio agregar esta bandera
             activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(activityIntent);
-            Log.d("RecordingWidgetReceiver", "MainActivity iniciada desde el widget.");
+            Log.d("RecordingWidgetReceiver", "CalculadoraScreen iniciada desde el widget.");
         }
     }
 }
