@@ -6,6 +6,7 @@ import android.widget.Button;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.appGrabacion.screens.FolderActivity;
 import com.example.appGrabacion.screens.LoginActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -20,6 +21,11 @@ public class MainActivity extends AppCompatActivity {
             // Lanzamos LoginActivity
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
+        });
+        // Botón a Carpeta Personal
+        Button btnGoFolder = findViewById(R.id.btnGoFolder);
+        btnGoFolder.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, FolderActivity.class));
         });
     }
 }

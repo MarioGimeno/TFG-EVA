@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:gravity="center"
     android:padding="24dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Aquí irían el resto de vistas de MainActivity -->
     <TextView
         android:id="@+id/tvWelcome"
         android:text="¡Bienvenido a la app!"
@@ -16,10 +14,17 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
-    <!-- Botón para ir al login -->
     <Button
         android:id="@+id/btnGoLogin"
         android:text="Ir a Login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
+
+    <!-- Botón “Mi Carpeta” con ancho dinámico -->
+    <Button
+        android:id="@+id/btnGoFolder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Mi Carpeta"
+        android:layout_marginTop="16dp"/>
 </LinearLayout>

@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">AppGrabacion</string>
+    <string name="preview">Vista previa</string>
+
 </resources>
