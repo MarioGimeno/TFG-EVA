@@ -1,15 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:layout_height="match_parent">
 
+    <!-- Aquí irían el resto de vistas de MainActivity -->
     <TextView
-        android:id="@+id/helloText"
+        android:id="@+id/tvWelcome"
+        android:text="¡Bienvenido a la app!"
+        android:textSize="24sp"
+        android:layout_marginBottom="32dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hola Mundo!"
-        android:textSize="20sp"
-        android:layout_centerInParent="true" />
-</RelativeLayout>
+        android:layout_height="wrap_content"/>
+
+    <!-- Botón para ir al login -->
+    <Button
+        android:id="@+id/btnGoLogin"
+        android:text="Ir a Login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+</LinearLayout>

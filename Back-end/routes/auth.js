@@ -1,16 +1,18 @@
 const express = require('express');
 const router  = express.Router();
 const { register, login } = require('../services/authService');
-
 router.post('/register', async (req, res) => {
-  try {
-    const tokens = await register(req.body);
-    res.json(tokens);
-  } catch (e) {
-    res.status(400).json({ error: e.message });
-  }
-});
-
+    console.log('→ POST /auth/register recibido con body:', req.body);
+    try {
+      const tokens = await register(req.body);
+      console.log('   Registro OK, tokens:', tokens);
+      res.json(tokens);
+    } catch (e) {
+      console.error('   Error en register:', e.message);
+      res.status(400).json({ error: e.message });
+    }
+  });
+  
 router.post('/login', async (req, res) => {
   try {
     const tokens = await login(req.body);
