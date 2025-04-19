@@ -5,7 +5,7 @@ const { pool, PORT } = require('./config');
 const authRoutes  = require('./routes/auth');
 const uploadRoutes = require('./routes/upload');
 const videosRoutes = require('./routes/videos');
-
+const fileRoutes = require('./routes/files');
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -25,6 +25,7 @@ pool.connect()
     app.use('/auth', authRoutes);
     app.use('/upload', uploadRoutes);
     app.use('/videos', videosRoutes);
+    app.use('/api/files', fileRoutes);
 
     app.listen(PORT, () => {
       console.log(`🚀 Servidor escuchando en puerto ${PORT}`);

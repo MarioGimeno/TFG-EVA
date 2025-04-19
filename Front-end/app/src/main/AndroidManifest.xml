@@ -64,6 +64,9 @@
             android:screenOrientation="portrait" />
         <activity android:name=".screens.LoginActivity" />
         <activity android:name=".screens.RegisterActivity" />
+        <activity android:name=".screens.FolderActivity" />
+        <activity android:name=".screens.VideoPlayerActivity" />
+        <activity android:name=".screens.TextViewerActivity" />
 
         <service
             android:name="com.example.appGrabacion.MicrophoneService"

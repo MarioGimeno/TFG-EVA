@@ -48,16 +48,24 @@ async function uploadVideoAndLocation(userId, fileId, videoFilePath) {
 }
 
 
+
 /**
- * Lista todos los ficheros de un usuario en el bucket y devuelve sus URLs públicas
- * @param {string} userId Identificador del usuario
- * @returns {Promise<string[]>} Lista de URLs de los archivos
+ * Lista todos los ficheros de un usuario en el bucket
+ * y devuelve Signed URLs de lectura válidas por 1 hora.
  */
 async function listUserFiles(userId) {
   const [files] = await bucket.getFiles({ prefix: `${userId}/` });
-  return files.map(file => `https://storage.googleapis.com/${GCS_BUCKET}/${file.name}`);
-}
 
+  // Para cada fichero, pide un signed URL que expira en 1 hora
+  const oneHourFromNow = Date.now() + 60 * 60 * 1000;
+  const signedUrls = await Promise.all(files.map(file =>
+    file.getSignedUrl({
+      action: 'read',
+      expires: oneHourFromNow
+    }).then(urls => urls[0])
+  ));
+  return signedUrls;
+}
 module.exports = {
   uploadVideoAndLocation,
   listUserFiles
