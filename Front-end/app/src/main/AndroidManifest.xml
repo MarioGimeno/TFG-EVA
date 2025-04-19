@@ -67,7 +67,8 @@
         <activity android:name=".screens.FolderActivity" />
         <activity android:name=".screens.VideoPlayerActivity" />
         <activity android:name=".screens.TextViewerActivity" />
-
+        <activity android:name=".screens.ImageViewerActivity" />
+        <activity android:name=".screens.PdfViewerActivity" />
         <service
             android:name="com.example.appGrabacion.MicrophoneService"
             android:exported="true"
