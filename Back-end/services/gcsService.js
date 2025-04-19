@@ -17,25 +17,26 @@ const bucket = storage.bucket(GCS_BUCKET);
  * @param {string} videoFilePath Ruta local del archivo de video desencriptado
  * @returns {Promise<string>} URL base donde están los archivos subidos
  */
+// …
 async function uploadVideoAndLocation(userId, fileId, videoFilePath) {
-  // Definimos destinos dentro del bucket con template literals
-  const videoDestination = `${userId}/${fileId}/video.mp4`;
-  const locationDestination = `${userId}/${fileId}/location.txt`;
-  
-  // Subida del vídeo
+  // antes tenías:
+  // const videoDestination   = `${userId}/${fileId}/video.mp4`;
+  // const locationDestination= `${userId}/${fileId}/location.txt`;
+
+  const videoDestination    = `${userId}/${fileId}.mp4`;
+  const locationDestination = `${userId}/${fileId}.txt`;
+
   await bucket.upload(videoFilePath, {
     destination: videoDestination,
     metadata: { contentType: 'video/mp4' },
     resumable: true
   });
 
-  // Comprobamos si existe un archivo de ubicación desencriptado
   const locationDecPath = path.join(
     path.dirname(videoFilePath),
-    `${fileId}-decrypted-location.txt`
+    `${fileId}.txt`
   );
   if (fs.existsSync(locationDecPath)) {
-    // Subida de la ubicación
     await bucket.upload(locationDecPath, {
       destination: locationDestination,
       metadata: { contentType: 'text/plain' },
@@ -43,10 +44,9 @@ async function uploadVideoAndLocation(userId, fileId, videoFilePath) {
     });
   }
 
-  // Construimos la URL pública base
-  const baseUrl = `https://storage.googleapis.com/${GCS_BUCKET}/${userId}/${fileId}/`;
-  return baseUrl;
+  return `https://storage.googleapis.com/${GCS_BUCKET}/${videoDestination}`;
 }
+
 
 /**
  * Lista todos los ficheros de un usuario en el bucket y devuelve sus URLs públicas

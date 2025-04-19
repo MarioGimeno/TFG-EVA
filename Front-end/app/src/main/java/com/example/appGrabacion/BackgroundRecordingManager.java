@@ -24,6 +24,7 @@ import com.example.appGrabacion.encriptación.CryptoUtils;
 import com.example.appGrabacion.pojo.ChunkedRequestBody;
 import com.example.appGrabacion.utils.ApiService;
 import com.example.appGrabacion.utils.RetrofitClient;
+import com.example.appGrabacion.utils.SessionManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 
@@ -342,25 +343,25 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
         isRecording = false;
         Log.d(TAG, "Grabación de video detenida");
     }
-
     /**
-     * Combina (encripta) el archivo de video y la información de ubicación, y luego los envía al servidor.
+     * Combina (encripta) el archivo de video y la información de ubicación,
+     * y luego los envía al servidor usando el endpoint /upload/upload-chunk.
      */
     private void combineAudioAndLocation() {
         new Thread(() -> {
             try {
-                // Archivo de video grabado.
+                // 1) Localiza y comprueba el fichero de video
                 File videoFile = new File(context.getExternalFilesDir(null), "recorded_video.mp4");
                 if (!videoFile.exists()) {
                     Log.e(TAG, "❌ Error: Archivo de video no encontrado.");
                     return;
                 }
 
-                // Encripta el video.
+                // 2) Encripta el video
                 File encryptedVideoFile = new File(context.getExternalFilesDir(null), "encrypted_video.mp4");
                 CryptoUtils.encryptFileFlexible(videoFile, encryptedVideoFile);
 
-                // Prepara el archivo de ubicación concatenando la ubicación de inicio y fin.
+                // 3) Prepara la info de ubicación
                 String locationData = startLocation + "\n" + endLocation;
                 Log.d(TAG, "Localización a enviar:\n" + locationData);
                 File locationFile = new File(context.getExternalFilesDir(null), "location.txt");
@@ -372,40 +373,150 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
                     return;
                 }
 
-                // Encripta el archivo de ubicación.
+                // 4) Encripta la ubicación
                 File encryptedLocationFile = new File(context.getExternalFilesDir(null), "encrypted_location.txt");
                 CryptoUtils.encryptFileFlexible(locationFile, encryptedLocationFile);
 
-                // Genera un ID único para identificar la subida.
+                // 5) Genera un ID único para esta sesión de subida
                 String fileId = UUID.randomUUID().toString();
 
-                // Envía la ubicación utilizando un endpoint especial (chunkIndex = -1, totalChunks = 0).
-                RequestBody fileIdBody = RequestBody.create(MediaType.parse("text/plain"), fileId);
-                RequestBody chunkIndexBody = RequestBody.create(MediaType.parse("text/plain"), "-1");
+                // 6) Crea los RequestBody y el Part para la ubicación
+                RequestBody fileIdBody      = RequestBody.create(MediaType.parse("text/plain"), fileId);
+                RequestBody chunkIndexBody  = RequestBody.create(MediaType.parse("text/plain"), "-1");
                 RequestBody totalChunksBody = RequestBody.create(MediaType.parse("text/plain"), "0");
 
-                RequestBody locationRequestBody = RequestBody.create(MediaType.parse("text/plain"), encryptedLocationFile);
-                MultipartBody.Part locationPart = MultipartBody.Part.createFormData("chunkData", encryptedLocationFile.getName(), locationRequestBody);
+                RequestBody locationBody = RequestBody.create(
+                        MediaType.parse("application/octet-stream"),
+                        encryptedLocationFile
+                );
+                MultipartBody.Part locationPart = MultipartBody.Part.createFormData(
+                        "chunkData",
+                        encryptedLocationFile.getName(),
+                        locationBody
+                );
 
-                ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
-                Call<ResponseBody> callLocation = apiService.uploadChunk(fileIdBody, chunkIndexBody, totalChunksBody, locationPart);
-                Response<ResponseBody> locationResponse = callLocation.execute();
+                // 7) Prepara ApiService (el interceptor añade el JWT automáticamente)
+                ApiService api = RetrofitClient
+                        .getRetrofitInstance(context)
+                        .create(ApiService.class);
 
-                if (locationResponse.isSuccessful()) {
+                // 8) Obtén el token y llama a uploadChunk con el header y las partes
+                String token  = new SessionManager(context).fetchToken();
+                String bearer = "Bearer " + token;
+
+                Response<ResponseBody> locResp = api.uploadChunk(
+                        bearer,
+                        fileIdBody,
+                        chunkIndexBody,
+                        totalChunksBody,
+                        locationPart
+                ).execute();
+
+                if (locResp.isSuccessful()) {
                     Log.d(TAG, "✅ Ubicación enviada correctamente.");
-                    // Envía los chunks del video usando el mismo fileId.
+                    // 9) Si OK, sube los chunks del vídeo
                     uploadVideoChunks(fileId, encryptedVideoFile);
                 } else {
-                    Log.e(TAG, "❌ Error al enviar ubicación. Código: " + locationResponse.code());
+                    Log.e(TAG, "❌ Error al enviar ubicación. Código: "
+                            + locResp.code() + " / " + locResp.errorBody().string());
                 }
 
-                // (Opcional) Elimina el archivo original de video.
+                // 10) (Opcional) elimina el vídeo original
                 deleteFile(videoFile);
 
             } catch (Exception e) {
                 Log.e(TAG, "❌ Error en combineAudioAndLocation", e);
             }
         }).start();
+    }
+
+    /**
+     * Divide el archivo de vídeo en chunks y los sube al servidor.
+     * Firma: uploadChunk(String authHeader, RequestBody fileId, RequestBody chunkIndex,
+     *                    RequestBody totalChunks, MultipartBody.Part chunkData)
+     */
+    public void uploadVideoChunks(String fileId, File encryptedVideoFile) {
+        long chunkSize  = 50L * 1024L * 1024L; // 50MB
+        long fileLength = encryptedVideoFile.length();
+        int totalChunks = (int)((fileLength + chunkSize - 1) / chunkSize);
+
+        Log.d(TAG, "Total de chunks: " + totalChunks);
+
+        ApiService api = RetrofitClient
+                .getRetrofitInstance(context)
+                .create(ApiService.class);
+
+        // Prepara el header una vez
+        String token  = new SessionManager(context).fetchToken();
+        String bearer = "Bearer " + token;
+
+        ExecutorService executor = Executors.newFixedThreadPool(3);
+
+        for (int i = 0; i < totalChunks; i++) {
+            final int chunkIndex = i;
+            long offset = chunkIndex * chunkSize;
+            long length = Math.min(chunkSize, fileLength - offset);
+
+            // Construye el RequestBody para este chunk
+            ChunkedRequestBody chunkBody = new ChunkedRequestBody(
+                    encryptedVideoFile, offset, length,
+                    MediaType.parse("application/octet-stream")
+            );
+            MultipartBody.Part chunkPart = MultipartBody.Part.createFormData(
+                    "chunkData", "chunk_" + chunkIndex, chunkBody
+            );
+
+            RequestBody fileIdBody      = RequestBody.create(
+                    MediaType.parse("text/plain"), fileId);
+            RequestBody chunkIndexBody  = RequestBody.create(
+                    MediaType.parse("text/plain"), String.valueOf(chunkIndex));
+            RequestBody totalChunksBody = RequestBody.create(
+                    MediaType.parse("text/plain"), String.valueOf(totalChunks));
+
+            executor.submit(() -> {
+                int attempts = 0;
+                boolean success = false;
+                while (!success && attempts < 3) {
+                    attempts++;
+                    try {
+                        Response<ResponseBody> resp = api.uploadChunk(
+                                bearer,
+                                fileIdBody,
+                                chunkIndexBody,
+                                totalChunksBody,
+                                chunkPart
+                        ).execute();
+
+                        if (resp.isSuccessful()) {
+                            Log.d(TAG, "Chunk " + chunkIndex + " subido correctamente.");
+                            success = true;
+                        } else {
+                            Log.e(TAG, "Error chunk " + chunkIndex
+                                    + " code=" + resp.code()
+                                    + " intento " + attempts);
+                            Thread.sleep(2000);
+                        }
+                    } catch (Exception ex) {
+                        Log.e(TAG, "Fallo chunk " + chunkIndex
+                                + ": " + ex.getMessage()
+                                + " intento " + attempts);
+                        try { Thread.sleep(2000); } catch (InterruptedException ignore) {}
+                    }
+                }
+                if (!success) {
+                    Log.e(TAG, "No se pudo subir chunk " + chunkIndex);
+                }
+            });
+        }
+
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(30, TimeUnit.MINUTES)) {
+                Log.e(TAG, "Timeout subida de chunks.");
+            }
+        } catch (InterruptedException e) {
+            Log.e(TAG, "Error esperando subida de chunks", e);
+        }
     }
 
     /**
@@ -442,85 +553,6 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
             }
         }
         return chunks;
-    }
-
-    /**
-     * Sube los chunks del video encriptado al servidor utilizando Retrofit y un ExecutorService para controlar la concurrencia.
-     *
-     * @param fileId              Identificador único del archivo.
-     * @param encryptedVideoFile  Archivo de video encriptado.
-     */
-    public void uploadVideoChunks(String fileId, File encryptedVideoFile) {
-        // Tamaño del chunk: 50 MB
-        long chunkSize = 50L * 1024L * 1024L;
-        long fileLength = encryptedVideoFile.length();
-        int totalChunks = (int) ((fileLength + chunkSize - 1) / chunkSize);
-        Log.d("ChunkUpload", "Total de chunks: " + totalChunks);
-
-        ApiService apiService = RetrofitClient.getRetrofitInstance().create(ApiService.class);
-
-        final int maxConcurrentUploads = 3;
-        final int maxRetries = 3;
-        ExecutorService executor = Executors.newFixedThreadPool(maxConcurrentUploads);
-
-        for (int i = 0; i < totalChunks; i++) {
-            final int chunkIndex = i;
-            long offset = chunkIndex * chunkSize;
-            long length = Math.min(chunkSize, fileLength - offset);
-
-            // Crea el RequestBody para el chunk.
-            ChunkedRequestBody chunkBody = new ChunkedRequestBody(
-                    encryptedVideoFile,
-                    offset,
-                    length,
-                    MediaType.parse("application/octet-stream")
-            );
-
-            RequestBody fileIdBody = RequestBody.create(MediaType.parse("text/plain"), fileId);
-            RequestBody chunkIndexBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(chunkIndex));
-            RequestBody totalChunksBody = RequestBody.create(MediaType.parse("text/plain"), String.valueOf(totalChunks));
-
-            MultipartBody.Part chunkPart = MultipartBody.Part.createFormData("chunkData", "chunk_" + chunkIndex, chunkBody);
-
-            // Se envía cada chunk asíncronamente con reintentos.
-            executor.submit(() -> {
-                int attempt = 0;
-                boolean uploaded = false;
-                while (!uploaded && attempt < maxRetries) {
-                    attempt++;
-                    try {
-                        Call<ResponseBody> call = apiService.uploadChunk(fileIdBody, chunkIndexBody, totalChunksBody, chunkPart);
-                        Response<ResponseBody> response = call.execute();
-                        if (response.isSuccessful()) {
-                            Log.d(TAG, "Chunk " + chunkIndex + " enviado correctamente.");
-                            uploaded = true;
-                        } else {
-                            Log.e(TAG, "Error al enviar chunk " + chunkIndex + ": " + response.code() + ". Reintento " + attempt);
-                            Thread.sleep(2000);
-                        }
-                    } catch (Exception e) {
-                        Log.e(TAG, "Fallo al enviar chunk " + chunkIndex + ": " + e.getMessage() + ". Reintento " + attempt);
-                        try {
-                            Thread.sleep(2000);
-                        } catch (InterruptedException ie) {
-                            // Ignorar la excepción
-                        }
-                    }
-                }
-                if (!uploaded) {
-                    Log.e(TAG, "No se pudo enviar el chunk " + chunkIndex + " después de " + maxRetries + " intentos.");
-                }
-            });
-        }
-
-        executor.shutdown();
-        try {
-            if (!executor.awaitTermination(30, TimeUnit.MINUTES)) {
-                Log.e(TAG, "Tiempo de espera excedido para la subida de chunks.");
-            }
-        } catch (InterruptedException e) {
-            Log.e(TAG, "Error esperando la finalización de la subida de chunks", e);
-        }
     }
 
     // Métodos del TextureView.SurfaceTextureListener

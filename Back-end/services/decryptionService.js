@@ -1,15 +1,16 @@
+// services/decryptionService.js
 const { Worker } = require('worker_threads');
-const { IV_SIZE, TAG_SIZE, SECRET_KEY } = require('../config');
+const path = require('path');
 
-function decryptFile(input, output) {
+function decryptFile(inputPath, outputPath) {
   return new Promise((resolve, reject) => {
-    const worker = new Worker(
-      require.resolve('../workers/decryptWorker.js'),
-      { workerData: { input, output, SECRET_KEY, IV_SIZE, TAG_SIZE } }
-    );
-    worker.on('message', m => m.success ? resolve(output) : reject(m.error));
+    const workerScript = path.join(__dirname, 'decryptWorker.js');  // <— ruta correcta
+    const worker = new Worker(workerScript, {
+      workerData: { inputFilePath: inputPath, outputFilePath: outputPath }
+    });
+    worker.on('message', msg => msg.success ? resolve(outputPath) : reject(new Error(msg.error)));
     worker.on('error', reject);
-    worker.on('exit', code => code === 0 ? null : reject(`exit ${code}`));
+    worker.on('exit', code => code === 0 ? null : reject(new Error(`Worker stopped with ${code}`)));
   });
 }
 

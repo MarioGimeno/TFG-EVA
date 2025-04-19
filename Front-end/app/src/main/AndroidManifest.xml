@@ -62,6 +62,8 @@
             android:exported="true"
             android:launchMode="singleTop"
             android:screenOrientation="portrait" />
+        <activity android:name=".screens.LoginActivity" />
+        <activity android:name=".screens.RegisterActivity" />
 
         <service
             android:name="com.example.appGrabacion.MicrophoneService"
