@@ -26,7 +26,7 @@ public class TextViewerActivity extends AppCompatActivity {
         tvContent = findViewById(R.id.tvContent);
 
         String url = getIntent().getStringExtra("url");
-        if (url == null || !url.toLowerCase().endsWith(".txt")) {
+        if (url == null || !url.toLowerCase().contains(".txt")) {
             Toast.makeText(this, "URL de texto inválida", Toast.LENGTH_SHORT).show();
             finish();
             return;

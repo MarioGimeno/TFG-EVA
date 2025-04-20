@@ -1,15 +1,19 @@
 package com.example.appGrabacion.models;
 
-import com.google.gson.annotations.SerializedName;
-
 public class FileEntry {
-    @SerializedName("name")
-    private String name;
+    private final String name;
+    private final String url;
 
-    @SerializedName("url")
-    private String signedUrl;
+    public FileEntry(String name, String url) {
+        this.name = name;
+        this.url = url;
+    }
 
-    // getters
-    public String getName() { return name; }
-    public String getSignedUrl() { return signedUrl; }
+    public String getName() {
+        return name;
+    }
+
+    public String getUrl() {
+        return url;
+    }
 }

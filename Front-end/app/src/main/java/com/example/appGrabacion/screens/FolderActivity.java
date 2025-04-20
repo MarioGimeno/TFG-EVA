@@ -1,4 +1,3 @@
-// FolderActivity.java
 package com.example.appGrabacion.screens;
 
 import android.app.Activity;
@@ -16,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.FileAdapter;
+import com.example.appGrabacion.models.FileEntry;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONArray;
@@ -37,9 +37,9 @@ import okhttp3.Response;
 public class FolderActivity extends AppCompatActivity {
     private static final int REQUEST_PICK_FILE = 1234;
     private final OkHttpClient client = new OkHttpClient();
-    private final List<String> urls = new ArrayList<>();
+    private final List<FileEntry> files = new ArrayList<>();
     private FileAdapter adapter;
-    private String token; // <-- guardamos el token
+    private String token;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,7 +56,7 @@ public class FolderActivity extends AppCompatActivity {
 
         RecyclerView rv = findViewById(R.id.rvFiles);
         rv.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new FileAdapter(this, urls);
+        adapter = new FileAdapter(this, files);
         rv.setAdapter(adapter);
 
         FloatingActionButton fab = findViewById(R.id.fabUpload);
@@ -66,13 +66,13 @@ public class FolderActivity extends AppCompatActivity {
     }
 
     private void pickFile() {
-        Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-        i.setType("*/*");
-        i.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{
-                "image/*","video/*","application/pdf","text/plain"
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{
+                "image/*", "video/*", "application/pdf", "text/plain"
         });
-        i.addCategory(Intent.CATEGORY_OPENABLE);
-        startActivityForResult(i, REQUEST_PICK_FILE);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, REQUEST_PICK_FILE);
     }
 
     @Override
@@ -106,11 +106,14 @@ public class FolderActivity extends AppCompatActivity {
                     .build();
 
             client.newCall(req).enqueue(new Callback() {
-                @Override public void onFailure(Call c, java.io.IOException e) {
-                    runOnUiThread(() -> Toast.makeText(FolderActivity.this,
-                            "Error al subir: "+e.getMessage(), Toast.LENGTH_SHORT).show());
+                @Override public void onFailure(Call call, java.io.IOException e) {
+                    runOnUiThread(() ->
+                            Toast.makeText(FolderActivity.this,
+                                    "Error al subir: " + e.getMessage(),
+                                    Toast.LENGTH_SHORT).show()
+                    );
                 }
-                @Override public void onResponse(Call c, Response r) throws java.io.IOException {
+                @Override public void onResponse(Call call, Response r) throws java.io.IOException {
                     if (r.isSuccessful()) {
                         runOnUiThread(() -> {
                             Toast.makeText(FolderActivity.this,
@@ -118,13 +121,17 @@ public class FolderActivity extends AppCompatActivity {
                             loadFiles();
                         });
                     } else {
-                        runOnUiThread(() -> Toast.makeText(FolderActivity.this,
-                                "Error servidor: "+r.code(), Toast.LENGTH_SHORT).show());
+                        runOnUiThread(() ->
+                                Toast.makeText(FolderActivity.this,
+                                        "Error servidor: " + r.code(),
+                                        Toast.LENGTH_SHORT).show()
+                        );
                     }
                 }
             });
         } catch (Exception ex) {
-            Toast.makeText(this, "Error lectura: "+ex.getMessage(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Error lectura: " + ex.getMessage(),
+                    Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -135,22 +142,29 @@ public class FolderActivity extends AppCompatActivity {
                 .build();
 
         client.newCall(req).enqueue(new Callback() {
-            @Override public void onFailure(Call c, java.io.IOException e) { /*…*/ }
-            @Override public void onResponse(Call c, Response r) throws java.io.IOException {
+            @Override public void onFailure(Call call, java.io.IOException e) { /*…*/ }
+
+            @Override public void onResponse(Call call, Response r) throws java.io.IOException {
                 if (!r.isSuccessful()) return;
                 try {
                     JSONObject obj = new JSONObject(r.body().string());
                     JSONArray arr = obj.getJSONArray("files");
-                    urls.clear();
+                    files.clear();
                     for (int i = 0; i < arr.length(); i++) {
-                        // Ahora cada elemento es un objeto { name, url }
-                        JSONObject fileObj = arr.getJSONObject(i);
-                        String signedUrl = fileObj.getString("url");
-                        Log.d("FolderActivity", "Signed URL[" + i + "]: " + signedUrl);
-                        urls.add(signedUrl);
+                        JSONObject o = arr.getJSONObject(i);
+                        String fullPath = o.getString("name");
+                        String name = fullPath.contains("/")
+                                ? fullPath.substring(fullPath.lastIndexOf('/') + 1)
+                                : fullPath;
+                        String url  = o.getString("url");
+                        files.add(new FileEntry(name, url));
+                        Log.d("FolderActivity",
+                                "Entry[" + i + "] " + name + " → " + url);
                     }
                     runOnUiThread(() -> adapter.notifyDataSetChanged());
-                } catch (Exception x) { x.printStackTrace(); }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
             }
         });
     }
