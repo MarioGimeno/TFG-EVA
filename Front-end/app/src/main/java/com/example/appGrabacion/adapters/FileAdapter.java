@@ -47,9 +47,9 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.VH> {
     @Override
     public void onBindViewHolder(@NonNull VH holder, int pos) {
         FileEntry e = entries.get(pos);
-        String name  = e.getName();
+        String name = e.getName();          // nombre con extensión
         String lower = name.toLowerCase();
-        String url   = e.getUrl();
+        String url  = e.getUrl();
 
         holder.tvName.setText(name);
 
@@ -79,10 +79,10 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.VH> {
             holder.btnType.setImageResource(R.drawable.ic_file);
         }
 
-        // Click on the rest of the item -> open in-app or fallback
+        // Clic en el resto del item: abrir viewer / player
         holder.itemView.setOnClickListener(v -> {
             Intent intent;
-           /* if (lower.endsWith(".mp4")) {
+            if (lower.endsWith(".mp4")) {
                 intent = new Intent(ctx, VideoPlayerActivity.class);
                 intent.putExtra("url", url);
 
@@ -99,15 +99,14 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.VH> {
                 intent.putExtra("url", url);
 
             } else {
-                // Fallback: open URL in browser
-                intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            }*/
-            intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-
+                // si no hay viewer, lanzo descarga
+                downloadFile(url, name);
+                return;
+            }
             ctx.startActivity(intent);
         });
 
-        // Click on download button -> download to device
+        // Clic en el botón de descarga
         holder.btnDownload.setOnClickListener(v ->
                 downloadFile(url, name)
         );
@@ -124,6 +123,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.VH> {
             String mime = MimeTypeMap.getSingleton()
                     .getMimeTypeFromExtension(ext);
 
+            // Let the DownloadManager pick the default public Downloads location
             DownloadManager.Request req = new DownloadManager.Request(
                     Uri.parse(fileUrl)
             );
@@ -138,10 +138,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.VH> {
             );
             req.setAllowedOverMetered(true);
             req.setAllowedOverRoaming(false);
-            req.setDestinationInExternalPublicDir(
-                    Environment.DIRECTORY_DOWNLOADS,
-                    fileName
-            );
+            // Remove custom destination: default Downloads folder will be used
 
             DownloadManager dm =
                     (DownloadManager) ctx.getSystemService(Context.DOWNLOAD_SERVICE);
@@ -157,6 +154,7 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.VH> {
                     Toast.LENGTH_LONG).show();
         }
     }
+
 
     static class VH extends RecyclerView.ViewHolder {
         ImageView   imgPreview;
