@@ -1,6 +1,7 @@
 package com.example.appGrabacion.screens;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,12 +29,7 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         session = new SessionManager(this);
-        // Si ya está logado, vamos directo al MainActivity
-        if (session.isLoggedIn()) {
-            startActivity(new Intent(this, MainActivity.class));
-            finish();
-            return;
-        }
+        session.clear();
 
         EditText etEmail    = findViewById(R.id.etEmail);
         EditText etPassword = findViewById(R.id.etPassword);
@@ -54,13 +50,25 @@ public class LoginActivity extends AppCompatActivity {
                         @Override
                         public void onResponse(Call<LoginResponse> call, Response<LoginResponse> res) {
                             if (res.isSuccessful() && res.body()!=null) {
-                                session.saveToken(res.body().token);
+                                String jwt = res.body().token;  // <-- aquí tienes tu token
+
+                                // 1) lo guardas en SharedPreferences
+                                SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
+                                prefs.edit()
+                                        .putString("auth_token", jwt)
+                                        .apply();
+
+                                // 2) también lo guardas en tu SessionManager si lo usas
+                                session.saveToken(jwt);
+
+                                // 3) y ya puedes ir al MainActivity
                                 startActivity(new Intent(LoginActivity.this, MainActivity.class));
                                 finish();
                             } else {
                                 Toast.makeText(LoginActivity.this, "Credenciales inválidas", Toast.LENGTH_SHORT).show();
                             }
                         }
+
                         @Override
                         public void onFailure(Call<LoginResponse> call, Throwable t) {
                             Toast.makeText(LoginActivity.this, "Error de red", Toast.LENGTH_SHORT).show();

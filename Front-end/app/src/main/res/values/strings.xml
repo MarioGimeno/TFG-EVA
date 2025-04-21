@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">AppGrabacion</string>
     <string name="preview">Vista previa</string>
+    <string name="upload_file">Subir archivo</string>
+    <string name="file_type">Tipo de archivo</string>
 
 </resources>

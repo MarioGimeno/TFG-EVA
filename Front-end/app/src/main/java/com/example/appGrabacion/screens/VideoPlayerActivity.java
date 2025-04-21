@@ -2,48 +2,41 @@ package com.example.appGrabacion.screens;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appGrabacion.R;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.ui.PlayerView;
-import com.google.android.exoplayer2.upstream.DefaultDataSource;
-import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 
 public class VideoPlayerActivity extends AppCompatActivity {
-
-    private SimpleExoPlayer player;
+    private static final String TAG = "VideoPlayerActivity";
+    private ExoPlayer player;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
 
-        String url = getIntent().getStringExtra("videoUrl");
-        if (url == null || url.isEmpty()) {
-            finish();
-            return;
-        }
+        // Leer el mismo extra "url" que usamos al lanzar el Intent
+        String url = getIntent().getStringExtra("url");
+        Log.d(TAG, "URL recibida: " + url);
 
         PlayerView playerView = findViewById(R.id.playerView);
-
-        DefaultHttpDataSource.Factory httpFactory = new DefaultHttpDataSource.Factory();
-        DefaultDataSource.Factory dataSourceFactory =
-                new DefaultDataSource.Factory(this, httpFactory);
-
-        player = new SimpleExoPlayer.Builder(this)
-                .setMediaSourceFactory(new DefaultMediaSourceFactory(dataSourceFactory))
-                .build();
-
+        player = new ExoPlayer.Builder(this).build();
         playerView.setPlayer(player);
-        MediaItem mediaItem = MediaItem.fromUri(Uri.parse(url));
-        player.setMediaItem(mediaItem);
-        player.prepare();
-        player.play();
+
+        if (url != null) {
+            MediaItem mediaItem = MediaItem.fromUri(Uri.parse(url));
+            player.setMediaItem(mediaItem);
+            player.prepare();
+            player.play();
+        } else {
+            Log.e(TAG, "No se recibió URL válida");
+            finish();
+        }
     }
 
     @Override

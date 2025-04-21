@@ -53,19 +53,20 @@ async function uploadVideoAndLocation(userId, fileId, videoFilePath) {
  * Lista todos los ficheros de un usuario en el bucket
  * y devuelve Signed URLs de lectura válidas por 1 hora.
  */
+
 async function listUserFiles(userId) {
   const [files] = await bucket.getFiles({ prefix: `${userId}/` });
 
-  // Para cada fichero, pide un signed URL que expira en 1 hora
-  const oneHourFromNow = Date.now() + 60 * 60 * 1000;
-  const signedUrls = await Promise.all(files.map(file =>
-    file.getSignedUrl({
+  return Promise.all(files.map(async file => {
+    const [signedUrl] = await file.getSignedUrl({
       action: 'read',
-      expires: oneHourFromNow
-    }).then(urls => urls[0])
-  ));
-  return signedUrls;
+      expires: Date.now() + 60 * 60 * 1000
+    });
+    console.log('Urls ' + file.name + ': ' + signedUrl);
+    return { name: file.name, url: signedUrl };
+  }));
 }
+
 module.exports = {
   uploadVideoAndLocation,
   listUserFiles
