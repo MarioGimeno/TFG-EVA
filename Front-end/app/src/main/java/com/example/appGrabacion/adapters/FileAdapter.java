@@ -77,33 +77,10 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.VH> {
         } else {
             holder.imgPreview.setImageResource(R.drawable.ic_file);
             holder.btnType.setImageResource(R.drawable.ic_file);
-        }
-
-        // Clic en el resto del item: abrir viewer / player
+        }        // Clic en el resto del item: abrir siempre en navegador
         holder.itemView.setOnClickListener(v -> {
-            Intent intent;
-            if (lower.endsWith(".mp4")) {
-                intent = new Intent(ctx, VideoPlayerActivity.class);
-                intent.putExtra("url", url);
-
-            } else if (lower.endsWith(".txt")) {
-                intent = new Intent(ctx, TextViewerActivity.class);
-                intent.putExtra("url", url);
-
-            } else if (lower.matches(".*\\.(jpg|png)$")) {
-                intent = new Intent(ctx, ImageViewerActivity.class);
-                intent.putExtra("url", url);
-
-            } else if (lower.endsWith(".pdf")) {
-                intent = new Intent(ctx, PdfViewerActivity.class);
-                intent.putExtra("url", url);
-
-            } else {
-                // si no hay viewer, lanzo descarga
-                downloadFile(url, name);
-                return;
-            }
-            ctx.startActivity(intent);
+            Intent browser = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            ctx.startActivity(browser);
         });
 
         // Clic en el botón de descarga
