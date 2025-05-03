@@ -62,6 +62,8 @@ import retrofit2.Callback;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
+import com.google.gson.Gson;
+
 /**
  * Clase que encapsula la lógica de grabación de video con audio (incluyendo el manejo del MediaRecorder, la cámara,
  * el servicio de micrófono y la combinación con la ubicación), sin modificar la funcionalidad original.
@@ -194,6 +196,8 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
     private void sendLiveLocationPush(double lat, double lon) {
         List<Integer> contacts = contactManager.getContactIds(); // IDs o tokens que guardes
         LocationUpdateRequest req = new LocationUpdateRequest(contacts, lat, lon);
+        Log.d(TAG, "Contactos recuperados en cliente: " + contacts);
+        Log.d(TAG, "Payload JSON enviado: " + new Gson().toJson(req));
         NotificationsApi api = RetrofitClient
                 .getRetrofitInstance(context)
                 .create(NotificationsApi.class);

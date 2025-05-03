@@ -66,13 +66,17 @@ public class ContactsActivity extends AppCompatActivity {
     private void loadContacts() {
         progress.setVisibility(View.VISIBLE);
         api.getContacts(token).enqueue(new Callback<List<ContactEntry>>() {
-            @Override public void onResponse(Call<List<ContactEntry>> call, Response<List<ContactEntry>> res) {
+            @Override
+            public void onResponse(Call<List<ContactEntry>> call, Response<List<ContactEntry>> res) {
                 progress.setVisibility(View.GONE);
                 if (res.isSuccessful()) {
                     adapter.setContacts(res.body());
-                } else Toast.makeText(ContactsActivity.this, "Error cargando contactos", Toast.LENGTH_SHORT).show();
+                } else
+                    Toast.makeText(ContactsActivity.this, "Error cargando contactos", Toast.LENGTH_SHORT).show();
             }
-            @Override public void onFailure(Call<List<ContactEntry>> call, Throwable t) {
+
+            @Override
+            public void onFailure(Call<List<ContactEntry>> call, Throwable t) {
                 progress.setVisibility(View.GONE);
                 Toast.makeText(ContactsActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
             }
@@ -86,17 +90,26 @@ public class ContactsActivity extends AppCompatActivity {
             Toast.makeText(this, "Nombre y teléfono son obligatorios", Toast.LENGTH_SHORT).show();
             return;
         }
-        ContactEntry c = new ContactEntry(name, phone);
+
+        // Usamos el constructor de cuatro parámetros, dejando los IDs a 0
+        ContactEntry c = new ContactEntry(0, 0, name, phone);
+
         progress.setVisibility(View.VISIBLE);
         api.addContact(token, c).enqueue(new Callback<ContactEntry>() {
-            @Override public void onResponse(Call<ContactEntry> call, Response<ContactEntry> res) {
+            @Override
+            public void onResponse(Call<ContactEntry> call, Response<ContactEntry> res) {
                 progress.setVisibility(View.GONE);
                 if (res.isSuccessful()) {
-                    etName.setText(""); etPhone.setText("");
+                    etName.setText("");
+                    etPhone.setText("");
                     loadContacts();
-                } else Toast.makeText(ContactsActivity.this, "Error guardando", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(ContactsActivity.this, "Error guardando", Toast.LENGTH_SHORT).show();
+                }
             }
-            @Override public void onFailure(Call<ContactEntry> call, Throwable t) {
+
+            @Override
+            public void onFailure(Call<ContactEntry> call, Throwable t) {
                 progress.setVisibility(View.GONE);
                 Toast.makeText(ContactsActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
             }

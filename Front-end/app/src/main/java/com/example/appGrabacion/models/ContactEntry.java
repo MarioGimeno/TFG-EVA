@@ -1,27 +1,82 @@
+// ContactEntry.java
 package com.example.appGrabacion.models;
 
+import com.google.gson.annotations.SerializedName;
+
+/**
+ * Modelo que representa un contacto, con mapeo del campo remoto "contact_user_id" y correo electrónico.
+ */
 public class ContactEntry {
+    /**
+     * ID local (primary key interno, opcional).
+     */
     private int id;
+
+    /**
+     * ID remoto del usuario en el servidor (contact_user_id).
+     */
+    @SerializedName("contact_user_id")
+    private int contactUserId;
+
+    /**
+     * Nombre o alias del contacto.
+     */
     private String name;
+
+    /**
+     * Email del contacto.
+     */
     private String email;
 
-    // Constructor principal (al mappear desde la API)
-    public ContactEntry(int id, String name, String email) {
-        this.id    = id;
-        this.name  = name;
+    public ContactEntry() { }
+
+    public ContactEntry(int id, int contactUserId, String name, String email) {
+        this.id = id;
+        this.contactUserId = contactUserId;
+        this.name = name;
         this.email = email;
     }
 
-    // Nuevo constructor para crear LOCALMENTE antes de tener un id
-    public ContactEntry(String name, String email) {
-        this(0, name, email);
+    public int getId() {
+        return id;
     }
 
-    // Getters y setters
-    public int getId()             { return id; }
-    public String getName()        { return name; }
-    public String getEmail()       { return email; }
-    public void setId(int id)      { this.id = id; }
-    public void setName(String n)  { this.name = n; }
-    public void setEmail(String e) { this.email = e; }
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public int getContactUserId() {
+        return contactUserId;
+    }
+
+    public void setContactUserId(int contactUserId) {
+        this.contactUserId = contactUserId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @Override
+    public String toString() {
+        return "ContactEntry{" +
+                "id=" + id +
+                ", contactUserId=" + contactUserId +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                '}';
+    }
 }
+
