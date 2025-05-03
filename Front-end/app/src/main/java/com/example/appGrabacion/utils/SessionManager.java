@@ -27,4 +27,8 @@ public class SessionManager {
     public void clear() {
         prefs.edit().clear().apply();
     }
+    /** Método estático de conveniencia **/
+    public static String getToken(Context ctx) {
+        return new SessionManager(ctx).fetchToken();
+    }
 }

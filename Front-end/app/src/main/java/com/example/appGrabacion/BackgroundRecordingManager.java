@@ -13,6 +13,8 @@ import android.hardware.camera2.CaptureRequest;
 import android.media.MediaRecorder;
 import android.os.Handler;
 import android.os.Looper;
+import android.preference.PreferenceManager;
+import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.Surface;
 import android.view.TextureView;
@@ -21,12 +23,18 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 
 import com.example.appGrabacion.encriptación.CryptoUtils;
+import com.example.appGrabacion.models.ContactEntry;
+import com.example.appGrabacion.models.EmailRequest;
+import com.example.appGrabacion.models.EmailResponse;
+import com.example.appGrabacion.models.LocationUpdateRequest;
 import com.example.appGrabacion.pojo.ChunkedRequestBody;
 import com.example.appGrabacion.utils.ApiService;
+import com.example.appGrabacion.utils.NotificationsApi;
 import com.example.appGrabacion.utils.RetrofitClient;
 import com.example.appGrabacion.utils.SessionManager;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.example.appGrabacion.utils.ContactManager;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,7 +57,11 @@ import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Response;
+import retrofit2.Callback;
 
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationResult;
 /**
  * Clase que encapsula la lógica de grabación de video con audio (incluyendo el manejo del MediaRecorder, la cámara,
  * el servicio de micrófono y la combinación con la ubicación), sin modificar la funcionalidad original.
@@ -65,16 +77,19 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
     protected CameraDevice cameraDevice;
     protected MediaRecorder mediaRecorder;
     protected CameraCaptureSession captureSession;
+    private ContactManager contactManager;
 
     public boolean isRecording = false;
     private String startLocation = "";
     private String endLocation = "";
-
+    private LocationRequest liveLocationRequest;
+    private com.google.android.gms.location.LocationCallback liveLocationCallback;
     public BackgroundRecordingManager(Context context, TextureView textureView) {
         this.context = context;
         this.textureView = textureView;
         cameraManager = (CameraManager) context.getSystemService(Context.CAMERA_SERVICE);
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(context);
+        contactManager = new ContactManager(context);
 
         // Se asigna el listener a la TextureView (para recibir los callbacks de la cámara)
         if (this.textureView != null) {
@@ -86,7 +101,7 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
     /**
      * Interfaz para el callback de la obtención de la ubicación.
      */
-    public interface LocationCallback {
+    public interface RecordingLocationListener {
         void onLocationReceived();
     }
 
@@ -96,7 +111,7 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
      * @param isStart  true para la ubicación de inicio, false para la ubicación de fin.
      * @param callback Se invoca cuando se recibe la ubicación (o si es nula).
      */
-    private void getLocation(final boolean isStart, final LocationCallback callback) {
+    private void getLocation(final boolean isStart, final RecordingLocationListener callback) {
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Log.e(TAG, "No se tienen permisos de localización");
             if (callback != null) {
@@ -141,28 +156,82 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
         Intent intent = new Intent(context, MicrophoneService.class);
         context.stopService(intent);
     }
+    private void startLiveLocationUpdates() {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            Log.e(TAG, "No hay permiso de ubicación para live updates");
+            return;
+        }
+        liveLocationRequest = LocationRequest.create()
+                .setInterval(30000)
+                .setFastestInterval(10000)
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+
+        liveLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult result) {
+                if (result == null) return;
+                double lat = result.getLastLocation().getLatitude();
+                double lon = result.getLastLocation().getLongitude();
+                String mapsLink = "https://maps.google.com/?q=" + lat + "," + lon;
+                String body = "Ubicación en vivo: " + mapsLink;
+                sendLiveLocationPush(lat, lon);
+            }
+        };
+        fusedLocationClient.requestLocationUpdates(
+                liveLocationRequest,
+                liveLocationCallback,
+                Looper.getMainLooper()
+        );
+    }
+
+    private void stopLiveLocationUpdates() {
+        if (liveLocationCallback != null) {
+            fusedLocationClient.removeLocationUpdates(liveLocationCallback);
+        }
+    }
+
+    private void sendLiveLocationPush(double lat, double lon) {
+        List<Integer> contacts = contactManager.getContactIds(); // IDs o tokens que guardes
+        LocationUpdateRequest req = new LocationUpdateRequest(contacts, lat, lon);
+        NotificationsApi api = RetrofitClient
+                .getRetrofitInstance(context)
+                .create(NotificationsApi.class);
+        String bearer = "Bearer " + SessionManager.getToken(context);
+// Suponiendo que sendLocationUpdate devuelve Call<Void> o Call<LocationResponse>
+        api.sendLocationUpdate(bearer, req)
+                .enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            Log.d(TAG, "Live location sent successfully");
+                        } else {
+                            Log.e(TAG, "Error sending live location: code=" + response.code());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        Log.e(TAG, "Failed to send live location", t);
+                    }
+                });
+    }
 
     /**
      * Inicia la grabación; se obtiene la ubicación de inicio, se arranca el servicio del micrófono y se inicia la grabación de video.
      *
      * @param callback Callback que se ejecuta al obtener la ubicación.
      */
-    public void startRecording(final LocationCallback callback) {
-        if (isRecording) {
-            Log.d(TAG, "Ya se está grabando");
-            return;
-        }
-        getLocation(true, new LocationCallback() {
-            @Override
-            public void onLocationReceived() {
-                startMicrophoneService();
-                startVideoRecording();
-                if (callback != null) {
-                    callback.onLocationReceived();
-                }
-            }
+    public void startRecording(final RecordingLocationListener callback) {
+        if (isRecording) return;
+        getLocation(true, () -> {
+            startLiveLocationUpdates();
+            startMicrophoneService();
+            startVideoRecording();
+            if (callback != null) callback.onLocationReceived();
         });
     }
+
 
     /**
      * Detiene la grabación; se obtiene la ubicación final, se para el servicio del micrófono y se finaliza la grabación de video,
@@ -170,12 +239,12 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
      *
      * @param callback Callback que se ejecuta al finalizar la obtención de la ubicación final.
      */
-    public void stopRecording(final LocationCallback callback) {
+    public void stopRecording(final RecordingLocationListener callback) {
         if (!isRecording) {
             Log.d(TAG, "No hay grabación en curso");
             return;
         }
-        getLocation(false, new LocationCallback() {
+        getLocation(false, new RecordingLocationListener() {
             @Override
             public void onLocationReceived() {
                 stopMicrophoneService();
@@ -554,6 +623,8 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
         }
         return chunks;
     }
+
+
 
     // Métodos del TextureView.SurfaceTextureListener
 
