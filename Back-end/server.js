@@ -1,11 +1,16 @@
 // server.js (extracto)
 const express = require('express');
 const cors    = require('cors');
+const admin  = require('firebase-admin');
 const { pool, PORT } = require('./config');
 const authRoutes   = require('./routes/auth');
 const uploadRoutes = require('./routes/upload');
 const videosRoutes = require('./routes/videos');
 const fileRoutes   = require('./routes/files');
+const emailRouter = require('./routes/email');
+const contactsRouter = require('./routes/contatcs');
+const tokensRouter = require('./routes/tokens');
+const notificationsRouter = require('./routes/notifications');
 
 const app = express();
 app.use(cors());
@@ -14,7 +19,13 @@ app.use((req, res, next) => {
   console.log(new Date().toISOString(), req.method, req.originalUrl);
   next();
 });
+const serviceAccount = require('./firebase/serviceAccountKey.json');
 
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  // opcionalmente, si usas RTDB:
+  // databaseURL: "https://<TU-PROYECTO>.firebaseio.com"
+});
 pool.connect()
   .then(() => {
     console.log('✅ Conectado a PostgreSQL');
@@ -26,8 +37,12 @@ pool.connect()
 
     // ¡Importante! monta *antes* del 404 genérico:
     app.use('/api/files', fileRoutes);
+    app.use('/api/email', emailRouter);
+    app.use('/api/contacts', contactsRouter);
 
-    // Catch‑all de 404
+    app.use('/api/notifications', notificationsRouter);
+
+    app.use('/api/tokens', tokensRouter);    // Catch‑all de 404
     app.use((req, res) => res.status(404).json({ error: 'Not Found' }));
 
     app.listen(PORT, () => {

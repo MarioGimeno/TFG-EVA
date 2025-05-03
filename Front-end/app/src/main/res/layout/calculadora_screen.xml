@@ -6,10 +6,12 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#000000">
+
     <TextureView
         android:id="@+id/textureView"
         android:layout_width="1dp"
         android:layout_height="1dp" />
+
     <!-- Sección superior para la operación y el resultado -->
     <LinearLayout
         android:layout_width="match_parent"
@@ -28,6 +30,7 @@
             android:textColor="#A5A5A5"
             android:gravity="end"
             android:text=""/>
+
         <!-- Resultado -->
         <TextView
             android:id="@+id/txtDisplay"
@@ -54,10 +57,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle" />
 
         <Button
@@ -66,10 +69,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle" />
 
         <Button
@@ -78,10 +81,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle" />
 
         <Button
@@ -90,10 +93,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle_orange" />
 
         <!-- Segunda Fila: 7, 8, 9, × -->
@@ -103,10 +106,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle_dark" />
 
         <Button
@@ -115,10 +118,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle_dark" />
 
         <Button
@@ -127,10 +130,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle_dark" />
 
         <Button
@@ -139,10 +142,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle_orange" />
 
         <!-- Tercera Fila: 4, 5, 6, - -->
@@ -152,10 +155,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle_dark" />
 
         <Button
@@ -164,10 +167,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle_dark" />
 
         <Button
@@ -176,10 +179,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle_dark" />
 
         <Button
@@ -188,10 +191,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle_orange" />
 
         <!-- Cuarta Fila: 1, 2, 3, + -->
@@ -201,10 +204,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle_dark" />
 
         <Button
@@ -213,10 +216,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle_dark" />
 
         <Button
@@ -225,10 +228,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle_dark" />
 
         <Button
@@ -237,10 +240,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle_orange" />
 
         <!-- Quinta Fila: 0 (span 2), ., = -->
@@ -250,13 +253,11 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
             app:layout_columnSpan="2"
             app:layout_columnWeight="2"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
-            android:layout_marginRight="6dp"
-            android:layout_marginLeft="9dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             android:background="@drawable/button_zero_dark" />
 
         <Button
@@ -265,10 +266,10 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle_dark" />
 
         <Button
@@ -277,12 +278,11 @@
             android:textSize="36sp"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:backgroundTint="@null"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             app:layout_columnWeight="1"
             app:layout_rowWeight="1"
-            android:layout_margin="4dp"
             android:background="@drawable/button_circle_orange" />
 
     </androidx.gridlayout.widget.GridLayout>
 </LinearLayout>
-

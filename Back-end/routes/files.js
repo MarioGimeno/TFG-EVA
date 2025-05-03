@@ -85,7 +85,7 @@ router.post(
 
       res.json({
         name: `${fileId}${ext}`,
-        url: signedUrl
+        url: signedUrl 
       });
     } catch (err) {
       console.error('Error subiendo a GCS:', err);

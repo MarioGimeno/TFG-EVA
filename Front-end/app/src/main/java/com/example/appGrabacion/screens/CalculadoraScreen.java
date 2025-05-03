@@ -92,7 +92,7 @@ public class CalculadoraScreen extends AppCompatActivity implements TextureView.
      * Inicia la grabación y, mediante el callback, actualiza el botón para reflejar el estado activo.
      */
     private void startRecording() {
-        recordingManager.startRecording(new BackgroundRecordingManager.LocationCallback() {
+        recordingManager.startRecording(new BackgroundRecordingManager.RecordingLocationListener() {
             @Override
             public void onLocationReceived() {
                 // En lugar de modificar el texto, se cambia el fondo para indicar grabación activa.
@@ -107,7 +107,7 @@ public class CalculadoraScreen extends AppCompatActivity implements TextureView.
      * Detiene la grabación y actualiza el botón para reflejar el estado inactivo.
      */
     private void stopRecording() {
-        recordingManager.stopRecording(new BackgroundRecordingManager.LocationCallback() {
+        recordingManager.stopRecording(new BackgroundRecordingManager.RecordingLocationListener() {
             @Override
             public void onLocationReceived() {
                 btnDot.setBackgroundResource(R.drawable.button_circle_orange);

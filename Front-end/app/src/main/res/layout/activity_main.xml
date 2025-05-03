@@ -20,11 +20,19 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
-    <!-- Botón “Mi Carpeta” con ancho dinámico -->
     <Button
         android:id="@+id/btnGoFolder"
+        android:text="Mi Carpeta"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Mi Carpeta"
         android:layout_marginTop="16dp"/>
+
+    <!-- Nuevo botón Contactos -->
+    <Button
+        android:id="@+id/btnGoContacts"
+        android:text="Contactos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"/>
+
 </LinearLayout>
