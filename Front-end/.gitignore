@@ -15,3 +15,5 @@
 local.properties
 # Forzar incluir el keystore de debug
 !keystores/myapp-debug.jks
+
+!app/keystores/myapp-debug.jks
