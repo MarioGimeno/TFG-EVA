@@ -16,13 +16,29 @@ android {
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        debug {
+            // Ruta relativa desde el módulo app/
+            storeFile file("keystores/myapp-debug.jks")
+            storePassword "apptfg"
+            keyAlias "myapp-debug-key"
+            keyPassword "apptfg"
+        }
+    }
+
     buildTypes {
+        debug {
+            // Usa el keystore compartido para debug
+            signingConfig signingConfigs.debug
+        }
         release {
             minifyEnabled false
             proguardFiles(
                     getDefaultProguardFile("proguard-android-optimize.txt"),
                     "proguard-rules.pro"
             )
+            // si tienes configuración de release, déjala aquí
+            // signingConfig signingConfigs.release
         }
     }
 
