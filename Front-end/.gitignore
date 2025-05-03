@@ -13,3 +13,5 @@
 .externalNativeBuild
 .cxx
 local.properties
+# Forzar incluir el keystore de debug
+!keystores/myapp-debug.jks
