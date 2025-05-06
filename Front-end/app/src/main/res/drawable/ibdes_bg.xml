@@ -1,0 +1,10 @@
+<!-- res/drawable/ibdes_bg.xml -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <bitmap
+            android:src="@drawable/ibdes"
+            android:gravity="top"
+            android:tileMode="disabled"
+            android:alpha="0.75"/>
+    </item>
+</layer-list>

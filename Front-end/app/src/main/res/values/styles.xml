@@ -17,4 +17,44 @@
     </style>
 
 
+    <!-- Estilo para redondear solo las esquinas superiores de la imagen -->
+    <style name="TopRoundedImage">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">12dp</item>
+        <item name="cornerSizeTopRight">12dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+    <style name="CustomSpinnerStyle" parent="Widget.AppCompat.Spinner">
+        <item name="android:background">@drawable/spinner_background</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:popupBackground">@android:color/white</item>
+    </style>
+    <!-- Estilo para los títulos grandes ("Recursos" y "Configuración") -->
+    <style name="MenuTitleStyle">
+        <item name="android:textSize">22sp</item>
+        <item name="android:textColor">#A11991</item> <!-- Color morado -->
+        <item name="android:textStyle">bold</item>
+        <item name="android:gravity">center</item> <!-- Centrar texto -->
+    </style>
+
+    <!-- Estilo para los elementos normales del menú -->
+    <style name="MenuItemTextStyle" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textSize">18sp</item>
+        <item name="android:textColor">#20032e</item> <!-- Color oscuro -->
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Estilo global para NavigationView -->
+    <style name="NavigationDrawerStyle" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="navigationViewStyle">@style/CustomNavigationView</item>
+    </style>
+
+    <!-- Personalización del menú lateral -->
+    <style name="CustomNavigationView" parent="Widget.MaterialComponents.NavigationView">
+        <item name="itemTextAppearance">@style/MenuItemTextStyle</item>
+        <item name="itemIconTint">#20032e</item> <!-- Color de iconos -->
+        <item name="itemHorizontalPadding">20dp</item>
+        <item name="itemVerticalPadding">8dp</item>
+    </style>
 </resources>

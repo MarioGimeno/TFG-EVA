@@ -4,7 +4,8 @@
     android:gravity="center"
     android:padding="24dp"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="#F6F6F6">    <!-- aquí el fondo blanco -->
 
     <TextView
         android:id="@+id/tvWelcome"
