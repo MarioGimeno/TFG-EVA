@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Color blanco de fondo, igual que cardBackgroundColor -->
+    <solid android:color="@android:color/white" />
+
+    <!-- Borde grueso de color #A11991 -->
+    <stroke
+        android:width="3dp"
+        android:color="#A11991" />
+
+    <!-- Radio igual al del CardView -->
+    <corners android:radius="20dp" />
+</shape>
