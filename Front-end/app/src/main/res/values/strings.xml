@@ -3,5 +3,11 @@
     <string name="preview">Vista previa</string>
     <string name="upload_file">Subir archivo</string>
     <string name="file_type">Tipo de archivo</string>
-
+    <string-array name="categorias_array">
+        <item>Recursos</item>
+        <item>Asesorías</item>
+        <item>Cursos</item>
+        <item>Gratuitos</item>
+        <item>Prestaciones</item>
+    </string-array>
 </resources>

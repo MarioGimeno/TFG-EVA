@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Fondo blanco para el menú -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/my_primary" />
+        </shape>
+    </item>
+
+    <!-- Borde superior púrpura -->
+    <item
+        android:top="1dp"
+        android:bottom="1dp"> <!-- Altura pequeña para mostrar solo el borde -->
+        <shape android:shape="rectangle">
+            <solid android:color="@color/white" />
+        </shape>
+    </item>
+
+</layer-list>

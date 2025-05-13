@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Fondo blanco -->
+    <solid android:color="#FFFFFF" />
+
+    <!-- Bordes redondeados -->
+    <corners android:radius="50dp" />
+
+    <!-- Padding interno -->
+    <padding
+        android:left="8dp"
+        android:right="8dp"
+        android:top="4dp"
+        android:bottom="4dp" />
+
+    <!-- Borde de color `my_primary` -->
+    <stroke
+        android:width="2dp"
+        android:color="#20032e" />
+</shape>

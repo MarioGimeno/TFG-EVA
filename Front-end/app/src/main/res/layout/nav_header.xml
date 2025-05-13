@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#eac1e5"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".loginUser.view.LoginActivity"
+    >
+
+    <!-- Imagen de fondo en la parte superior -->
+    <RelativeLayout
+        android:id="@+id/image_section"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:background="@android:color/white"
+        android:paddingTop="25dp">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            android:alpha="0.4"
+            android:background="@android:color/white"
+            android:padding="5dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/eva" />
+
+        <!-- Texto centrado en la imagen -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:fontFamily="@font/belleza"
+            android:text="EVA"
+            android:textColor="#20032e"
+            android:textSize="90sp"
+            android:textStyle="bold" /> <!-- Centra el texto en el RelativeLayout -->
+
+    </RelativeLayout>
+</RelativeLayout>

@@ -1,0 +1,134 @@
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="12dp"
+    app:cardElevation="6dp"
+    app:cardCornerRadius="12dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <!-- Contenedor de texto a la izquierda -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:orientation="vertical"
+            android:gravity="center_vertical">
+
+            <!-- Título -->
+            <TextView
+                android:id="@+id/titulo_card"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Título de la Card"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Nombre de la actividad -->
+            <TextView
+                android:id="@+id/nombre_actividad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="@android:color/black"
+                android:layout_marginBottom="4dp" />
+
+            <!-- Descripción -->
+            <TextView
+                android:id="@+id/descripcion_actividad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@android:color/darker_gray"
+                android:layout_marginBottom="4dp" />
+
+            <!-- Ubicación -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/localizacion"
+                    android:layout_gravity="center_vertical"
+                    android:tint="@android:color/darker_gray"/>
+
+                <TextView
+                    android:id="@+id/lugar_actividad"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="Ubicación de la actividad"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- Teléfono -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/tfn"
+                    android:layout_gravity="center_vertical"
+                    android:tint="@android:color/darker_gray"/>
+
+                <TextView
+                    android:id="@+id/telefono_actividad"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="123-456-789"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+            <!-- Correo -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="4dp">
+
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/correo"
+                    android:layout_gravity="center_vertical"
+                    android:tint="@android:color/darker_gray"/>
+
+                <TextView
+                    android:id="@+id/correo_actividad"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="ejemplo@email.com"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!-- Imagen a la derecha -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/imagen_actividad"
+            android:layout_width="100dp"
+            android:layout_height="124dp"
+            android:layout_marginStart="8dp"
+            android:scaleType="centerCrop"
+            app:shapeAppearanceOverlay="@style/TopRoundedImage"/>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>
