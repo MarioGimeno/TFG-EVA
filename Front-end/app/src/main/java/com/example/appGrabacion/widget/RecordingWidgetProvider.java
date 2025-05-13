@@ -33,7 +33,7 @@ public class RecordingWidgetProvider extends AppWidgetProvider {
                     context.getPackageName(),
                     R.layout.widget_layout
             );
-            views.setOnClickPendingIntent(R.id.widget_button, pi);
+            views.setOnClickPendingIntent(R.id.widget_image, pi);
             appWidgetManager.updateAppWidget(widgetId, views);
         }
     }
