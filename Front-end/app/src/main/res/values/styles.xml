@@ -57,4 +57,13 @@
         <item name="itemHorizontalPadding">20dp</item>
         <item name="itemVerticalPadding">8dp</item>
     </style>
+    <!-- Tema para Splash Screen -->
+    <style name="Theme.App.Splash" parent="Theme.MaterialComponents.NoActionBar">
+        <!-- Pinta el fondo con un drawable que será tu splash -->
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:windowDisablePreview">true</item>
+
+
+    </style>
+
 </resources>
