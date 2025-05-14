@@ -20,6 +20,8 @@ import com.example.appGrabacion.adapters.ContactsAdapter;
 import com.example.appGrabacion.models.ContactEntry;
 import com.example.appGrabacion.utils.ContactsApi;
 import com.example.appGrabacion.utils.RetrofitClient;
+import android.widget.TextView;
+
 
 import java.util.List;
 
@@ -35,11 +37,15 @@ public class ContactsActivity extends AppCompatActivity {
     private Button btnAdd;
     private ContactsApi api;
     private String token;
+    private TextView tvTitle;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts);
+        tvTitle = findViewById(R.id.tvTitle);
+
 
         // UI refs
         rv = findViewById(R.id.rvContacts);
@@ -87,7 +93,7 @@ public class ContactsActivity extends AppCompatActivity {
         String name = etName.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
         if (TextUtils.isEmpty(name) || TextUtils.isEmpty(phone)) {
-            Toast.makeText(this, "Nombre y teléfono son obligatorios", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Nombre y email son obligatorios", Toast.LENGTH_SHORT).show();
             return;
         }
 
