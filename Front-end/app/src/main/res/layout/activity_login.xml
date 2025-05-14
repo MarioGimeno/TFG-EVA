@@ -94,7 +94,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textEmailAddress"
-                            android:backgroundTint="#A11991" />
+                            android:backgroundTint="#A11991"
+                            android:textColor="#000000"  />
 
                         <View
                             android:layout_width="match_parent"
@@ -114,7 +115,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:inputType="textPassword"
-                            android:backgroundTint="#A11991" />
+                            android:backgroundTint="#A11991"
+                            android:textColor="#000000"  />
 
                         <RelativeLayout
                             android:layout_width="match_parent"
