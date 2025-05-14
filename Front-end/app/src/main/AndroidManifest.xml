@@ -89,7 +89,7 @@
         <activity android:name=".screens.ContactsActivity" />
         <activity android:name=".screens.MapsActivity" />
         <activity android:name=".screens.EntidadesActivity" />
-
+        <activity android:name=".screens.RecursosActivity" />
 
         <service
             android:name="com.example.appGrabacion.MicrophoneService"
