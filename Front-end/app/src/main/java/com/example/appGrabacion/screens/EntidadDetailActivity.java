@@ -1,9 +1,12 @@
+// src/main/java/com/example/appGrabacion/screens/EntidadDetailActivity.java
 package com.example.appGrabacion.screens;
 
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,14 +21,18 @@ import com.example.appGrabacion.models.Entidad;
 import com.example.appGrabacion.models.Recurso;
 import com.example.appGrabacion.utils.EntityService;
 import com.example.appGrabacion.services.ResourceService;
+import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class EntidadDetailActivity extends AppCompatActivity {
-    private ImageView imgEntidad, ivWeb, ivPhone, ivAddress, ivEmail;
-    private TextView tvNombre;
+    private ImageView imgEntidadDetail,
+            ivWebInline, ivEmailInline, ivPhoneInline, ivHorarioInline, ivAddressInline;
+    private TextView tvNombreEntidadDetail,
+            tvWebLink, tvEmailText, tvPhoneText, tvHorarioText, tvAddressText;
+    private ProgressBar progressImage, progressSlider;
     private RecyclerView rvRecursos;
     private RecursosDetailAdapter recursoAdapter;
 
@@ -35,20 +42,35 @@ public class EntidadDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_entidad_detail);
 
         // 1) Bind de vistas
-        imgEntidad  = findViewById(R.id.imgEntidadDetail);
-        tvNombre    = findViewById(R.id.tvNombreEntidadDetail);
-        ivWeb       = findViewById(R.id.ivWeb);
-        ivPhone     = findViewById(R.id.ivPhone);
-        ivAddress   = findViewById(R.id.ivAddress);
-        ivEmail     = findViewById(R.id.ivEmail);
-        rvRecursos  = findViewById(R.id.rvRecursosDetail);
+        imgEntidadDetail     = findViewById(R.id.imgEntidadDetail);
+        progressImage        = findViewById(R.id.progressImage);
 
-        // 2) Slider horizontal
+        ivWebInline    = findViewById(R.id.ivWebInline);
+        tvWebLink      = findViewById(R.id.tvWebLink);
+
+        ivEmailInline  = findViewById(R.id.ivEmailInline);
+        tvEmailText    = findViewById(R.id.tvEmailText);
+
+        ivPhoneInline  = findViewById(R.id.ivPhoneInline);
+        tvPhoneText    = findViewById(R.id.tvPhoneText);
+
+        ivHorarioInline= findViewById(R.id.ivHorarioInline);
+        tvHorarioText  = findViewById(R.id.tvHorarioText);
+
+        ivAddressInline= findViewById(R.id.ivAddressInline);
+        tvAddressText  = findViewById(R.id.tvAddressText);
+
+        progressSlider = findViewById(R.id.progressSlider);
+        rvRecursos     = findViewById(R.id.rvRecursosDetail);
+
+        // 2) Configurar slider horizontal, invisible inicialmente
         rvRecursos.setLayoutManager(
                 new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         );
         recursoAdapter = new RecursosDetailAdapter(this);
         rvRecursos.setAdapter(recursoAdapter);
+        rvRecursos.setAlpha(0f);
+        rvRecursos.setVisibility(View.GONE);
 
         // 3) Obtener ID de la entidad
         int idEntidad = getIntent().getIntExtra("id_entidad", -1);
@@ -62,51 +84,51 @@ public class EntidadDetailActivity extends AppCompatActivity {
         new EntityService(this).fetchById(idEntidad, new EntityService.EntityDetailCallback() {
             @Override
             public void onSuccess(Entidad e) {
-                // Imagen
+                // Mostrar loader de la imagen
+                progressImage.setVisibility(View.VISIBLE);
+
+                // Cargar imagen con callback para ocultar loader
                 if (e.getImagen() != null && !e.getImagen().isEmpty()) {
                     Picasso.get()
                             .load(e.getImagen())
-                            .placeholder(R.drawable.eva
-                            )
-                            .into(imgEntidad);
+                            .placeholder(R.drawable.eva)
+                            .into(imgEntidadDetail, new Callback() {
+                                @Override
+                                public void onSuccess() {
+                                    progressImage.animate()
+                                            .alpha(0f)
+                                            .setDuration(300)
+                                            .withEndAction(() -> progressImage.setVisibility(View.GONE))
+                                            .start();
+                                }
+                                @Override
+                                public void onError(Exception ex) {
+                                    progressImage.setVisibility(View.GONE);
+                                }
+                            });
+                } else {
+                    progressImage.setVisibility(View.GONE);
                 }
 
-                // Web
-                ivWeb.setOnClickListener(v -> {
-                    String url = e.getPaginaWeb();
-                    if (url == null || url.isEmpty()) return;
-                    if (!url.startsWith("http")) url = "http://" + url;
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-                });
-                // Teléfono
-                ivPhone.setOnClickListener(v -> {
-                    String tel = e.getTelefono();
-                    if (tel == null || tel.isEmpty()) return;
-                    startActivity(new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + tel)));
-                });
-                // Dirección
-                ivAddress.setOnClickListener(v -> {
-                    String addr = e.getDireccion();
-                    if (addr == null || addr.isEmpty()) return;
-                    Uri geo = Uri.parse("geo:0,0?q=" + Uri.encode(addr));
-                    Intent map = new Intent(Intent.ACTION_VIEW, geo);
-                    map.setPackage("com.google.android.apps.maps");
-                    if (map.resolveActivity(getPackageManager()) != null) {
-                        startActivity(map);
-                    } else {
-                        startActivity(new Intent(Intent.ACTION_VIEW,
-                                Uri.parse("https://www.google.com/maps/search/?api=1&query="
-                                        + Uri.encode(addr))));
-                    }
-                });
-                // Email
-                ivEmail.setOnClickListener(v -> {
-                    String mail = e.getEmail();
-                    if (mail == null || mail.isEmpty()) return;
-                    Intent email = new Intent(Intent.ACTION_SENDTO);
-                    email.setData(Uri.parse("mailto:" + mail));
-                    startActivity(email);
-                });
+
+
+                tvWebLink.setOnClickListener(v -> openUrl(e.getPaginaWeb()));
+
+                tvEmailText.setText(e.getEmail());
+                ivEmailInline.setOnClickListener(v -> sendEmail(e.getEmail()));
+
+                tvPhoneText.setText(e.getTelefono());
+                ivPhoneInline.setOnClickListener(v -> dialPhone(e.getTelefono()));
+
+                tvHorarioText.setText(e.getHorario());
+                // opcional: listener para icono horario
+                ivHorarioInline.setOnClickListener(v ->
+                        Toast.makeText(EntidadDetailActivity.this, "Horario: " + e.getHorario(),
+                                Toast.LENGTH_SHORT).show()
+                );
+
+                tvAddressText.setText(e.getDireccion());
+                ivAddressInline.setOnClickListener(v -> openMap(e.getDireccion()));
             }
 
             @Override
@@ -118,7 +140,8 @@ public class EntidadDetailActivity extends AppCompatActivity {
             }
         });
 
-        // 5) Cargar y filtrar recursos asociados
+        // 5) Cargar y prefetch de recursos asociados con loader
+        progressSlider.setVisibility(View.VISIBLE);
         new ResourceService(this).fetchAll(new ResourceService.ResourceCallback() {
             @Override
             public void onSuccess(List<Recurso> lista) {
@@ -126,14 +149,90 @@ public class EntidadDetailActivity extends AppCompatActivity {
                 for (Recurso r : lista) {
                     if (r.getIdEntidad() == idEntidad) filtrados.add(r);
                 }
-                recursoAdapter.submitList(filtrados);
+                if (filtrados.isEmpty()) {
+                    showSliderWithFade();
+                } else {
+                    prefetchImagesAndShow(filtrados);
+                }
             }
             @Override
             public void onError(Throwable t) {
+                progressSlider.setVisibility(View.GONE);
                 Toast.makeText(EntidadDetailActivity.this,
                         "Error al cargar recursos: " + t.getMessage(),
                         Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+    /** Pre-carga todas las imágenes de recursos y luego muestra el slider animado */
+    private void prefetchImagesAndShow(List<Recurso> list) {
+        final int total = list.size();
+        final int[] loaded = {0};
+        for (Recurso r : list) {
+            Picasso.get()
+                    .load(r.getImagen())
+                    .fetch(new Callback() {
+                        @Override public void onSuccess() {
+                            if (++loaded[0] == total) {
+                                recursoAdapter.submitList(list);
+                                showSliderWithFade();
+                            }
+                        }
+                        @Override public void onError(Exception e) {
+                            if (++loaded[0] == total) {
+                                recursoAdapter.submitList(list);
+                                showSliderWithFade();
+                            }
+                        }
+                    });
+        }
+    }
+
+    /** Cross-fade entre loader y slider */
+    private void showSliderWithFade() {
+        rvRecursos.setVisibility(View.VISIBLE);
+        rvRecursos.setAlpha(0f);
+
+        progressSlider.animate()
+                .alpha(0f)
+                .setDuration(300)
+                .withEndAction(() -> progressSlider.setVisibility(View.GONE))
+                .start();
+
+        rvRecursos.animate()
+                .alpha(1f)
+                .setDuration(300)
+                .start();
+    }
+
+    private void openUrl(String url) {
+        if (url == null || url.isEmpty()) return;
+        if (!url.startsWith("http")) url = "http://" + url;
+        startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+    }
+
+    private void dialPhone(String tel) {
+        if (tel == null || tel.isEmpty()) return;
+        startActivity(new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + tel)));
+    }
+
+    private void openMap(String addr) {
+        if (addr == null || addr.isEmpty()) return;
+        Uri geo = Uri.parse("geo:0,0?q=" + Uri.encode(addr));
+        Intent map = new Intent(Intent.ACTION_VIEW, geo)
+                .setPackage("com.google.android.apps.maps");
+        if (map.resolveActivity(getPackageManager()) != null) {
+            startActivity(map);
+        } else {
+            startActivity(new Intent(Intent.ACTION_VIEW,
+                    Uri.parse("https://www.google.com/maps/search/?api=1&query="
+                            + Uri.encode(addr))));
+        }
+    }
+
+    private void sendEmail(String mail) {
+        if (mail == null || mail.isEmpty()) return;
+        startActivity(new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:" + mail)));
     }
 }

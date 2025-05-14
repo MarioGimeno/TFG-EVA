@@ -55,12 +55,10 @@ public class RecursosDetailAdapter extends ListAdapter<Recurso, RecursosDetailAd
 
     class RecursoViewHolder extends RecyclerView.ViewHolder {
         private final ImageView imgRecurso;
-        private final Button btnGoRecurso;
 
         RecursoViewHolder(@NonNull View itemView) {
             super(itemView);
             imgRecurso    = itemView.findViewById(R.id.imgSliderRecurso);
-            btnGoRecurso  = itemView.findViewById(R.id.btnGoRecurso);
         }
 
         void bind(final Recurso rec) {
@@ -76,7 +74,7 @@ public class RecursosDetailAdapter extends ListAdapter<Recurso, RecursosDetailAd
             }
 
             // Listener para ir al detalle del recurso
-            btnGoRecurso.setOnClickListener(v -> {
+            imgRecurso.setOnClickListener(v -> {
                 Intent intent = new Intent(context, RecursoDetailActivity.class);
                 intent.putExtra("id_recurso", rec.getId());
                 context.startActivity(intent);

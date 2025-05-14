@@ -16,7 +16,7 @@
         app:orientation="horizontal"/>
 
     <!-- Imagen del recurso (100% ancho, 35% alto) -->
-    <ImageView
+        <ImageView
         android:id="@+id/imgRecursoDetail"
         android:layout_width="0dp"
         android:layout_height="0dp"
