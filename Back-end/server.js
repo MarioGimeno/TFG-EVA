@@ -11,7 +11,9 @@ const emailRouter = require('./routes/email');
 const contactsRouter = require('./routes/contatcs');
 const tokensRouter = require('./routes/tokens');
 const notificationsRouter = require('./routes/notifications');
-
+const entidadesRouter = require('./routes/entidades');
+const serviciosRouter   = require('./routes/servicios');
+const categoriasRouter = require('./routes/categorias');
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -41,7 +43,9 @@ pool.connect()
     app.use('/api/contacts', contactsRouter);
 
     app.use('/api/notifications', notificationsRouter);
-
+    app.use('/api/servicios', serviciosRouter);
+    app.use('/api/categorias', categoriasRouter);
+    app.use('/api/entidades', entidadesRouter);
     app.use('/api/tokens', tokensRouter);    // Catch‑all de 404
     app.use((req, res) => res.status(404).json({ error: 'Not Found' }));
 

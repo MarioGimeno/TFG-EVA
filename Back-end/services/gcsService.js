@@ -56,14 +56,14 @@ async function uploadVideoAndLocation(userId, fileId, videoFilePath) {
 
 async function listUserFiles(userId) {
   const [files] = await bucket.getFiles({ prefix: `${userId}/` });
-
+  console.log(files);
   return Promise.all(files.map(async file => {
     const [signedUrl] = await file.getSignedUrl({
       action: 'read',
       expires: Date.now() + 60 * 60 * 1000
     });
     console.log('Urls ' + file.name + ': ' + signedUrl);
-    return { name: file.name, url: signedUrl };
+    return { name: file.name, url: signedUrl, };
   }));
 }
 

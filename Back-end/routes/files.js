@@ -18,7 +18,8 @@ const bucket = storage.bucket(GCS_BUCKET);
 
 /**
  * GET /api/files
- * Lista los archivos del usuario y devuelve Signed URLs de lectura.
+ * Lista los archivos del usuario y devuelve Signed URLs de lectura
+ * junto con 'created' (ISO date) y 'size' (bytes).
  */
 router.get(
   '/',
@@ -28,21 +29,27 @@ router.get(
       const prefix = `${req.userId}/`;
       const [files] = await bucket.getFiles({ prefix });
 
-      // Generamos una Signed URL para cada fichero
       const result = await Promise.all(files.map(async file => {
-        const expires = Date.now() + 60 * 60 * 1000; // 1 hora
+        // 1) generar URL firmada
+        const expires = Date.now() + 60 * 60 * 1000; // 1 hora
         const [signedUrl] = await file.getSignedUrl({
           action: 'read',
           expires
         });
+
+        // 2) obtener metadata real desde GCS
+        const [meta] = await file.getMetadata();
+        // meta.timeCreated es string ISO; meta.size es string de bytes
+
         return {
-          name: path.basename(file.name),
-          url: signedUrl
+          name:    path.basename(file.name),
+          url:     signedUrl,
+          created: meta.timeCreated,             // ej. "2025-05-06T17:12:56.054Z"
+          size:    parseInt(meta.size, 10)       // convertir a number
         };
       }));
 
       res.json({ files: result });
-
     } catch (err) {
       console.error('Error al listar archivos:', err);
       res.status(500).json({ error: 'Error interno listando tus archivos' });
@@ -52,8 +59,8 @@ router.get(
 
 /**
  * POST /api/files
- * Recibe form-data con campo 'file', lo sube a GCS
- * y devuelve una Signed URL de lectura.
+ * Sube un archivo y devuelve sólo name+url; los campos created/size
+ * se poblarán cuando el cliente vuelva a llamar al GET /api/files.
  */
 router.post(
   '/',
@@ -70,14 +77,12 @@ router.post(
       const gcsPath = `${userId}/${fileId}${ext}`;
 
       const file = bucket.file(gcsPath);
-      // Almacenamos en privado (resumable: false es opcional)
       await file.save(req.file.buffer, {
         metadata: { contentType: req.file.mimetype },
         resumable: false
       });
 
-      // Ahora generamos la Signed URL
-      const expires = Date.now() + 60 * 60 * 1000; // 1 hora
+      const expires = Date.now() + 60 * 60 * 1000;
       const [signedUrl] = await file.getSignedUrl({
         action: 'read',
         expires
@@ -85,7 +90,8 @@ router.post(
 
       res.json({
         name: `${fileId}${ext}`,
-        url: signedUrl 
+        url: signedUrl
+        // NOTA: aquí NO devolvemos created/size; eso lo hará tu GET
       });
     } catch (err) {
       console.error('Error subiendo a GCS:', err);

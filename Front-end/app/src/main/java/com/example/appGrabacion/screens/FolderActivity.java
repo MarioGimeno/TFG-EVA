@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -59,9 +61,8 @@ public class FolderActivity extends AppCompatActivity {
         adapter = new FileAdapter(this, files);
         rv.setAdapter(adapter);
 
-        FloatingActionButton fab = findViewById(R.id.fabUpload);
-        fab.setOnClickListener(v -> pickFile());
-
+        ImageView imgUpload = findViewById(R.id.imgUpload);
+        imgUpload.setOnClickListener(v -> pickFile());
         loadFiles();
     }
 
@@ -100,7 +101,7 @@ public class FolderActivity extends AppCompatActivity {
                     .build();
 
             Request req = new Request.Builder()
-                    .url("http://192.168.1.140:3000/api/files")
+                    .url("http://192.168.1.20:3000/api/files")
                     .addHeader("Authorization", "Bearer " + token)
                     .post(body)
                     .build();
@@ -137,12 +138,14 @@ public class FolderActivity extends AppCompatActivity {
 
     private void loadFiles() {
         Request req = new Request.Builder()
-                .url("http://192.168.1.140:3000/api/files")
+                .url("http://192.168.1.20:3000/api/files")
                 .addHeader("Authorization", "Bearer " + token)
                 .build();
 
         client.newCall(req).enqueue(new Callback() {
-            @Override public void onFailure(Call call, java.io.IOException e) { /*…*/ }
+            @Override public void onFailure(Call call, java.io.IOException e) {
+                // podrías notificar al usuario si quieres
+            }
 
             @Override public void onResponse(Call call, Response r) throws java.io.IOException {
                 if (!r.isSuccessful()) return;
@@ -152,16 +155,24 @@ public class FolderActivity extends AppCompatActivity {
                     files.clear();
                     for (int i = 0; i < arr.length(); i++) {
                         JSONObject o = arr.getJSONObject(i);
+
+                        // -- extraemos ya los nuevos campos --
                         String fullPath = o.getString("name");
                         String name = fullPath.contains("/")
                                 ? fullPath.substring(fullPath.lastIndexOf('/') + 1)
                                 : fullPath;
-                        String url  = o.getString("url");
-                        files.add(new FileEntry(name, url));
+                        String url     = o.getString("url");
+                        String created = o.getString("created");
+                        long   size    = o.getLong("size");
+
+                        files.add(new FileEntry(name, url, created, size));
+
                         Log.d("FolderActivity",
-                                "Entry[" + i + "] " + name + " → " + url);
+                                "Entry[" + i + "] " + name +
+                                        " (" + size + " B, " + created + ") → " + url
+                        );
                     }
-                    runOnUiThread(() -> adapter.notifyDataSetChanged());
+                    runOnUiThread(adapter::notifyDataSetChanged);
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }

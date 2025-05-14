@@ -2,12 +2,14 @@
 <resources>
 
     <!-- Tema personalizado sin ActionBar -->
-    <style name="Theme.Calculadora_Front" parent="Theme.MaterialComponents.NoActionBar">
-        <item name="android:windowBackground">#000000</item>
+    <style name="Theme.Calculadora_Front" parent="Theme.MaterialComponents.NoActionBar.Bridge">
+        <!-- ya no tintea tus Button como MaterialComponents -->
         <item name="colorPrimary">#000000</item>
         <item name="colorPrimaryDark">#000000</item>
         <item name="colorAccent">#FFFFFF</item>
     </style>
+
+
 
     <!-- Tema “normal” de tu app, debe heredar de AppCompat -->
     <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
@@ -57,4 +59,13 @@
         <item name="itemHorizontalPadding">20dp</item>
         <item name="itemVerticalPadding">8dp</item>
     </style>
+    <!-- Tema para Splash Screen -->
+    <style name="Theme.App.Splash" parent="Theme.MaterialComponents.NoActionBar">
+        <!-- Pinta el fondo con un drawable que será tu splash -->
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:windowDisablePreview">true</item>
+
+
+    </style>
+
 </resources>

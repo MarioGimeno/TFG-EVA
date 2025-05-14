@@ -10,4 +10,8 @@
         <item>Gratuitos</item>
         <item>Prestaciones</item>
     </string-array>
+    <!-- Descripción accesible para el ImageView de la entidad -->
+    <string name="imagen_entidad">Imagen representativa de la entidad</string>
+    <string name="imagen_recurso">Imagen representativa del recurso</string>
+
 </resources>
