@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat;
 
 import com.example.appGrabacion.models.ContactEntry;
 import com.example.appGrabacion.screens.ContactsActivity;
+import com.example.appGrabacion.screens.EntidadesActivity;
 import com.example.appGrabacion.screens.FolderActivity;
 import com.example.appGrabacion.screens.LoginActivity;
 import com.example.appGrabacion.utils.ContactManager;
@@ -61,6 +62,10 @@ public class MainActivity extends AppCompatActivity {
         Button btnGoFolder = findViewById(R.id.btnGoFolder);
         btnGoFolder.setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, FolderActivity.class));
+        });
+        Button btnGoEntidades = findViewById(R.id.btnGoEntidades);
+        btnGoEntidades.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, EntidadesActivity.class));
         });
 
         findViewById(R.id.btnGoContacts).setOnClickListener(v ->

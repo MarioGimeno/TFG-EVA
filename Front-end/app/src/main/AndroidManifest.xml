@@ -88,6 +88,8 @@
         <activity android:name=".screens.PdfViewerActivity" />
         <activity android:name=".screens.ContactsActivity" />
         <activity android:name=".screens.MapsActivity" />
+        <activity android:name=".screens.EntidadesActivity" />
+
 
         <service
             android:name="com.example.appGrabacion.MicrophoneService"
