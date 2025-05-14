@@ -2,12 +2,14 @@
 <resources>
 
     <!-- Tema personalizado sin ActionBar -->
-    <style name="Theme.Calculadora_Front" parent="Theme.MaterialComponents.NoActionBar">
-        <item name="android:windowBackground">#000000</item>
+    <style name="Theme.Calculadora_Front" parent="Theme.MaterialComponents.NoActionBar.Bridge">
+        <!-- ya no tintea tus Button como MaterialComponents -->
         <item name="colorPrimary">#000000</item>
         <item name="colorPrimaryDark">#000000</item>
         <item name="colorAccent">#FFFFFF</item>
     </style>
+
+
 
     <!-- Tema “normal” de tu app, debe heredar de AppCompat -->
     <style name="AppTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
