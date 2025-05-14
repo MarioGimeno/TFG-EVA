@@ -90,6 +90,8 @@
         <activity android:name=".screens.MapsActivity" />
         <activity android:name=".screens.EntidadesActivity" />
         <activity android:name=".screens.RecursosActivity" />
+        <activity android:name=".screens.EntidadDetailActivity"/>
+        <activity android:name=".screens.RecursoDetailActivity"/>
 
         <service
             android:name="com.example.appGrabacion.MicrophoneService"

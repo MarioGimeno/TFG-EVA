@@ -1,3 +1,4 @@
+// com/example/appGrabacion/screens/EntidadesAdapter.java
 package com.example.appGrabacion.adapters;
 
 import android.view.LayoutInflater;
@@ -15,64 +16,65 @@ import com.example.appGrabacion.R;
 import com.example.appGrabacion.models.Entidad;
 import com.squareup.picasso.Picasso;
 
-public class EntidadesAdapter extends ListAdapter<Entidad, EntidadesAdapter.EntidadViewHolder> {
+public class EntidadesAdapter
+        extends ListAdapter<Entidad, EntidadesAdapter.ViewHolder> {
 
-    public EntidadesAdapter() {
+    public interface OnItemClickListener {
+        void onItemClick(Entidad entidad);
+    }
+
+    private final OnItemClickListener listener;
+
+    public EntidadesAdapter(OnItemClickListener listener) {
         super(DIFF_CALLBACK);
+        this.listener = listener;
     }
 
     private static final DiffUtil.ItemCallback<Entidad> DIFF_CALLBACK =
             new DiffUtil.ItemCallback<Entidad>() {
-                @Override
-                public boolean areItemsTheSame(@NonNull Entidad oldItem, @NonNull Entidad newItem) {
-                    return oldItem.getIdEntidad() == newItem.getIdEntidad();
+                @Override public boolean areItemsTheSame(@NonNull Entidad o1, @NonNull Entidad o2) {
+                    return o1.getIdEntidad()==o2.getIdEntidad();
                 }
-
-                @Override
-                public boolean areContentsTheSame(@NonNull Entidad oldItem, @NonNull Entidad newItem) {
-                    return oldItem.equals(newItem);
+                @Override public boolean areContentsTheSame(@NonNull Entidad o1, @NonNull Entidad o2) {
+                    return o1.equals(o2);
                 }
             };
 
-    @NonNull
-    @Override
-    public EntidadViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_entidad, parent, false);
-        return new EntidadViewHolder(view);
+    @NonNull @Override
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup p, int i) {
+        View v = LayoutInflater.from(p.getContext())
+                .inflate(R.layout.item_entidad, p, false);
+        return new ViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull EntidadViewHolder holder, int position) {
-        holder.bind(getItem(position));
+    public void onBindViewHolder(@NonNull ViewHolder vh, int pos) {
+        Entidad e = getItem(pos);
+        vh.bind(e, listener);
     }
 
-    static class EntidadViewHolder extends RecyclerView.ViewHolder {
-        private final ImageView imgEntidad;
-        private final TextView tvEmail, tvDireccion, tvTelefono;
-
-        EntidadViewHolder(@NonNull View itemView) {
-            super(itemView);
-            imgEntidad    = itemView.findViewById(R.id.imgEntidad);
-            tvEmail       = itemView.findViewById(R.id.tvEmailEntidad);
-            tvDireccion   = itemView.findViewById(R.id.tvDireccionEntidad);
-            tvTelefono    = itemView.findViewById(R.id.tvTelefonoEntidad);
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView img; TextView tvEmail, tvDir, tvTel;
+        ViewHolder(@NonNull View v) {
+            super(v);
+            img      = v.findViewById(R.id.imgEntidad);
+            tvEmail  = v.findViewById(R.id.tvEmailEntidad);
+            tvDir    = v.findViewById(R.id.tvDireccionEntidad);
+            tvTel    = v.findViewById(R.id.tvTelefonoEntidad);
         }
-
-        void bind(Entidad ent) {
-            tvEmail.setText(ent.getEmail());
-            tvDireccion.setText(ent.getDireccion());
-            tvTelefono.setText(ent.getTelefono());
-            // Carga imagen con Picasso (o Glide)
-            if (ent.getImagen() != null && !ent.getImagen().isEmpty()) {
+        void bind(final Entidad e, final OnItemClickListener l) {
+            tvEmail.setText(e.getEmail());
+            tvDir  .setText(e.getDireccion());
+            tvTel  .setText(e.getTelefono());
+            if (e.getImagen()!=null && !e.getImagen().isEmpty()) {
                 Picasso.get()
-                        .load(ent.getImagen())
+                        .load(e.getImagen())
                         .placeholder(R.drawable.eva)
                         .error(R.drawable.eva)
-                        .into(imgEntidad);
-            } else {
-                imgEntidad.setImageResource(R.drawable.eva);
-            }
+                        .into(img);
+            } else img.setImageResource(R.drawable.eva);
+
+            itemView.setOnClickListener(v -> l.onItemClick(e));
         }
     }
 }

@@ -20,13 +20,18 @@ public class ResourceService {
                 .create(ResourcesApi.class);
     }
 
-    /** Callback propio para resultados de Recurso */
+    /**
+     * Callback propio para resultados de Recurso
+     */
     public interface ResourceCallback {
         void onSuccess(List<Recurso> recursos);
+
         void onError(Throwable t);
     }
 
-    /** Obtiene la lista completa de recursos */
+    /**
+     * Obtiene la lista completa de recursos
+     */
     public void fetchAll(final ResourceCallback callback) {
         api.getResources().enqueue(new Callback<List<Recurso>>() {
             @Override
@@ -41,6 +46,31 @@ public class ResourceService {
 
             @Override
             public void onFailure(Call<List<Recurso>> call, Throwable t) {
+                callback.onError(t);
+            }
+        });
+    }
+
+    // dentro de ResourceService.java
+    public interface ResourceDetailCallback {
+        void onSuccess(Recurso recurso);
+
+        void onError(Throwable t);
+    }
+
+    public void fetchById(int id, final ResourceDetailCallback callback) {
+        api.getResourceById(id).enqueue(new Callback<Recurso>() {
+            @Override
+            public void onResponse(Call<Recurso> call, Response<Recurso> resp) {
+                if (resp.isSuccessful() && resp.body() != null) {
+                    callback.onSuccess(resp.body());
+                } else {
+                    callback.onError(new RuntimeException("Código: " + resp.code()));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Recurso> call, Throwable t) {
                 callback.onError(t);
             }
         });
