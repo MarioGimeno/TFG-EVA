@@ -26,13 +26,13 @@
     <application
         android:name=".App"
         android:theme="@style/Theme.Calculadora_Front"
+        android:icon="@mipmap/ic_launcher"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:largeHeap="true"
         android:networkSecurityConfig="@xml/network_security_config"
         android:allowBackup="true"
         android:label="EVA"
-        android:supportsRtl="true"
-        android:icon="@drawable/eva"
-        android:roundIcon="@drawable/eva">
+        android:supportsRtl="true">
         <!-- Aquí pones tu Google Maps API Key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
