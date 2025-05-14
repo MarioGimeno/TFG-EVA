@@ -4,6 +4,7 @@ package com.example.appGrabacion.screens;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -42,8 +43,8 @@ public class EntidadDetailActivity extends AppCompatActivity {
         setContentView(R.layout.activity_entidad_detail);
 
         // 1) Bind de vistas
-        imgEntidadDetail     = findViewById(R.id.imgEntidadDetail);
-        progressImage        = findViewById(R.id.progressImage);
+        imgEntidadDetail      = findViewById(R.id.imgEntidadDetail);
+        progressImage         = findViewById(R.id.progressImage);
 
         ivWebInline    = findViewById(R.id.ivWebInline);
         tvWebLink      = findViewById(R.id.tvWebLink);
@@ -88,7 +89,7 @@ public class EntidadDetailActivity extends AppCompatActivity {
                 progressImage.setVisibility(View.VISIBLE);
 
                 // Cargar imagen con callback para ocultar loader
-                if (e.getImagen() != null && !e.getImagen().isEmpty()) {
+                if (!TextUtils.isEmpty(e.getImagen())) {
                     Picasso.get()
                             .load(e.getImagen())
                             .placeholder(R.drawable.eva)
@@ -101,8 +102,7 @@ public class EntidadDetailActivity extends AppCompatActivity {
                                             .withEndAction(() -> progressImage.setVisibility(View.GONE))
                                             .start();
                                 }
-                                @Override
-                                public void onError(Exception ex) {
+                                @Override public void onError(Exception ex) {
                                     progressImage.setVisibility(View.GONE);
                                 }
                             });
@@ -110,25 +110,60 @@ public class EntidadDetailActivity extends AppCompatActivity {
                     progressImage.setVisibility(View.GONE);
                 }
 
+                // Web
+                if (TextUtils.isEmpty(e.getPaginaWeb())) {
+                    tvWebLink.setText("No disponible");
+                    ivWebInline.setEnabled(false);
+                } else {
+                    tvWebLink.setText("Accede aquí");
+                    ivWebInline.setEnabled(true);
+                    tvWebLink.setOnClickListener(v -> openUrl(e.getPaginaWeb()));
+                    ivWebInline.setOnClickListener(v -> openUrl(e.getPaginaWeb()));
+                }
 
+                // Email
+                if (TextUtils.isEmpty(e.getEmail())) {
+                    tvEmailText.setText("No disponible");
+                    ivEmailInline.setEnabled(false);
+                } else {
+                    tvEmailText.setText(e.getEmail());
+                    ivEmailInline.setEnabled(true);
+                    ivEmailInline.setOnClickListener(v -> sendEmail(e.getEmail()));
+                }
 
-                tvWebLink.setOnClickListener(v -> openUrl(e.getPaginaWeb()));
+                // Teléfono
+                if (TextUtils.isEmpty(e.getTelefono())) {
+                    tvPhoneText.setText("No disponible");
+                    ivPhoneInline.setEnabled(false);
+                } else {
+                    tvPhoneText.setText(e.getTelefono());
+                    ivPhoneInline.setEnabled(true);
+                    ivPhoneInline.setOnClickListener(v -> dialPhone(e.getTelefono()));
+                }
 
-                tvEmailText.setText(e.getEmail());
-                ivEmailInline.setOnClickListener(v -> sendEmail(e.getEmail()));
+                // Horario
+                if (TextUtils.isEmpty(e.getHorario())) {
+                    tvHorarioText.setText("No disponible");
+                    ivHorarioInline.setEnabled(false);
+                } else {
+                    tvHorarioText.setText(e.getHorario());
+                    ivHorarioInline.setEnabled(true);
+                    ivHorarioInline.setOnClickListener(v ->
+                            Toast.makeText(EntidadDetailActivity.this,
+                                    "Horario: " + e.getHorario(),
+                                    Toast.LENGTH_SHORT).show()
+                    );
+                }
 
-                tvPhoneText.setText(e.getTelefono());
-                ivPhoneInline.setOnClickListener(v -> dialPhone(e.getTelefono()));
-
-                tvHorarioText.setText(e.getHorario());
-                // opcional: listener para icono horario
-                ivHorarioInline.setOnClickListener(v ->
-                        Toast.makeText(EntidadDetailActivity.this, "Horario: " + e.getHorario(),
-                                Toast.LENGTH_SHORT).show()
-                );
-
-                tvAddressText.setText(e.getDireccion());
-                ivAddressInline.setOnClickListener(v -> openMap(e.getDireccion()));
+                // Dirección
+                if (TextUtils.isEmpty(e.getDireccion())) {
+                    tvAddressText.setText("No disponible");
+                    ivAddressInline.setEnabled(false);
+                } else {
+                    tvAddressText.setText(e.getDireccion());
+                    ivAddressInline.setEnabled(true);
+                    ivAddressInline.setOnClickListener(v -> openMap(e.getDireccion()));
+                }
             }
 
             @Override
@@ -155,8 +190,7 @@ public class EntidadDetailActivity extends AppCompatActivity {
                     prefetchImagesAndShow(filtrados);
                 }
             }
-            @Override
-            public void onError(Throwable t) {
+            @Override public void onError(Throwable t) {
                 progressSlider.setVisibility(View.GONE);
                 Toast.makeText(EntidadDetailActivity.this,
                         "Error al cargar recursos: " + t.getMessage(),
@@ -207,18 +241,18 @@ public class EntidadDetailActivity extends AppCompatActivity {
     }
 
     private void openUrl(String url) {
-        if (url == null || url.isEmpty()) return;
+        if (TextUtils.isEmpty(url)) return;
         if (!url.startsWith("http")) url = "http://" + url;
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
     }
 
     private void dialPhone(String tel) {
-        if (tel == null || tel.isEmpty()) return;
+        if (TextUtils.isEmpty(tel)) return;
         startActivity(new Intent(Intent.ACTION_DIAL, Uri.parse("tel:" + tel)));
     }
 
     private void openMap(String addr) {
-        if (addr == null || addr.isEmpty()) return;
+        if (TextUtils.isEmpty(addr)) return;
         Uri geo = Uri.parse("geo:0,0?q=" + Uri.encode(addr));
         Intent map = new Intent(Intent.ACTION_VIEW, geo)
                 .setPackage("com.google.android.apps.maps");
@@ -232,7 +266,7 @@ public class EntidadDetailActivity extends AppCompatActivity {
     }
 
     private void sendEmail(String mail) {
-        if (mail == null || mail.isEmpty()) return;
+        if (TextUtils.isEmpty(mail)) return;
         startActivity(new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:" + mail)));
     }
 }

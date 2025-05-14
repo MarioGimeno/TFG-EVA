@@ -133,12 +133,12 @@
                         android:justificationMode="inter_word"/>
                 </LinearLayout>
 
-                <!-- Horario: icon nuevo + texto (icon alineado arriba) -->
+                <!-- Horario: icon nuevo + texto (texto centrado verticalmente) -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:gravity="top"
+                    android:gravity="center_vertical"
                     android:paddingBottom="8dp">
 
                     <ImageView
