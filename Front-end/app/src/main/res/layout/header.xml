@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <LinearLayout
+        android:id="@+id/SeccionLogo"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:orientation="horizontal"
+        android:background="@color/white"
+        android:elevation="4dp"
+        android:padding="8dp"
+        android:gravity="center_vertical">
+
+        <!-- Logo EVA -->
+        <ImageView
+            android:id="@+id/logo"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/eva"
+            android:layout_marginStart="10dp"/>
+
+        <!-- Texto EVA ocupa el espacio disponible -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/belleza"
+            android:text="EVA"
+            android:layout_marginLeft="10dp"
+            android:textColor="#20032e"
+            android:textSize="30sp"
+            android:textStyle="bold"/>
+
+        <!-- Contenedor para los iconos alineados a la derecha -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <!-- Icono 1 -->
+            <ImageView
+                android:id="@+id/icono_1"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/grabar"
+                android:tint="#20032e"/>
+
+            <!-- Icono 2 -->
+            <ImageView
+                android:id="@+id/menu_icon"
+                android:layout_width="35dp"
+                android:layout_height="35dp"
+                android:layout_marginEnd="12dp"
+                android:src="@drawable/menu"
+                android:tint="#20032e"/>
+        </LinearLayout>
+    </LinearLayout>
+
+</merge>
