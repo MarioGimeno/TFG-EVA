@@ -1,5 +1,5 @@
 // com/example/appGrabacion/utils/FolderService.java
-package com.example.appGrabacion.utils;
+package com.example.appGrabacion.services;
 
 import android.content.Context;
 import android.net.Uri;
@@ -10,6 +10,8 @@ import java.util.List;
 
 import com.example.appGrabacion.models.FileEntry;
 import com.example.appGrabacion.models.FilesResponse;
+import com.example.appGrabacion.utils.FolderApi;
+import com.example.appGrabacion.utils.RetrofitClient;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;

@@ -20,7 +20,7 @@ import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.RecursosDetailAdapter;
 import com.example.appGrabacion.models.Entidad;
 import com.example.appGrabacion.models.Recurso;
-import com.example.appGrabacion.utils.EntityService;
+import com.example.appGrabacion.services.EntityService;
 import com.example.appGrabacion.services.ResourceService;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
