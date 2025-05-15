@@ -1,12 +1,16 @@
+// com/example/appGrabacion/models/FilesResponse.java
 package com.example.appGrabacion.models;
-
-// models/FilesResponse.java
-
 
 import java.util.List;
 
 public class FilesResponse {
-    private List<String> files;
-    public List<String> getFiles() { return files; }
-    public void setFiles(List<String> files) { this.files = files; }
+    private List<FileEntry> files;
+
+    public List<FileEntry> getFiles() {
+        return files;
+    }
+
+    public void setFiles(List<FileEntry> files) {
+        this.files = files;
+    }
 }
