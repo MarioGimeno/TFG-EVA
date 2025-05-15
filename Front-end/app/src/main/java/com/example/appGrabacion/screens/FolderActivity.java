@@ -151,7 +151,7 @@ public class FolderActivity extends AppCompatActivity {
                     .build();
 
             Request req = new Request.Builder()
-                    .url("http://192.168.1.20:3000/api/files")
+                    .url("http://192.168.1.140:3000/api/files")
                     .addHeader("Authorization", "Bearer " + token)
                     .post(body)
                     .build();
@@ -189,7 +189,7 @@ public class FolderActivity extends AppCompatActivity {
 
     private void loadFiles() {
         Request req = new Request.Builder()
-                .url("http://192.168.1.20:3000/api/files")
+                .url("http://192.168.1.140:3000/api/files")
                 .addHeader("Authorization", "Bearer " + token)
                 .build();
 
