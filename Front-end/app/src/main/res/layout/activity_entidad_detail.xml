@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     android:background="@android:color/white">
 
-    <!-- Imagen + loader -->
     <FrameLayout
         android:id="@+id/flImagenLoader"
         android:layout_width="0dp"
@@ -33,7 +32,6 @@
             android:indeterminateTint="#A11991"/>
     </FrameLayout>
 
-    <!-- CardWrapper solapando la imagen -->
     <LinearLayout
         android:id="@+id/cardWrapper"
         android:layout_width="0dp"
@@ -58,20 +56,21 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-                <!-- Web: icon + "Accede aquí" (sin negrita) -->
+
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
+                    android:layout_marginTop="8dp"
                     android:paddingBottom="8dp">
 
                     <ImageView
                         android:id="@+id/ivWebInline"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:src="@drawable/web"
-                        android:contentDescription="@string/cd_web"/>
+                        android:src="@drawable/web"/>
 
                     <TextView
                         android:id="@+id/tvWebLink"
@@ -83,7 +82,6 @@
                         android:paddingStart="8dp"/>
                 </LinearLayout>
 
-                <!-- Email: icon + dirección de email -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -95,8 +93,7 @@
                         android:id="@+id/ivEmailInline"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:src="@drawable/email"
-                        android:contentDescription="@string/cd_email"/>
+                        android:src="@drawable/email"/>
 
                     <TextView
                         android:id="@+id/tvEmailText"
@@ -108,7 +105,6 @@
                         android:justificationMode="inter_word"/>
                 </LinearLayout>
 
-                <!-- Teléfono: icon + número -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -120,8 +116,7 @@
                         android:id="@+id/ivPhoneInline"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:src="@drawable/telefonodetail"
-                        android:contentDescription="@string/cd_telefono"/>
+                        android:src="@drawable/telefonodetail"/>
 
                     <TextView
                         android:id="@+id/tvPhoneText"
@@ -133,7 +128,6 @@
                         android:justificationMode="inter_word"/>
                 </LinearLayout>
 
-                <!-- Horario: icon nuevo + texto (texto centrado verticalmente) -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -145,8 +139,7 @@
                         android:id="@+id/ivHorarioInline"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:src="@drawable/horario"
-                      />
+                        android:src="@drawable/horario"/>
 
                     <TextView
                         android:id="@+id/tvHorarioText"
@@ -158,7 +151,6 @@
                         android:justificationMode="inter_word"/>
                 </LinearLayout>
 
-                <!-- Dirección: icon + dirección -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -170,8 +162,7 @@
                         android:id="@+id/ivAddressInline"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
-                        android:src="@drawable/direccion"
-                        android:contentDescription="@string/cd_direccion"/>
+                        android:src="@drawable/direccion"/>
 
                     <TextView
                         android:id="@+id/tvAddressText"
@@ -183,18 +174,18 @@
                         android:justificationMode="inter_word"/>
                 </LinearLayout>
 
-                <!-- Sección Recursos -->
                 <TextView
                     android:id="@+id/tvSectionRecursos"
-                    android:layout_width="wrap_content"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="12dp"
                     android:text="Recursos asociados"
                     android:textStyle="bold"
                     android:textSize="18sp"
-                    android:textColor="@android:color/black"
+                    android:textColor="#A11991"
                     android:paddingBottom="8dp"/>
 
-                <!-- Loader y slider -->
                 <FrameLayout
                     android:id="@+id/flLoaderSlider"
                     android:layout_width="match_parent"
