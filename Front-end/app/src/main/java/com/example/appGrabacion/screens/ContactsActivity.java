@@ -2,33 +2,37 @@
 // 2) ContactsActivity.java
 package com.example.appGrabacion.screens;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.appGrabacion.MainActivity;
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.ContactsAdapter;
 import com.example.appGrabacion.models.ContactEntry;
 import com.example.appGrabacion.utils.ContactsApi;
 import com.example.appGrabacion.utils.RetrofitClient;
-import android.widget.TextView;
-
 
 import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
 public class ContactsActivity extends AppCompatActivity {
     private RecyclerView rv;
     private ContactsAdapter adapter;
@@ -44,6 +48,13 @@ public class ContactsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts);
 
+        // 1) Botón de vuelta a Main (igual que en FolderActivity)
+        findViewById(R.id.btnBack).setOnClickListener(v -> {
+            startActivity(new Intent(ContactsActivity.this, MainActivity.class));
+            finish();
+        });
+
+
 
         // UI refs
         rv = findViewById(R.id.rvContacts);
@@ -56,6 +67,33 @@ public class ContactsActivity extends AppCompatActivity {
         rv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new ContactsAdapter();
         rv.setAdapter(adapter);
+
+        // 2) Scroll dinámico igual que en FolderActivity
+        ImageView header = findViewById(R.id.imgHeader);
+        FrameLayout wrapper = findViewById(R.id.card_wrapper);
+        ConstraintLayout.LayoutParams params =
+                (ConstraintLayout.LayoutParams) wrapper.getLayoutParams();
+        final int initialMarginTop = params.topMargin;
+        header.post(() -> {
+            int overlapPx = Math.round(
+                    TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_DIP,
+                            40,
+                            getResources().getDisplayMetrics()
+                    )
+            );
+            int maxScroll = header.getHeight() - overlapPx;
+            rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                int accumulatedDy = 0;
+                @Override
+                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    accumulatedDy = Math.max(0, Math.min(accumulatedDy + dy, maxScroll));
+                    params.topMargin = initialMarginTop - accumulatedDy;
+                    wrapper.setLayoutParams(params);
+                }
+            });
+        });
 
         // Retrofit API
         api = RetrofitClient.getRetrofitInstance(this).create(ContactsApi.class);

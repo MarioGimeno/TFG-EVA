@@ -19,8 +19,22 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.30" />
 
-    <!-- 2) FrameLayout + CardView para el contenido blanco con borde morado -->
+    <!-- Flecha de “atrás” arriba a la izquierda -->
+    <ImageView
+        android:id="@+id/btnBack"
+        android:layout_width="58dp"
+        android:layout_height="58dp"
+        android:src="@drawable/ic_atras"
+        android:padding="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- 2) Tu tarjeta solapada 40dp, base anclada abajo -->
     <FrameLayout
+        android:id="@+id/card_wrapper"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="-40dp"
@@ -31,6 +45,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!-- 3) CardView blanca con esquinas redondeadas arriba -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -150,7 +165,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:nestedScrollingEnabled="false"/>
-
                 </LinearLayout>
             </ScrollView>
         </androidx.cardview.widget.CardView>
