@@ -2,12 +2,11 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root_constraint"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/black"
-    tools:context=".screens.LoginActivity">
+    android:background="@android:color/black">
+
 
     <!-- 1) Imagen de fondo al 40% de altura -->
     <ImageView
@@ -20,8 +19,20 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.40"/>
+    <ImageView
+        android:id="@+id/btnBack"
+        android:layout_width="58dp"
+        android:layout_height="58dp"
+        android:src="@drawable/ic_atras"
+        android:contentDescription="back"
+        android:padding="12dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
 
-    <!-- 2) FrameLayout “card wrapper” con borde y padding -->
+    <!-- 2) Tu tarjeta solapada 40dp, base anclada abajo -->
     <FrameLayout
         android:id="@+id/card_wrapper"
         android:layout_width="0dp"
@@ -34,24 +45,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- 3) CardView con todas las esquinas redondeadas -->
+        <!-- 3) CardView blanca con esquinas redondeadas arriba -->
         <androidx.cardview.widget.CardView
             android:id="@+id/main_card"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:cardBackgroundColor="@android:color/white"
             app:cardCornerRadius="20dp"
-            app:cardElevation="12dp"
             app:cardUseCompatPadding="false"
             app:cardPreventCornerOverlap="false"
-            android:clipToOutline="false">
+            app:cardElevation="12dp">
 
-            <!-- 4) Contenedor para RecyclerView + botón -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
-                <!-- RecyclerView ocupa todo el espacio (0dp + constraints) -->
+                <!-- Lista de archivos -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvFiles"
                     android:layout_width="0dp"
@@ -59,17 +68,19 @@
                     android:padding="8dp"
                     android:paddingBottom="90dp"
                     android:clipToPadding="false"
-                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                    android:paddingTop="10dp"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
 
-                <!-- Botón “Subir” centrado abajo -->
+                <!-- Botón de “Subir” siempre visible abajo -->
                 <ImageView
                     android:id="@+id/imgUpload"
                     android:layout_width="65dp"
                     android:layout_height="65dp"
+                    android:layout_marginBottom="16dp"
                     android:src="@drawable/ic_subida"
                     android:contentDescription="@string/upload_file"
                     android:clickable="true"
@@ -77,10 +88,8 @@
                     android:elevation="16dp"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginBottom="16dp"/>
+                    app:layout_constraintEnd_toEndOf="parent"/>
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.cardview.widget.CardView>
-
     </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

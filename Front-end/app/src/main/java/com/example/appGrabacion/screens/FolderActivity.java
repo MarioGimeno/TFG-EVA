@@ -6,19 +6,21 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
+import android.util.TypedValue;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.appGrabacion.MainActivity;
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.FileAdapter;
 import com.example.appGrabacion.models.FileEntry;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -48,6 +50,13 @@ public class FolderActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_folder);
 
+        ImageView btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> {
+            startActivity(new Intent(FolderActivity.this, MainActivity.class));
+            finish();
+        });
+
+        // 0) Comprueba sesión
         SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
         token = prefs.getString("auth_token", "");
         if (token.isEmpty()) {
@@ -56,13 +65,55 @@ public class FolderActivity extends AppCompatActivity {
             return;
         }
 
+        // 1) Inicializa RecyclerView
         RecyclerView rv = findViewById(R.id.rvFiles);
         rv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new FileAdapter(this, files);
         rv.setAdapter(adapter);
 
+        // 2) Listener del botón
         ImageView imgUpload = findViewById(R.id.imgUpload);
         imgUpload.setOnClickListener(v -> pickFile());
+
+        // 3) Ajuste dinámico del topMargin para que la tarjeta suba por arriba
+        ImageView videoBg   = findViewById(R.id.videoBackground);
+        FrameLayout wrapper = findViewById(R.id.card_wrapper);
+
+        // Toma los LayoutParams de ConstraintLayout (tu padre real)
+        ConstraintLayout.LayoutParams params =
+                (ConstraintLayout.LayoutParams) wrapper.getLayoutParams();
+        // Guarda el marginTop inicial (–40dp)
+        final int initialMarginTop = params.topMargin;
+
+        videoBg.post(() -> {
+            // 40dp convertidos a px
+            final int overlapPx = Math.round(
+                    TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_DIP,
+                            40,
+                            getResources().getDisplayMetrics()
+                    )
+            );
+            // Altura real de la imagen
+            final int imgH = videoBg.getHeight();
+            // Scroll máximo: cubrir toda la imagen menos esos 40dp
+            final int maxScroll = imgH - overlapPx;
+
+            rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                int accumulatedDy = 0;
+                @Override
+                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    // Clamp de 0 a maxScroll
+                    accumulatedDy = Math.max(0, Math.min(accumulatedDy + dy, maxScroll));
+                    // Restamos accumulatedDy al marginTop inicial
+                    params.topMargin = initialMarginTop - accumulatedDy;
+                    wrapper.setLayoutParams(params);
+                }
+            });
+        });
+
+        // 4) Carga inicial de archivos
         loadFiles();
     }
 
@@ -77,11 +128,10 @@ public class FolderActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int request, int result, @Nullable Intent data) {
+    protected void onActivityResult(int request, int result, Intent data) {
         super.onActivityResult(request, result, data);
         if (request == REQUEST_PICK_FILE && result == Activity.RESULT_OK && data != null) {
-            Uri uri = data.getData();
-            uploadFile(uri);
+            uploadFile(data.getData());
         }
     }
 
@@ -131,7 +181,8 @@ public class FolderActivity extends AppCompatActivity {
                 }
             });
         } catch (Exception ex) {
-            Toast.makeText(this, "Error lectura: " + ex.getMessage(),
+            Toast.makeText(this,
+                    "Error lectura: " + ex.getMessage(),
                     Toast.LENGTH_SHORT).show();
         }
     }
@@ -143,10 +194,7 @@ public class FolderActivity extends AppCompatActivity {
                 .build();
 
         client.newCall(req).enqueue(new Callback() {
-            @Override public void onFailure(Call call, java.io.IOException e) {
-                // podrías notificar al usuario si quieres
-            }
-
+            @Override public void onFailure(Call call, java.io.IOException e) { }
             @Override public void onResponse(Call call, Response r) throws java.io.IOException {
                 if (!r.isSuccessful()) return;
                 try {
@@ -155,8 +203,6 @@ public class FolderActivity extends AppCompatActivity {
                     files.clear();
                     for (int i = 0; i < arr.length(); i++) {
                         JSONObject o = arr.getJSONObject(i);
-
-                        // -- extraemos ya los nuevos campos --
                         String fullPath = o.getString("name");
                         String name = fullPath.contains("/")
                                 ? fullPath.substring(fullPath.lastIndexOf('/') + 1)
@@ -164,9 +210,7 @@ public class FolderActivity extends AppCompatActivity {
                         String url     = o.getString("url");
                         String created = o.getString("created");
                         long   size    = o.getLong("size");
-
                         files.add(new FileEntry(name, url, created, size));
-
                         Log.d("FolderActivity",
                                 "Entry[" + i + "] " + name +
                                         " (" + size + " B, " + created + ") → " + url
