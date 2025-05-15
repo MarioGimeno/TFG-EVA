@@ -4,10 +4,11 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-02-08T11:04:50.916135200Z">
+        <DropdownSelection timestamp="2025-05-14T19:57:09.395091900Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Martu\.android\avd\Pixel_4_API_35_3.avd" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=4lfyayr4mz7t6hfq" />
+
             </handle>
           </Target>
         </DropdownSelection>
@@ -16,6 +17,11 @@
             <Target type="DEFAULT_BOOT">
               <handle>
                 <DeviceId pluginId="PhysicalDevice" identifier="serial=4lfyayr4mz7t6hfq" />
+              </handle>
+            </Target>
+            <Target type="DEFAULT_BOOT">
+              <handle>
+                <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Mario\.android\avd\Medium_Phone_API_35_2_1.avd" />
               </handle>
             </Target>
           </targets>

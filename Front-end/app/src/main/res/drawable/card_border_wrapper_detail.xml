@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <!-- Fondo blanco para tapar la imagen -->
+    <solid android:color="@android:color/white"/>
+
+    <!-- Borde de 2dp color #A11991 -->
+    <stroke
+        android:width="2dp"
+        android:color="#A11991"/>
+
+    <!-- Sólo top-left y top-right redondeadas -->
+    <corners
+        android:topLeftRadius="22dp"
+        android:topRightRadius="22dp"
+        android:bottomLeftRadius="0dp"
+        android:bottomRightRadius="0dp"/>
+</shape>

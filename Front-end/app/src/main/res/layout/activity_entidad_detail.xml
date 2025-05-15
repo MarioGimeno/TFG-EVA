@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/containerEntidadDetail"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <FrameLayout
+        android:id="@+id/flImagenLoader"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.40">
+
+        <ImageView
+            android:id="@+id/imgEntidadDetail"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/imagen_entidad"/>
+
+        <ProgressBar
+            android:id="@+id/progressImage"
+            style="?android:attr/progressBarStyleLarge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:indeterminateTint="#A11991"/>
+    </FrameLayout>
+
+    <LinearLayout
+        android:id="@+id/cardWrapper"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:background="@drawable/card_border_wrapper_detail"
+        android:padding="16dp"
+        android:layout_marginTop="-24dp"
+        android:elevation="8dp"
+        app:layout_constraintTop_toBottomOf="@id/flImagenLoader"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingBottom="8dp">
+
+                    <ImageView
+                        android:id="@+id/ivWebInline"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/web"/>
+
+                    <TextView
+                        android:id="@+id/tvWebLink"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Accede aquí"
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp"
+                        android:paddingStart="8dp"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingBottom="8dp">
+
+                    <ImageView
+                        android:id="@+id/ivEmailInline"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/email"/>
+
+                    <TextView
+                        android:id="@+id/tvEmailText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp"
+                        android:paddingStart="8dp"
+                        android:justificationMode="inter_word"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingBottom="8dp">
+
+                    <ImageView
+                        android:id="@+id/ivPhoneInline"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/telefonodetail"/>
+
+                    <TextView
+                        android:id="@+id/tvPhoneText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp"
+                        android:paddingStart="8dp"
+                        android:justificationMode="inter_word"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:paddingBottom="8dp">
+
+                    <ImageView
+                        android:id="@+id/ivHorarioInline"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/horario"/>
+
+                    <TextView
+                        android:id="@+id/tvHorarioText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp"
+                        android:paddingStart="8dp"
+                        android:justificationMode="inter_word"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:paddingBottom="16dp">
+
+                    <ImageView
+                        android:id="@+id/ivAddressInline"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/direccion"/>
+
+                    <TextView
+                        android:id="@+id/tvAddressText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp"
+                        android:paddingStart="8dp"
+                        android:justificationMode="inter_word"/>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvSectionRecursos"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Recursos asociados"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:textColor="#A11991"
+                    android:paddingBottom="8dp"/>
+
+                <FrameLayout
+                    android:id="@+id/flLoaderSlider"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp">
+
+                    <ProgressBar
+                        android:id="@+id/progressSlider"
+                        style="?android:attr/progressBarStyleLarge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:indeterminateTint="#A11991"/>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvRecursosDetail"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:overScrollMode="never"
+                        android:visibility="gone"/>
+                </FrameLayout>
+
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+    <ImageButton
+        android:id="@+id/btnBack"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/bg_btn_back"
+        android:elevation="8dp"
+        android:padding="8dp"
+        android:src="@drawable/flecha_vuelta"
+        android:tint="@android:color/white"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
