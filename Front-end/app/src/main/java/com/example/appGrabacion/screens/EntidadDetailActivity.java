@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -36,12 +37,15 @@ public class EntidadDetailActivity extends AppCompatActivity {
     private ProgressBar progressImage, progressSlider;
     private RecyclerView rvRecursos;
     private RecursosDetailAdapter recursoAdapter;
+    private ImageButton btnBack;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_entidad_detail);
-
+        // bind back button and handle click
+        btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> finish());
         // 1) Bind de vistas
         imgEntidadDetail      = findViewById(R.id.imgEntidadDetail);
         progressImage         = findViewById(R.id.progressImage);
