@@ -10,4 +10,12 @@
         <item>Gratuitos</item>
         <item>Prestaciones</item>
     </string-array>
+    <!-- Descripción accesible para el ImageView de la entidad -->
+    <string name="imagen_entidad">Imagen representativa de la entidad</string>
+    <string name="imagen_recurso">Imagen representativa del recurso</string>
+    <string name="cd_web">Abrir sitio web</string>
+    <string name="cd_telefono">Llamar teléfono</string>
+    <string name="cd_direccion">Ver dirección</string>
+    <string name="cd_email">Enviar email</string>
+
 </resources>

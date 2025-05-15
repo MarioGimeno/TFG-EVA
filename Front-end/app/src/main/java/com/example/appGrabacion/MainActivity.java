@@ -16,8 +16,10 @@ import androidx.core.content.ContextCompat;
 
 import com.example.appGrabacion.models.ContactEntry;
 import com.example.appGrabacion.screens.ContactsActivity;
+import com.example.appGrabacion.screens.EntidadesActivity;
 import com.example.appGrabacion.screens.FolderActivity;
 import com.example.appGrabacion.screens.LoginActivity;
+import com.example.appGrabacion.screens.RecursosActivity;
 import com.example.appGrabacion.utils.ContactManager;
 import com.example.appGrabacion.utils.ContactsApi;
 import com.example.appGrabacion.utils.MyFirebaseMessagingService;
@@ -62,6 +64,15 @@ public class MainActivity extends AppCompatActivity {
         btnGoFolder.setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, FolderActivity.class));
         });
+        Button btnGoEntidades = findViewById(R.id.btnGoEntidades);
+        btnGoEntidades.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, EntidadesActivity.class));
+        });
+        Button btnGoRecursos = findViewById(R.id.btnGoRecursos);
+        btnGoRecursos.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, RecursosActivity.class));
+        });
+
 
         findViewById(R.id.btnGoContacts).setOnClickListener(v ->
                 startActivity(new Intent(this, ContactsActivity.class))
