@@ -37,14 +37,12 @@ public class ContactsActivity extends AppCompatActivity {
     private Button btnAdd;
     private ContactsApi api;
     private String token;
-    private TextView tvTitle;
 
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts);
-        tvTitle = findViewById(R.id.tvTitle);
 
 
         // UI refs
