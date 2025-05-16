@@ -6,18 +6,20 @@ import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
 import com.example.appGrabacion.MainActivity;
 import com.example.appGrabacion.R;
-import com.example.appGrabacion.adapters.EntidadesAdapter;
-import com.example.appGrabacion.adapters.RecursosAdapter;
+import com.example.appGrabacion.adapters.ImageGridAdapter;
 import com.example.appGrabacion.models.Entidad;
 import com.example.appGrabacion.models.Recurso;
 import com.example.appGrabacion.services.GenericActivityService;
+import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
@@ -26,8 +28,6 @@ public class GenericListActivity extends AppCompatActivity {
 
     private String type;
     private RecyclerView rv;
-    private EntidadesAdapter entidadesAdapter;
-    private RecursosAdapter recursosAdapter;
     private GenericActivityService service;
 
     @Override
@@ -45,7 +45,7 @@ public class GenericListActivity extends AppCompatActivity {
                 type.equals("entidades") ? R.drawable.entidades : R.drawable.servicios
         );
 
-        // 3) RecyclerView
+        // 3) RecyclerView en grid de 2 columnas
         rv = findViewById(R.id.rvItems);
         rv.setLayoutManager(new GridLayoutManager(this, 2));
 
@@ -60,30 +60,69 @@ public class GenericListActivity extends AppCompatActivity {
 
         // 6) Carga datos
         if (type.equals("entidades")) {
-            setupEntidades();
+            setupEntidadesGrid();
         } else if (type.equals("servicios")) {
-            setupServicios();
+            setupServiciosGrid();
         } else {
-            setupServiciosPorCategoria(type);
+            setupServiciosPorCategoriaGrid(type);
         }
     }
 
-    private void setupEntidades() {
-        entidadesAdapter = new EntidadesAdapter(e -> {
-            // al hacer click en entidad
-            Intent i = new Intent(this, EntidadDetailActivity.class);
-            i.putExtra("id_entidad", e.getIdEntidad());
-            startActivity(i);
-        });
-        rv.setAdapter(entidadesAdapter);
+    /**
+     * Crea un loader circular para usar como placeholder
+     */
+    private CircularProgressDrawable makeLoader() {
+        CircularProgressDrawable loader = new CircularProgressDrawable(this);
+        loader.setStrokeWidth(5f);
+        loader.setCenterRadius(30f);
+        loader.start();
+        return loader;
+    }
 
-        service.loadEntidades(new GenericActivityService.LoadCallback<Entidad>() {
-            @Override
-            public void onSuccess(List<Entidad> items) {
-                runOnUiThread(() -> entidadesAdapter.submitList(items));
+    private void setupEntidadesGrid() {
+        // 1) DiffUtil
+        DiffUtil.ItemCallback<Entidad> diffCallback = new DiffUtil.ItemCallback<Entidad>() {
+            @Override public boolean areItemsTheSame(@NonNull Entidad a, @NonNull Entidad b) {
+                return a.getIdEntidad() == b.getIdEntidad();
             }
+            @Override public boolean areContentsTheSame(@NonNull Entidad a, @NonNull Entidad b) {
+                return a.equals(b);
+            }
+        };
+
+        // 2) Binder
+        ImageGridAdapter.Binder<Entidad> binder = new ImageGridAdapter.Binder<Entidad>() {
             @Override
-            public void onError(Throwable t) {
+            public void bind(ImageView imageView, Entidad item) {
+                Picasso.get()
+                        .load(item.getImagen())
+                        .placeholder(makeLoader())
+                        .error(R.drawable.eva)
+                        .into(imageView);
+            }
+        };
+
+        // 3) Listener
+        ImageGridAdapter.OnItemClickListener<Entidad> listener =
+                new ImageGridAdapter.OnItemClickListener<Entidad>() {
+                    @Override public void onItemClick(Entidad entidad) {
+                        Intent i = new Intent(GenericListActivity.this, EntidadDetailActivity.class);
+                        i.putExtra("id_entidad", entidad.getIdEntidad());
+                        startActivity(i);
+                    }
+                };
+
+        // 4) Adapter
+        ImageGridAdapter<Entidad> grid =
+                new ImageGridAdapter<>(diffCallback, binder, listener);
+        rv.setAdapter(grid);
+
+        // 5) Load
+        service.loadEntidades(new GenericActivityService.LoadCallback<Entidad>() {
+            @Override public void onSuccess(List<Entidad> items) {
+                runOnUiThread(() -> grid.submitList(items));
+            }
+            @Override public void onError(Throwable t) {
                 runOnUiThread(() ->
                         Toast.makeText(GenericListActivity.this,
                                 "Error cargando entidades: " + t.getMessage(),
@@ -92,21 +131,51 @@ public class GenericListActivity extends AppCompatActivity {
             }
         });
     }
-    private void setupServicios() {
-        recursosAdapter = new RecursosAdapter(recurso -> {
-            Intent i = new Intent(GenericListActivity.this, RecursoDetailActivity.class);
-            i.putExtra("id_recurso", recurso.getId());
-            startActivity(i);
-        });
-        rv.setAdapter(recursosAdapter);
 
-        service.loadServicios(new GenericActivityService.LoadCallback<Recurso>() {
-            @Override
-            public void onSuccess(List<Recurso> items) {
-                runOnUiThread(() -> recursosAdapter.submitList(items));
+    private void setupServiciosGrid() {
+        // 1) DiffUtil
+        DiffUtil.ItemCallback<Recurso> diffCallback = new DiffUtil.ItemCallback<Recurso>() {
+            @Override public boolean areItemsTheSame(@NonNull Recurso a, @NonNull Recurso b) {
+                return a.getId() == b.getId();
             }
+            @Override public boolean areContentsTheSame(@NonNull Recurso a, @NonNull Recurso b) {
+                return a.equals(b);
+            }
+        };
+
+        // 2) Binder
+        ImageGridAdapter.Binder<Recurso> binder = new ImageGridAdapter.Binder<Recurso>() {
             @Override
-            public void onError(Throwable t) {
+            public void bind(ImageView imageView, Recurso item) {
+                Picasso.get()
+                        .load(item.getImagen())
+                        .placeholder(makeLoader())
+                        .error(R.drawable.eva)
+                        .into(imageView);
+            }
+        };
+
+        // 3) Listener
+        ImageGridAdapter.OnItemClickListener<Recurso> listener =
+                new ImageGridAdapter.OnItemClickListener<Recurso>() {
+                    @Override public void onItemClick(Recurso recurso) {
+                        Intent i = new Intent(GenericListActivity.this, RecursoDetailActivity.class);
+                        i.putExtra("id_recurso", recurso.getId());
+                        startActivity(i);
+                    }
+                };
+
+        // 4) Adapter
+        ImageGridAdapter<Recurso> grid =
+                new ImageGridAdapter<>(diffCallback, binder, listener);
+        rv.setAdapter(grid);
+
+        // 5) Load
+        service.loadServicios(new GenericActivityService.LoadCallback<Recurso>() {
+            @Override public void onSuccess(List<Recurso> items) {
+                runOnUiThread(() -> grid.submitList(items));
+            }
+            @Override public void onError(Throwable t) {
                 runOnUiThread(() ->
                         Toast.makeText(GenericListActivity.this,
                                 "Error cargando servicios: " + t.getMessage(),
@@ -116,24 +185,53 @@ public class GenericListActivity extends AppCompatActivity {
         });
     }
 
-
-    private void setupServiciosPorCategoria(String categoria) {
-        recursosAdapter = new RecursosAdapter(recurso -> {
-            Intent i = new Intent(GenericListActivity.this, RecursoDetailActivity.class);
-            i.putExtra("id_recurso", recurso.getId());
-            startActivity(i);
-        });        rv.setAdapter(recursosAdapter);
-
-        service.loadServiciosPorCategoria(categoria, new GenericActivityService.LoadCallback<Recurso>() {
-            @Override
-            public void onSuccess(List<Recurso> items) {
-                runOnUiThread(() -> recursosAdapter.submitList(items));
+    private void setupServiciosPorCategoriaGrid(String categoria) {
+        // 1) DiffUtil
+        DiffUtil.ItemCallback<Recurso> diffCallback = new DiffUtil.ItemCallback<Recurso>() {
+            @Override public boolean areItemsTheSame(@NonNull Recurso a, @NonNull Recurso b) {
+                return a.getId() == b.getId();
             }
+            @Override public boolean areContentsTheSame(@NonNull Recurso a, @NonNull Recurso b) {
+                return a.equals(b);
+            }
+        };
+
+        // 2) Binder
+        ImageGridAdapter.Binder<Recurso> binder = new ImageGridAdapter.Binder<Recurso>() {
             @Override
-            public void onError(Throwable t) {
+            public void bind(ImageView imageView, Recurso item) {
+                Picasso.get()
+                        .load(item.getImagen())
+                        .placeholder(makeLoader())
+                        .error(R.drawable.eva)
+                        .into(imageView);
+            }
+        };
+
+        // 3) Listener
+        ImageGridAdapter.OnItemClickListener<Recurso> listener =
+                new ImageGridAdapter.OnItemClickListener<Recurso>() {
+                    @Override public void onItemClick(Recurso recurso) {
+                        Intent i = new Intent(GenericListActivity.this, RecursoDetailActivity.class);
+                        i.putExtra("id_recurso", recurso.getId());
+                        startActivity(i);
+                    }
+                };
+
+        // 4) Adapter
+        ImageGridAdapter<Recurso> grid =
+                new ImageGridAdapter<>(diffCallback, binder, listener);
+        rv.setAdapter(grid);
+
+        // 5) Load
+        service.loadServiciosPorCategoria(categoria, new GenericActivityService.LoadCallback<Recurso>() {
+            @Override public void onSuccess(List<Recurso> items) {
+                runOnUiThread(() -> grid.submitList(items));
+            }
+            @Override public void onError(Throwable t) {
                 runOnUiThread(() ->
                         Toast.makeText(GenericListActivity.this,
-                                "Error categoría " + categoria + ": " + t.getMessage(),
+                                "Error cargando categoría \"" + categoria + "\": " + t.getMessage(),
                                 Toast.LENGTH_SHORT).show()
                 );
             }
