@@ -1,11 +1,13 @@
 package com.example.appGrabacion.services;
 
 import android.content.Context;
+
 import com.example.appGrabacion.models.Recurso;
 import com.example.appGrabacion.utils.ResourcesApi;
 import com.example.appGrabacion.utils.RetrofitClient;
 
 import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -21,11 +23,18 @@ public class ResourceService {
     }
 
     /**
-     * Callback propio para resultados de Recurso
+     * Callback propio para resultados de lista de Recurso
      */
     public interface ResourceCallback {
         void onSuccess(List<Recurso> recursos);
+        void onError(Throwable t);
+    }
 
+    /**
+     * Callback propio para detalle de un solo Recurso
+     */
+    public interface ResourceDetailCallback {
+        void onSuccess(Recurso recurso);
         void onError(Throwable t);
     }
 
@@ -51,13 +60,31 @@ public class ResourceService {
         });
     }
 
-    // dentro de ResourceService.java
-    public interface ResourceDetailCallback {
-        void onSuccess(Recurso recurso);
+    /**
+     * Obtiene los recursos filtrados por categoría
+     */
+    public void fetchByCategory(String categoria, final ResourceCallback callback) {
+        api.getResourcesByCategory(categoria).enqueue(new Callback<List<Recurso>>() {
+            @Override
+            public void onResponse(Call<List<Recurso>> call,
+                                   Response<List<Recurso>> resp) {
+                if (resp.isSuccessful() && resp.body() != null) {
+                    callback.onSuccess(resp.body());
+                } else {
+                    callback.onError(new RuntimeException("Código: " + resp.code()));
+                }
+            }
 
-        void onError(Throwable t);
+            @Override
+            public void onFailure(Call<List<Recurso>> call, Throwable t) {
+                callback.onError(t);
+            }
+        });
     }
 
+    /**
+     * Obtiene un recurso por su id
+     */
     public void fetchById(int id, final ResourceDetailCallback callback) {
         api.getResourceById(id).enqueue(new Callback<Recurso>() {
             @Override
