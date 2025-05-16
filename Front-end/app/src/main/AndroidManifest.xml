@@ -100,6 +100,7 @@
         <activity android:name=".screens.RecursosActivity" />
         <activity android:name=".screens.EntidadDetailActivity"/>
         <activity android:name=".screens.RecursoDetailActivity"/>
+        <activity android:name=".screens.GenericListActivity"/>
 
         <service
             android:name="com.example.appGrabacion.MicrophoneService"
