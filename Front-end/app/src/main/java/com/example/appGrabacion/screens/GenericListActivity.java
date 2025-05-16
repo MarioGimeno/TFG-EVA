@@ -2,7 +2,10 @@ package com.example.appGrabacion.screens;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.TypedValue;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -12,6 +15,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 
@@ -182,7 +186,6 @@ public class GenericListActivity extends AppCompatActivity {
             }
         });
     }
-
     private void setupServiciosPorCategoriaGrid(int categoryId) {
         DiffUtil.ItemCallback<Recurso> diff = new DiffUtil.ItemCallback<Recurso>() {
             @Override public boolean areItemsTheSame(@NonNull Recurso a, @NonNull Recurso b) {
@@ -192,27 +195,75 @@ public class GenericListActivity extends AppCompatActivity {
                 return a.equals(b);
             }
         };
-        ImageGridAdapter.Binder<Recurso> binder = getRecursoBinder();
+
         ImageGridAdapter.OnItemClickListener<Recurso> listener = r -> {
             Intent i = new Intent(this, RecursoDetailActivity.class);
             i.putExtra("id_recurso", r.getId());
             startActivity(i);
         };
-        ImageGridAdapter<Recurso> grid = new ImageGridAdapter<>(diff, binder, listener);
-        rv.setAdapter(grid);
 
-        service.loadServiciosPorCategoria(Integer.parseInt(String.valueOf(categoryId)), new GenericActivityService.LoadCallback<Recurso>() {
+        service.loadServiciosPorCategoria(categoryId, new GenericActivityService.LoadCallback<Recurso>() {
             @Override public void onSuccess(List<Recurso> items) {
-                runOnUiThread(() -> grid.submitList(items));
+                runOnUiThread(() -> {
+                    if (items.size() < 5) {
+                        // 1) LayoutManager horizontal
+                        LinearLayoutManager lm = new LinearLayoutManager(
+                                GenericListActivity.this,
+                                LinearLayoutManager.HORIZONTAL,
+                                false
+                        );
+                        rv.setLayoutManager(lm);
+
+                        // 2) Binder que ajusta altura a 200dp
+                        ImageGridAdapter.Binder<Recurso> binder = (iv, r) -> {
+                            // ajustar la card a 200dp de alto
+                            View card = (View) iv.getParent();
+                            ViewGroup.LayoutParams lp = card.getLayoutParams();
+                            lp.height = dpToPx(200);
+                            card.setLayoutParams(lp);
+
+                            // cargar imagen
+                            Picasso.get()
+                                    .load(r.getImagen())
+                                    .placeholder(makeLoader())
+                                    .fit().centerCrop()
+                                    .into(iv);
+                        };
+
+                        // 3) Adapter horizontal
+                        ImageGridAdapter<Recurso> horizontalAdapter =
+                                new ImageGridAdapter<>(diff, binder, listener);
+                        rv.setAdapter(horizontalAdapter);
+                        horizontalAdapter.submitList(items);
+
+                    } else {
+                        // grid 2 columnas, altura normal (150dp definido en XML)
+                        rv.setLayoutManager(new GridLayoutManager(
+                                GenericListActivity.this, 2
+                        ));
+
+                        ImageGridAdapter.Binder<Recurso> binder = getRecursoBinder();
+                        ImageGridAdapter<Recurso> gridAdapter =
+                                new ImageGridAdapter<>(diff, binder, listener);
+                        rv.setAdapter(gridAdapter);
+                        gridAdapter.submitList(items);
+                    }
+                });
             }
             @Override public void onError(Throwable t) {
                 runOnUiThread(() ->
                         Toast.makeText(GenericListActivity.this,
-                                "Error cargando categoría " + categoryId + ": " + t.getMessage(),
+                                "Error cargando categoría "+ categoryId +": "+t.getMessage(),
                                 Toast.LENGTH_SHORT).show()
                 );
             }
         });
+    }
+
+    /** Utilidad para convertir dp a píxeles */
+    private int dpToPx(int dp) {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round(dp * density);
     }
 
     @NonNull
@@ -225,7 +276,8 @@ public class GenericListActivity extends AppCompatActivity {
             } else {
                 req.placeholder(makeLoader())
                         .into(iv, new Callback() {
-                            @Override public void onSuccess() { loadedUrls.add(url); }
+                            @Override public void onSuccess() {
+                                loadedUrls.add(url); }
                             @Override public void onError(Exception ex) { }
                         });
             }
