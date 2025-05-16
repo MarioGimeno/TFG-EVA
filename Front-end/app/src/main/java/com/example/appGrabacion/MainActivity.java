@@ -19,6 +19,7 @@ import com.example.appGrabacion.screens.CategoriasActivity;
 import com.example.appGrabacion.screens.ContactsActivity;
 import com.example.appGrabacion.screens.EntidadesActivity;
 import com.example.appGrabacion.screens.FolderActivity;
+import com.example.appGrabacion.screens.GenericListActivity;
 import com.example.appGrabacion.screens.LoginActivity;
 import com.example.appGrabacion.screens.RecursosActivity;
 import com.example.appGrabacion.utils.ContactManager;
@@ -65,18 +66,27 @@ public class MainActivity extends AppCompatActivity {
         btnGoFolder.setOnClickListener(v -> {
             startActivity(new Intent(MainActivity.this, FolderActivity.class));
         });
+
         Button btnGoEntidades = findViewById(R.id.btnGoEntidades);
         btnGoEntidades.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, EntidadesActivity.class));
+            Intent i = new Intent(MainActivity.this, GenericListActivity.class);
+            i.putExtra(GenericListActivity.EXTRA_TYPE, "entidades");
+            startActivity(i);
         });
-        Button btnGoRecursos = findViewById(R.id.btnGoRecursos);
-        btnGoRecursos.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, RecursosActivity.class));
-        });
+
         Button btnGoCategorias = findViewById(R.id.btnGoCategorias);
         btnGoCategorias.setOnClickListener(v ->
                 startActivity(new Intent(MainActivity.this, CategoriasActivity.class))
         );
+
+
+        Button btnGoRecursos = findViewById(R.id.btnGoRecursos);
+        btnGoRecursos.setOnClickListener(v -> {
+            Intent i = new Intent(MainActivity.this, GenericListActivity.class);
+            i.putExtra(GenericListActivity.EXTRA_TYPE, "servicios");
+            startActivity(i);
+        });
+
 
         findViewById(R.id.btnGoContacts).setOnClickListener(v ->
                 startActivity(new Intent(this, ContactsActivity.class))

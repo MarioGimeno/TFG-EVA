@@ -1,5 +1,6 @@
 package com.example.appGrabacion.screens;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
@@ -30,8 +31,11 @@ public class RecursosActivity extends AppCompatActivity {
         // 1) Configurar RecyclerView y Adapter
         rvRecursos = findViewById(R.id.rvRecursos);
         rvRecursos.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new RecursosAdapter();
-        rvRecursos.setAdapter(adapter);
+        adapter = new RecursosAdapter(recurso -> {
+            Intent i = new Intent(RecursosActivity.this, RecursoDetailActivity.class);
+            i.putExtra("id_recurso", recurso.getId());
+            startActivity(i);
+        });        rvRecursos.setAdapter(adapter);
 
         // 2) Llamar al servicio para cargar recursos
         ResourceService service = new ResourceService(this);
