@@ -1,4 +1,3 @@
-// com/example/appGrabacion/screens/CategoriasActivity.java
 
 package com.example.appGrabacion.screens;
 
@@ -25,13 +24,16 @@ public class CategoriasActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         Log.d(TAG, "onCreate invoked");
+
         setContentView(R.layout.activity_categorias);
 
         RecyclerView rv = findViewById(R.id.rvCategorias);
         rv.setLayoutManager(new GridLayoutManager(this, 2));
 
         CategoriasAdapter adapter = new CategoriasAdapter(cat -> {
+
             // Lanzar detalle directamente con el ID
             Intent i = new Intent(CategoriasActivity.this, CategoriaDetailActivity.class);
             i.putExtra("id_categoria", cat.getIdCategoria());
@@ -42,13 +44,16 @@ public class CategoriasActivity extends AppCompatActivity {
         new CategoriaService(this).fetchAll(new CategoriaService.CategoriaCallback() {
             @Override public void onSuccess(List<Categoria> list) {
                 Log.d(TAG, "onSuccess: fetched " + list.size());
+
                 adapter.submitList(list);
             }
             @Override public void onError(Throwable t) {
                 Log.e(TAG, "Error al cargar categorías", t);
                 Toast.makeText(CategoriasActivity.this,
+
                         "Error: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
 }
+

@@ -1,6 +1,7 @@
 package com.example.appGrabacion.adapters;
 
 import android.util.Log;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -43,6 +44,7 @@ public class CategoriasRecursosAdapter
     }
 
 
+
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Recurso r = getItem(position);
@@ -63,6 +65,7 @@ public class CategoriasRecursosAdapter
         }
 
     }
+
 
 
     static class ViewHolder extends RecyclerView.ViewHolder {
