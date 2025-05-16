@@ -63,8 +63,8 @@ public class ResourceService {
     /**
      * Obtiene los recursos filtrados por categoría
      */
-    public void fetchByCategory(String categoria, final ResourceCallback callback) {
-        api.getResourcesByCategory(categoria).enqueue(new Callback<List<Recurso>>() {
+    public void fetchByCategory(int categoria, final ResourceCallback callback) {
+        api.getResourcesByCategoria(categoria).enqueue(new Callback<List<Recurso>>() {
             @Override
             public void onResponse(Call<List<Recurso>> call,
                                    Response<List<Recurso>> resp) {

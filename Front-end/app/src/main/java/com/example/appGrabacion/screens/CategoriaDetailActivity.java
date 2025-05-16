@@ -18,9 +18,10 @@ import com.example.appGrabacion.adapters.CategoriasRecursosAdapter;
 import com.example.appGrabacion.models.Categoria;
 import com.example.appGrabacion.models.Recurso;
 import com.example.appGrabacion.services.ResourceService;
-import com.example.appGrabacion.utils.CategoriaService;
+import com.example.appGrabacion.services.CategoriaService;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class CategoriaDetailActivity extends AppCompatActivity {

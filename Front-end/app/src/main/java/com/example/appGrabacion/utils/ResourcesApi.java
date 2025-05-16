@@ -18,6 +18,5 @@ public interface ResourcesApi {
 
     @GET("/api/servicios/categoria/{id}")
     Call<List<Recurso>> getResourcesByCategoria(@Path("id") int id);
-    @GET("api/resources")
-    Call<List<Recurso>> getResourcesByCategory(@Query("category") String category);
+
 }
