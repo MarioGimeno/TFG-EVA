@@ -75,4 +75,24 @@ public class ResourceService {
             }
         });
     }
+    public void fetchByCategoria(int categoriaId, final ResourceCallback callback) {
+        api.getResourcesByCategoria(categoriaId)
+                .enqueue(new Callback<List<Recurso>>() {
+                    @Override
+                    public void onResponse(Call<List<Recurso>> call,
+                                           Response<List<Recurso>> resp) {
+                        if (resp.isSuccessful() && resp.body() != null) {
+                            callback.onSuccess(resp.body());
+                        } else {
+                            callback.onError(
+                                    new RuntimeException("Código: " + resp.code()));
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<List<Recurso>> call, Throwable t) {
+                        callback.onError(t);
+                    }
+                });
+    }
+
 }

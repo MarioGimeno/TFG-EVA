@@ -6,7 +6,8 @@ const {
   getRecursoById,
   createRecurso,
   updateRecurso,
-  deleteRecurso
+  deleteRecurso,
+  getRecursosByCategoria
 } = require('../services/recursoService');
 
 // GET /api/servicios
@@ -62,6 +63,16 @@ router.delete('/:id', /* authMiddleware, */ async (req, res) => {
   } catch (e) {
     console.error('DELETE /api/servicios/:id error', e);
     res.status(400).json({ error: e.message });
+  }
+});
+//GET /api/servicios/:id
+router.get('/categoria/:id', async (req, res) => {
+  try {
+    const rows = await getRecursosByCategoria(req.params.id);
+    res.json(rows);
+  } catch (e) {
+    console.error('GET /api/servicios/categoria/:id error', e);
+    res.status(500).json({ error: 'Error al obtener recursos por categoría' });
   }
 });
 

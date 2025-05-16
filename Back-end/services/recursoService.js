@@ -83,10 +83,25 @@ async function deleteRecurso(id) {
   );
 }
 
+async function getRecursosByCategoria(idCategoria) {
+  const { rows } = await pool.query(`
+    SELECT id, id_entidad, id_categoria,
+           imagen, email, telefono, direccion, horario,
+           servicio, descripcion, requisitos,
+           gratuito, web, accesible
+      FROM recurso
+     WHERE id_categoria = $1
+     ORDER BY id
+  `, [idCategoria]);
+  return rows;
+}
+
 module.exports = {
   getAllRecursos,
   getRecursoById,
+  getRecursosByCategoria,    
   createRecurso,
   updateRecurso,
   deleteRecurso
 };
+
