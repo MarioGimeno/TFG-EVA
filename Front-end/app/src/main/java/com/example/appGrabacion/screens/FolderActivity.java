@@ -3,10 +3,8 @@ package com.example.appGrabacion.screens;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.OpenableColumns;
 import android.util.TypedValue;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -22,9 +20,7 @@ import com.example.appGrabacion.MainActivity;
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.FileAdapter;
 import com.example.appGrabacion.models.FileEntry;
-import com.example.appGrabacion.utils.FolderService;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
