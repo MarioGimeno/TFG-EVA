@@ -22,7 +22,7 @@ import com.example.appGrabacion.MainActivity;
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.FileAdapter;
 import com.example.appGrabacion.models.FileEntry;
-import com.example.appGrabacion.utils.FolderService;
+import com.example.appGrabacion.services.FolderService;
 
 import java.io.InputStream;
 import java.util.ArrayList;

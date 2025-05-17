@@ -5,6 +5,7 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ResourcesApi {
     /** GET /api/servicios — no requiere Authorization */
@@ -14,4 +15,6 @@ public interface ResourcesApi {
     /** GET /api/servicios/{id} */
     @GET("/api/servicios/{id}")
     Call<Recurso> getResourceById(@Path("id") int id);
+    @GET("api/resources")
+    Call<List<Recurso>> getResourcesByCategory(@Query("category") String category);
 }

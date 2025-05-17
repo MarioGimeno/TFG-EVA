@@ -1,3 +1,4 @@
+// com/example/appGrabacion/adapters/RecursosAdapter.java
 package com.example.appGrabacion.adapters;
 
 import android.view.LayoutInflater;
@@ -15,10 +16,19 @@ import com.example.appGrabacion.R;
 import com.example.appGrabacion.models.Recurso;
 import com.squareup.picasso.Picasso;
 
-public class RecursosAdapter extends ListAdapter<Recurso, RecursosAdapter.RecursoViewHolder> {
+public class RecursosAdapter
+        extends ListAdapter<Recurso, RecursosAdapter.RecursoViewHolder> {
 
-    public RecursosAdapter() {
+    /** Listener para clicks sobre un recurso */
+    public interface OnItemClickListener {
+        void onItemClick(Recurso recurso);
+    }
+
+    private final OnItemClickListener listener;
+
+    public RecursosAdapter(OnItemClickListener listener) {
         super(DIFF_CALLBACK);
+        this.listener = listener;
     }
 
     private static final DiffUtil.ItemCallback<Recurso> DIFF_CALLBACK =
@@ -33,17 +43,16 @@ public class RecursosAdapter extends ListAdapter<Recurso, RecursosAdapter.Recurs
                 }
             };
 
-    @NonNull
-    @Override
+    @NonNull @Override
     public RecursoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
+        View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_recurso, parent, false);
-        return new RecursoViewHolder(view);
+        return new RecursoViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(@NonNull RecursoViewHolder holder, int position) {
-        holder.bind(getItem(position));
+        holder.bind(getItem(position), listener);
     }
 
     static class RecursoViewHolder extends RecyclerView.ViewHolder {
@@ -58,7 +67,7 @@ public class RecursosAdapter extends ListAdapter<Recurso, RecursosAdapter.Recurs
             tvTelefono  = itemView.findViewById(R.id.tvTelefonoRecurso);
         }
 
-        void bind(Recurso rec) {
+        void bind(final Recurso rec, final OnItemClickListener l) {
             tvServicio.setText(rec.getServicio());
             tvDireccion.setText(rec.getDireccion());
             tvTelefono.setText(rec.getTelefono());
@@ -71,6 +80,7 @@ public class RecursosAdapter extends ListAdapter<Recurso, RecursosAdapter.Recurs
             } else {
                 imgRecurso.setImageResource(R.drawable.eva);
             }
+            itemView.setOnClickListener(v -> l.onItemClick(rec));
         }
     }
 }

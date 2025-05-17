@@ -1,8 +1,11 @@
 // com/example/appGrabacion/utils/EntityService.java
-package com.example.appGrabacion.utils;
+package com.example.appGrabacion.services;
 
 import android.content.Context;
 import com.example.appGrabacion.models.Entidad;
+import com.example.appGrabacion.utils.EntitiesApi;
+import com.example.appGrabacion.utils.RetrofitClient;
+
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
