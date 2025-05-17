@@ -1,4 +1,3 @@
-
 // 2) ContactsActivity.java
 package com.example.appGrabacion.screens;
 
@@ -6,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.TypedValue;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -18,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -33,6 +32,7 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+
 public class ContactsActivity extends AppCompatActivity {
     private RecyclerView rv;
     private ContactsAdapter adapter;
@@ -42,38 +42,44 @@ public class ContactsActivity extends AppCompatActivity {
     private ContactsApi api;
     private String token;
 
-
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts);
 
-        // 1) Botón de vuelta a Main (igual que en FolderActivity)
+        // 1) Botón de vuelta a Main
         findViewById(R.id.btnBack).setOnClickListener(v -> {
-            startActivity(new Intent(ContactsActivity.this, MainActivity.class));
+            startActivity(new Intent(this, MainActivity.class));
             finish();
         });
 
-
-
         // UI refs
-        rv = findViewById(R.id.rvContacts);
+        rv       = findViewById(R.id.rvContacts);
         progress = findViewById(R.id.progressContacts);
-        etName = findViewById(R.id.etContactName);
-        etPhone = findViewById(R.id.etEmail);
-        btnAdd = findViewById(R.id.btnAddContact);
+        etName   = findViewById(R.id.etContactName);
+        etPhone  = findViewById(R.id.etEmail);
+        btnAdd   = findViewById(R.id.btnAddContact);
 
-        // RecyclerView setup
-        rv.setLayoutManager(new LinearLayoutManager(this));
+        // RecyclerView setup con auto-measure dentro de ScrollView
+        LinearLayoutManager lm = new LinearLayoutManager(this) {
+            @Override public boolean isAutoMeasureEnabled() {
+                return true;
+            }
+        };
+        rv.setLayoutManager(lm);
+        rv.setHasFixedSize(false);
+        rv.setNestedScrollingEnabled(false);
+
         adapter = new ContactsAdapter();
         rv.setAdapter(adapter);
-
-        // 2) Scroll dinámico igual que en FolderActivity
-        ImageView header = findViewById(R.id.imgHeader);
-        FrameLayout wrapper = findViewById(R.id.card_wrapper);
+        NestedScrollView scrollAll = findViewById(R.id.scrollAll);
+        ImageView header        = findViewById(R.id.imgHeader);
+        FrameLayout wrapper     = findViewById(R.id.card_wrapper);
         ConstraintLayout.LayoutParams params =
                 (ConstraintLayout.LayoutParams) wrapper.getLayoutParams();
         final int initialMarginTop = params.topMargin;
+
+// ejecutamos cuando header ya ha medido su altura
         header.post(() -> {
             int overlapPx = Math.round(
                     TypedValue.applyDimension(
@@ -83,17 +89,15 @@ public class ContactsActivity extends AppCompatActivity {
                     )
             );
             int maxScroll = header.getHeight() - overlapPx;
-            rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                int accumulatedDy = 0;
-                @Override
-                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                    super.onScrolled(recyclerView, dx, dy);
-                    accumulatedDy = Math.max(0, Math.min(accumulatedDy + dy, maxScroll));
-                    params.topMargin = initialMarginTop - accumulatedDy;
-                    wrapper.setLayoutParams(params);
-                }
+
+            scrollAll.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldX, oldY) -> {
+                int dy = Math.max(0, Math.min(scrollY, maxScroll));
+                params.topMargin = initialMarginTop - dy;
+                wrapper.setLayoutParams(params);
             });
         });
+
+        // Eliminado el bloque de scroll dinámico sobre el header
 
         // Retrofit API
         api = RetrofitClient.getRetrofitInstance(this).create(ContactsApi.class);
@@ -106,20 +110,21 @@ public class ContactsActivity extends AppCompatActivity {
     }
 
     private void loadContacts() {
-        progress.setVisibility(View.VISIBLE);
+        progress.setVisibility(ProgressBar.VISIBLE);
         api.getContacts(token).enqueue(new Callback<List<ContactEntry>>() {
             @Override
             public void onResponse(Call<List<ContactEntry>> call, Response<List<ContactEntry>> res) {
-                progress.setVisibility(View.GONE);
+                progress.setVisibility(ProgressBar.GONE);
                 if (res.isSuccessful()) {
                     adapter.setContacts(res.body());
-                } else
+                } else {
                     Toast.makeText(ContactsActivity.this, "Error cargando contactos", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
             public void onFailure(Call<List<ContactEntry>> call, Throwable t) {
-                progress.setVisibility(View.GONE);
+                progress.setVisibility(ProgressBar.GONE);
                 Toast.makeText(ContactsActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
             }
         });
@@ -133,14 +138,12 @@ public class ContactsActivity extends AppCompatActivity {
             return;
         }
 
-        // Usamos el constructor de cuatro parámetros, dejando los IDs a 0
         ContactEntry c = new ContactEntry(0, 0, name, phone);
-
-        progress.setVisibility(View.VISIBLE);
+        progress.setVisibility(ProgressBar.VISIBLE);
         api.addContact(token, c).enqueue(new Callback<ContactEntry>() {
             @Override
             public void onResponse(Call<ContactEntry> call, Response<ContactEntry> res) {
-                progress.setVisibility(View.GONE);
+                progress.setVisibility(ProgressBar.GONE);
                 if (res.isSuccessful()) {
                     etName.setText("");
                     etPhone.setText("");
@@ -152,10 +155,9 @@ public class ContactsActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ContactEntry> call, Throwable t) {
-                progress.setVisibility(View.GONE);
+                progress.setVisibility(ProgressBar.GONE);
                 Toast.makeText(ContactsActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
             }
         });
     }
 }
-
