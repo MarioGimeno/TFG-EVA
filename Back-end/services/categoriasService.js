@@ -3,7 +3,7 @@ const { pool } = require('../config');
 
 async function getAllCategorias() {
   const { rows } = await pool.query(`
-    SELECT id_categoria, nombre
+    SELECT id_categoria, nombre, img_categoria
       FROM categoria
      ORDER BY id_categoria
   `);

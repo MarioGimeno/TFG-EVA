@@ -19,4 +19,9 @@ public interface ResourcesApi {
     @GET("/api/servicios/categoria/{id}")
     Call<List<Recurso>> getResourcesByCategoria(@Path("id") int id);
 
+    @GET("/api/servicios/gratuitos")
+    Call<List<Recurso>> getResourcesGratuitos();
+
+    @GET("/api/servicios/accesibles")
+    Call<List<Recurso>> getResourcesAccesibles();
 }

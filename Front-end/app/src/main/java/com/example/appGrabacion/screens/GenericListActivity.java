@@ -3,10 +3,8 @@ package com.example.appGrabacion.screens;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -22,8 +20,10 @@ import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 import com.example.appGrabacion.MainActivity;
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.ImageGridAdapter;
+import com.example.appGrabacion.models.Categoria;
 import com.example.appGrabacion.models.Entidad;
 import com.example.appGrabacion.models.Recurso;
+import com.example.appGrabacion.services.CategoriaService;
 import com.example.appGrabacion.services.GenericActivityService;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
@@ -36,9 +36,9 @@ import java.util.List;
 import java.util.Set;
 
 public class GenericListActivity extends AppCompatActivity {
-    public static final String EXTRA_LIST_TYPE = "list_type";      // "entidades" or "servicios"
-    public static final String EXTRA_CATEGORY_ID = "category_id";  // int for category
-    public static final String EXTRA_TYPE = "type" ;
+    public static final String EXTRA_LIST_TYPE    = "list_type";      // "entidades","servicios","gratuitos","accesibles"
+    public static final String EXTRA_CATEGORY_ID  = "category_id";    // int para categoría
+    public static final String EXTRA_TYPE         = "type";           // lo mantenemos
 
     private RecyclerView rv;
     private GenericActivityService service;
@@ -49,21 +49,11 @@ public class GenericListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_generic);
 
-        // Decide mode: category ID int, or list type string
         Intent intent = getIntent();
         boolean hasCategory = intent.hasExtra(EXTRA_CATEGORY_ID);
-        String listType = intent.getStringExtra(EXTRA_LIST_TYPE);
+        String listType     = intent.getStringExtra(EXTRA_LIST_TYPE);
 
         ImageView bg = findViewById(R.id.videoBackground);
-        // Set background depending on mode
-        if (hasCategory) {
-            bg.setImageResource(R.drawable.servicios);
-        } else if ("entidades".equalsIgnoreCase(listType)) {
-            bg.setImageResource(R.drawable.entidades);
-        } else {
-            bg.setImageResource(R.drawable.servicios);
-        }
-
         rv = findViewById(R.id.rvItems);
         rv.setLayoutManager(new GridLayoutManager(this, 2));
 
@@ -75,29 +65,105 @@ public class GenericListActivity extends AppCompatActivity {
         service = new GenericActivityService(this);
 
         if (hasCategory) {
-            int categoryId = intent.getIntExtra(EXTRA_CATEGORY_ID, -1);
-            if (categoryId < 0) {
+            // Modo: categoría
+            int catId = intent.getIntExtra(EXTRA_CATEGORY_ID, -1);
+            if (catId < 0) {
                 Toast.makeText(this, "Categoría inválida", Toast.LENGTH_SHORT).show();
                 finish();
                 return;
             }
-            setupServiciosPorCategoriaGrid(categoryId);
+            loadCategoryAndServicios(catId, bg);
+
         } else if ("entidades".equalsIgnoreCase(listType)) {
+            // Modo: Entidades
+            bg.setImageResource(R.drawable.entidades);
             setupEntidadesGrid();
+
+        } else if ("gratuitos".equalsIgnoreCase(listType)) {
+            // Modo: Gratuitos
+            bg.setImageResource(R.drawable.servicios);
+            setupGratuitosGrid();
+
+        } else if ("accesibles".equalsIgnoreCase(listType)) {
+            // Modo: Accesibles
+            bg.setImageResource(R.drawable.servicios);
+            setupAccesiblesGrid();
+
         } else {
+            // Modo: Todos los servicios
+            bg.setImageResource(R.drawable.servicios);
             setupServiciosGrid();
         }
     }
 
-    private CircularProgressDrawable makeLoader() {
-        CircularProgressDrawable l = new CircularProgressDrawable(this);
-        l.setStrokeWidth(5f);
-        l.setCenterRadius(30f);
-        l.start();
-        return l;
+    /** 1) Categoría → fondo + grid */
+    private void loadCategoryAndServicios(int categoryId, ImageView bg) {
+        new CategoriaService(this).fetchById(categoryId, new CategoriaService.CategoriaDetailCallback() {
+            @Override public void onSuccess(Categoria cat) {
+                Log.d("GenericList",
+                        "Cat → id:" + cat.getIdCategoria() +
+                                " nombre:\"" + cat.getNombre() +
+                                "\" img:" + cat.getImgCategoria()
+                );
+                String url = cat.getImgCategoria();
+                if (url != null && !url.isEmpty()) {
+                    Picasso.get()
+                            .load(url)
+                            .placeholder(R.drawable.eva)
+                            .error(R.drawable.eva)
+                            .into(bg);
+                }
+                setupServiciosPorCategoriaGrid(categoryId);
+            }
+            @Override public void onError(Throwable t) {
+                Toast.makeText(GenericListActivity.this,
+                        "Error cargando categoría: " + t.getMessage(),
+                        Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        });
     }
 
+    /** Grid para recursos de una categoría */
+    private void setupServiciosPorCategoriaGrid(int categoryId) {
+        rv.setLayoutManager(new GridLayoutManager(this, 2));
+        DiffUtil.ItemCallback<Recurso> diff = getRecursoDiff();
+        ImageGridAdapter.Binder<Recurso> binder = getRecursoBinder();
+        ImageGridAdapter.OnItemClickListener<Recurso> listener = r -> {
+            Intent i = new Intent(this, RecursoDetailActivity.class);
+            i.putExtra("id_recurso", r.getId());
+            startActivity(i);
+        };
+        ImageGridAdapter<Recurso> grid = new ImageGridAdapter<>(diff, binder, listener);
+        rv.setAdapter(grid);
+
+        service.loadServiciosPorCategoria(categoryId, new GenericActivityService.LoadCallback<Recurso>() {
+            @Override public void onSuccess(List<Recurso> items) {
+                runOnUiThread(() -> {
+                    if (items.size() < 2) {
+                        // horizontal si <5
+                        rv.setLayoutManager(new LinearLayoutManager(
+                                GenericListActivity.this,
+                                LinearLayoutManager.HORIZONTAL,
+                                false
+                        ));
+                    }
+                    grid.submitList(items);
+                });
+            }
+            @Override public void onError(Throwable t) {
+                runOnUiThread(() ->
+                        Toast.makeText(GenericListActivity.this,
+                                "Error: " + t.getMessage(),
+                                Toast.LENGTH_SHORT).show()
+                );
+            }
+        });
+    }
+
+    /** Grid: todas las entidades */
     private void setupEntidadesGrid() {
+        rv.setLayoutManager(new GridLayoutManager(this, 2));
         DiffUtil.ItemCallback<Entidad> diff = new DiffUtil.ItemCallback<Entidad>() {
             @Override public boolean areItemsTheSame(@NonNull Entidad a, @NonNull Entidad b) {
                 return a.getIdEntidad() == b.getIdEntidad();
@@ -106,7 +172,6 @@ public class GenericListActivity extends AppCompatActivity {
                 return a.equals(b);
             }
         };
-
         ImageGridAdapter.Binder<Entidad> binder = (iv, e) -> {
             String url = e.getImagen();
             RequestCreator req = Picasso.get().load(url).fit().centerCrop();
@@ -120,25 +185,23 @@ public class GenericListActivity extends AppCompatActivity {
                         });
             }
         };
-
         ImageGridAdapter.OnItemClickListener<Entidad> listener = e -> {
             Intent i = new Intent(this, EntidadDetailActivity.class);
             i.putExtra("id_entidad", e.getIdEntidad());
             startActivity(i);
         };
-
         ImageGridAdapter<Entidad> grid = new ImageGridAdapter<>(diff, binder, listener);
         rv.setAdapter(grid);
 
         service.loadEntidades(new GenericActivityService.LoadCallback<Entidad>() {
             @Override public void onSuccess(List<Entidad> items) {
                 List<Entidad> reordered = new ArrayList<>(items);
-                // move special email to front
+                // desplaza email especial al frente
                 for (int i = 0; i < reordered.size(); i++) {
-                    Entidad e = reordered.get(i);
-                    if ("casamujer@zaragoza.es".equalsIgnoreCase(e.getEmail())) {
+                    Entidad ent = reordered.get(i);
+                    if ("casamujer@zaragoza.es".equalsIgnoreCase(ent.getEmail())) {
                         reordered.remove(i);
-                        reordered.add(0, e);
+                        reordered.add(0, ent);
                         break;
                     }
                 }
@@ -147,22 +210,17 @@ public class GenericListActivity extends AppCompatActivity {
             @Override public void onError(Throwable t) {
                 runOnUiThread(() ->
                         Toast.makeText(GenericListActivity.this,
-                                "Error cargando entidades: " + t.getMessage(),
+                                "Error entidades: " + t.getMessage(),
                                 Toast.LENGTH_SHORT).show()
                 );
             }
         });
     }
 
+    /** Grid: TODOS los servicios */
     private void setupServiciosGrid() {
-        DiffUtil.ItemCallback<Recurso> diff = new DiffUtil.ItemCallback<Recurso>() {
-            @Override public boolean areItemsTheSame(@NonNull Recurso a, @NonNull Recurso b) {
-                return a.getId() == b.getId();
-            }
-            @Override public boolean areContentsTheSame(@NonNull Recurso a, @NonNull Recurso b) {
-                return a.equals(b);
-            }
-        };
+        rv.setLayoutManager(new GridLayoutManager(this, 2));
+        DiffUtil.ItemCallback<Recurso> diff = getRecursoDiff();
         ImageGridAdapter.Binder<Recurso> binder = getRecursoBinder();
         ImageGridAdapter.OnItemClickListener<Recurso> listener = r -> {
             Intent i = new Intent(this, RecursoDetailActivity.class);
@@ -180,14 +238,70 @@ public class GenericListActivity extends AppCompatActivity {
             @Override public void onError(Throwable t) {
                 runOnUiThread(() ->
                         Toast.makeText(GenericListActivity.this,
-                                "Error cargando servicios: " + t.getMessage(),
+                                "Error servicios: " + t.getMessage(),
                                 Toast.LENGTH_SHORT).show()
                 );
             }
         });
     }
-    private void setupServiciosPorCategoriaGrid(int categoryId) {
-        DiffUtil.ItemCallback<Recurso> diff = new DiffUtil.ItemCallback<Recurso>() {
+
+    /** Grid: sólo gratuitos */
+    private void setupGratuitosGrid() {
+        rv.setLayoutManager(new GridLayoutManager(this, 2));
+        DiffUtil.ItemCallback<Recurso> diff = getRecursoDiff();
+        ImageGridAdapter.Binder<Recurso> binder = getRecursoBinder();
+        ImageGridAdapter.OnItemClickListener<Recurso> listener = r -> {
+            Intent i = new Intent(this, RecursoDetailActivity.class);
+            i.putExtra("id_recurso", r.getId());
+            startActivity(i);
+        };
+        ImageGridAdapter<Recurso> grid = new ImageGridAdapter<>(diff, binder, listener);
+        rv.setAdapter(grid);
+
+        service.loadGratuitos(new GenericActivityService.LoadCallback<Recurso>() {
+            @Override public void onSuccess(List<Recurso> items) {
+                runOnUiThread(() -> grid.submitList(items));
+            }
+            @Override public void onError(Throwable t) {
+                runOnUiThread(() ->
+                        Toast.makeText(GenericListActivity.this,
+                                "Error gratuitos: " + t.getMessage(),
+                                Toast.LENGTH_SHORT).show()
+                );
+            }
+        });
+    }
+
+    /** Grid: sólo accesibles */
+    private void setupAccesiblesGrid() {
+        rv.setLayoutManager(new GridLayoutManager(this, 2));
+        DiffUtil.ItemCallback<Recurso> diff = getRecursoDiff();
+        ImageGridAdapter.Binder<Recurso> binder = getRecursoBinder();
+        ImageGridAdapter.OnItemClickListener<Recurso> listener = r -> {
+            Intent i = new Intent(this, RecursoDetailActivity.class);
+            i.putExtra("id_recurso", r.getId());
+            startActivity(i);
+        };
+        ImageGridAdapter<Recurso> grid = new ImageGridAdapter<>(diff, binder, listener);
+        rv.setAdapter(grid);
+
+        service.loadAccesibles(new GenericActivityService.LoadCallback<Recurso>() {
+            @Override public void onSuccess(List<Recurso> items) {
+                runOnUiThread(() -> grid.submitList(items));
+            }
+            @Override public void onError(Throwable t) {
+                runOnUiThread(() ->
+                        Toast.makeText(GenericListActivity.this,
+                                "Error accesibles: " + t.getMessage(),
+                                Toast.LENGTH_SHORT).show()
+                );
+            }
+        });
+    }
+
+    @NonNull
+    private DiffUtil.ItemCallback<Recurso> getRecursoDiff() {
+        return new DiffUtil.ItemCallback<Recurso>() {
             @Override public boolean areItemsTheSame(@NonNull Recurso a, @NonNull Recurso b) {
                 return a.getId() == b.getId();
             }
@@ -195,75 +309,6 @@ public class GenericListActivity extends AppCompatActivity {
                 return a.equals(b);
             }
         };
-
-        ImageGridAdapter.OnItemClickListener<Recurso> listener = r -> {
-            Intent i = new Intent(this, RecursoDetailActivity.class);
-            i.putExtra("id_recurso", r.getId());
-            startActivity(i);
-        };
-
-        service.loadServiciosPorCategoria(categoryId, new GenericActivityService.LoadCallback<Recurso>() {
-            @Override public void onSuccess(List<Recurso> items) {
-                runOnUiThread(() -> {
-                    if (items.size() < 5) {
-                        // 1) LayoutManager horizontal
-                        LinearLayoutManager lm = new LinearLayoutManager(
-                                GenericListActivity.this,
-                                LinearLayoutManager.HORIZONTAL,
-                                false
-                        );
-                        rv.setLayoutManager(lm);
-
-                        // 2) Binder que ajusta altura a 200dp
-                        ImageGridAdapter.Binder<Recurso> binder = (iv, r) -> {
-                            // ajustar la card a 200dp de alto
-                            View card = (View) iv.getParent();
-                            ViewGroup.LayoutParams lp = card.getLayoutParams();
-                            lp.height = dpToPx(200);
-                            card.setLayoutParams(lp);
-
-                            // cargar imagen
-                            Picasso.get()
-                                    .load(r.getImagen())
-                                    .placeholder(makeLoader())
-                                    .fit().centerCrop()
-                                    .into(iv);
-                        };
-
-                        // 3) Adapter horizontal
-                        ImageGridAdapter<Recurso> horizontalAdapter =
-                                new ImageGridAdapter<>(diff, binder, listener);
-                        rv.setAdapter(horizontalAdapter);
-                        horizontalAdapter.submitList(items);
-
-                    } else {
-                        // grid 2 columnas, altura normal (150dp definido en XML)
-                        rv.setLayoutManager(new GridLayoutManager(
-                                GenericListActivity.this, 2
-                        ));
-
-                        ImageGridAdapter.Binder<Recurso> binder = getRecursoBinder();
-                        ImageGridAdapter<Recurso> gridAdapter =
-                                new ImageGridAdapter<>(diff, binder, listener);
-                        rv.setAdapter(gridAdapter);
-                        gridAdapter.submitList(items);
-                    }
-                });
-            }
-            @Override public void onError(Throwable t) {
-                runOnUiThread(() ->
-                        Toast.makeText(GenericListActivity.this,
-                                "Error cargando categoría "+ categoryId +": "+t.getMessage(),
-                                Toast.LENGTH_SHORT).show()
-                );
-            }
-        });
-    }
-
-    /** Utilidad para convertir dp a píxeles */
-    private int dpToPx(int dp) {
-        float density = getResources().getDisplayMetrics().density;
-        return Math.round(dp * density);
     }
 
     @NonNull
@@ -276,11 +321,18 @@ public class GenericListActivity extends AppCompatActivity {
             } else {
                 req.placeholder(makeLoader())
                         .into(iv, new Callback() {
-                            @Override public void onSuccess() {
-                                loadedUrls.add(url); }
+                            @Override public void onSuccess() { loadedUrls.add(url); }
                             @Override public void onError(Exception ex) { }
                         });
             }
         };
+    }
+
+    private CircularProgressDrawable makeLoader() {
+        CircularProgressDrawable l = new CircularProgressDrawable(this);
+        l.setStrokeWidth(5f);
+        l.setCenterRadius(30f);
+        l.start();
+        return l;
     }
 }

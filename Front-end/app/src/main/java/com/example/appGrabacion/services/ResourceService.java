@@ -121,5 +121,28 @@ public class ResourceService {
                     }
                 });
     }
+    public void fetchGratuitos(final ResourceCallback cb) {
+        api.getResourcesGratuitos().enqueue(new Callback<List<Recurso>>() {
+            @Override public void onResponse(Call<List<Recurso>> c, Response<List<Recurso>> r) {
+                if (r.isSuccessful() && r.body()!=null) cb.onSuccess(r.body());
+                else cb.onError(new RuntimeException("Código:"+r.code()));
+            }
+            @Override public void onFailure(Call<List<Recurso>> c, Throwable t) {
+                cb.onError(t);
+            }
+        });
+    }
+
+    public void fetchAccesibles(final ResourceCallback cb) {
+        api.getResourcesAccesibles().enqueue(new Callback<List<Recurso>>() {
+            @Override public void onResponse(Call<List<Recurso>> c, Response<List<Recurso>> r) {
+                if (r.isSuccessful() && r.body()!=null) cb.onSuccess(r.body());
+                else cb.onError(new RuntimeException("Código:"+r.code()));
+            }
+            @Override public void onFailure(Call<List<Recurso>> c, Throwable t) {
+                cb.onError(t);
+            }
+        });
+    }
 
 }

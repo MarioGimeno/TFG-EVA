@@ -96,12 +96,43 @@ async function getRecursosByCategoria(idCategoria) {
   return rows;
 }
 
+async function getRecursosFiltrados({ gratuito, accesible }) {
+  const condiciones = [];
+  const valores     = [];
+  let idx = 1;
+
+  if (gratuito !== undefined) {
+    condiciones.push(`gratuito = $${idx++}`);
+    valores.push(gratuito);
+  }
+  if (accesible !== undefined) {
+    condiciones.push(`accesible = $${idx++}`);
+    valores.push(accesible);
+  }
+
+  const where = condiciones.length
+    ? `WHERE ${condiciones.join(' AND ')}`
+    : ``;
+
+  const { rows } = await pool.query(`
+    SELECT id, id_entidad, id_categoria,
+           imagen, email, telefono, direccion, horario,
+           servicio, descripcion, requisitos,
+           gratuito, web, accesible
+      FROM recurso
+      ${where}
+     ORDER BY id
+  `, valores);
+
+  return rows;
+}
+
 module.exports = {
   getAllRecursos,
+  getRecursosByCategoria,
+  getRecursosFiltrados,    
   getRecursoById,
-  getRecursosByCategoria,    
   createRecurso,
   updateRecurso,
   deleteRecurso
 };
-
