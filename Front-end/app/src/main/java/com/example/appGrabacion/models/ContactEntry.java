@@ -3,60 +3,44 @@ package com.example.appGrabacion.models;
 
 import com.google.gson.annotations.SerializedName;
 
-/**
- * Modelo que representa un contacto, con mapeo del campo remoto "contact_user_id" y correo electrónico.
- */
 public class ContactEntry {
-    /**
-     * ID local (primary key interno, opcional).
-     */
+    /** ID del contacto (viene siempre lleno) */
     private int id;
 
-    /**
-     * ID remoto del usuario en el servidor (contact_user_id).
-     */
+    /** Puede ser null, así que envoltorio Integer */
     @SerializedName("contact_user_id")
-    private int contactUserId;
+    private Integer contactUserId;
 
-    /**
-     * Nombre o alias del contacto.
-     */
     private String name;
-
-    /**
-     * Email del contacto.
-     */
     private String email;
 
     public ContactEntry() { }
 
-    public ContactEntry(int id, int contactUserId, String name, String email) {
+    public ContactEntry(int id, Integer contactUserId, String name, String email) {
         this.id = id;
         this.contactUserId = contactUserId;
         this.name = name;
         this.email = email;
     }
 
+    // getters y setters
     public int getId() {
         return id;
     }
-
     public void setId(int id) {
         this.id = id;
     }
 
-    public int getContactUserId() {
+    public Integer getContactUserId() {
         return contactUserId;
     }
-
-    public void setContactUserId(int contactUserId) {
+    public void setContactUserId(Integer contactUserId) {
         this.contactUserId = contactUserId;
     }
 
     public String getName() {
         return name;
     }
-
     public void setName(String name) {
         this.name = name;
     }
@@ -64,7 +48,6 @@ public class ContactEntry {
     public String getEmail() {
         return email;
     }
-
     public void setEmail(String email) {
         this.email = email;
     }
@@ -79,4 +62,3 @@ public class ContactEntry {
                 '}';
     }
 }
-

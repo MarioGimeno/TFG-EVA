@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.TypedValue;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -14,6 +15,7 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.widget.NestedScrollView;
@@ -70,8 +72,9 @@ public class ContactsActivity extends AppCompatActivity {
         rv.setHasFixedSize(false);
         rv.setNestedScrollingEnabled(false);
 
-        adapter = new ContactsAdapter();
+        adapter = new ContactsAdapter(contactId -> doDelete(contactId));
         rv.setAdapter(adapter);
+
         NestedScrollView scrollAll = findViewById(R.id.scrollAll);
         ImageView header        = findViewById(R.id.imgHeader);
         FrameLayout wrapper     = findViewById(R.id.card_wrapper);
@@ -106,9 +109,20 @@ public class ContactsActivity extends AppCompatActivity {
 
         btnAdd.setOnClickListener(v -> addContact());
 
+        // 1) Adapter ahora recibe un listener de borrado:
+        adapter = new ContactsAdapter(contactId -> {
+            // (Opcional) pides confirmación:
+            new AlertDialog.Builder(this)
+                    .setTitle("Borrar contacto")
+                    .setMessage("¿Seguro que quieres borrarlo?")
+                    .setPositiveButton("Sí", (d,w) -> doDelete(contactId))
+                    .setNegativeButton("No", null)
+                    .show();
+        });
+        rv.setAdapter(adapter);
+
         loadContacts();
     }
-
     private void loadContacts() {
         progress.setVisibility(ProgressBar.VISIBLE);
         api.getContacts(token).enqueue(new Callback<List<ContactEntry>>() {
@@ -159,5 +173,29 @@ public class ContactsActivity extends AppCompatActivity {
                 Toast.makeText(ContactsActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    // 2) Nuevo método para realizar el DELETE
+    private void doDelete(int contactId) {
+        progress.setVisibility(View.VISIBLE);
+        api.deleteContact(token, contactId)
+                .enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> res) {
+                        progress.setVisibility(View.GONE);
+                        if (res.isSuccessful()) {
+                            loadContacts();  // recarga lista tras el borrado
+                        } else {
+                            Toast.makeText(ContactsActivity.this,
+                                    "Error borrando", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        progress.setVisibility(View.GONE);
+                        Toast.makeText(ContactsActivity.this,
+                                "Error de red", Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 }

@@ -22,7 +22,6 @@
             android:layout_height="48dp"
             android:scaleType="centerInside"
             android:src="@drawable/contacto_icon"
-            android:contentDescription="@null"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent" />
@@ -37,9 +36,8 @@
             app:layout_constraintStart_toEndOf="@id/imgContactIcon"
             app:layout_constraintTop_toTopOf="@id/imgContactIcon"
             app:layout_constraintBottom_toBottomOf="@id/imgContactIcon"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintEnd_toStartOf="@+id/btnDelete">
 
-            <!-- Nombre -->
             <TextView
                 android:id="@+id/tvContactName"
                 android:layout_width="match_parent"
@@ -50,7 +48,6 @@
                 android:maxLines="1"
                 android:ellipsize="end" />
 
-            <!-- Email (sigue con id tvContactPhone) -->
             <TextView
                 android:id="@+id/tvContactPhone"
                 android:layout_width="match_parent"
@@ -60,10 +57,23 @@
                 android:textSize="13sp"
                 android:maxLines="1"
                 android:ellipsize="end" />
-
         </LinearLayout>
 
-        <!-- (Se ha eliminado el ImageButton de papelera) -->
+        <!-- Botón de borrar -->
+        <ImageButton
+            android:id="@+id/btnDelete"
+            android:layout_width="55dp"
+            android:layout_height="55dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_circle_white"
+            android:padding="8dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_delete"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
