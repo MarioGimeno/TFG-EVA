@@ -1,38 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView
+<!--
+  Ahora el root es un FrameLayout MATCH_PARENT,
+  y dentro la CardView usa padding en el padre para ser más pequeña.
+-->
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:strokeColor="#A11991"
-    app:strokeWidth="2dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="4dp"
-    app:cardBackgroundColor="@android:color/white">
+    android:padding="24dp">
 
-    <FrameLayout
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="4dp"
+        app:strokeWidth="2dp"
+        app:strokeColor="#A11991">
 
-        <!-- Imagen -->
-        <ImageView
-            android:id="@+id/sliderImage"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_margin="8dp"
-            android:adjustViewBounds="true"
-            android:scaleType="centerCrop"
-            android:layout_gravity="top"/>
+            android:layout_height="match_parent">
 
-        <!-- Título o subtítulo encima -->
-        <TextView
-            android:id="@+id/sliderTitle"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="#80000000"
-            android:textColor="@android:color/white"
-            android:textSize="16sp"
-            android:padding="8dp"
-            android:layout_gravity="bottom"/>
-    </FrameLayout>
-</com.google.android.material.card.MaterialCardView>
+            <ImageView
+                android:id="@+id/sliderImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="@null"/>
+
+            <TextView
+                android:id="@+id/sliderTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="bottom"
+                android:background="#80000000"
+                android:padding="8dp"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"/>
+        </FrameLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+</FrameLayout>

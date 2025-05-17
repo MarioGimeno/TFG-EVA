@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+
+    <!-- Tamaño fijo 70×70dp -->
+    <size
+        android:width="70dp"
+        android:height="70dp"/>
+
+    <!-- Fondo blanco -->
+    <solid android:color="#FFFFFF"/>
+
+    <!-- Borde morado 2dp -->
+    <stroke
+        android:width="2dp"
+        android:color="#A11991"/>
+</shape>

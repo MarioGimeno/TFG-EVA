@@ -1,57 +1,72 @@
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="24dp"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F6F6F6">    <!-- aquí el fondo blanco -->
+    android:background="#F6F6F6">
 
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/vpSlider"
+    <!-- Título morado encima del slider -->
+    <TextView
+        android:id="@+id/tvDiscover"
         android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:clipChildren="false"
-        android:clipToPadding="false"
-        android:paddingStart="30dp"
-        android:paddingEnd="30dp"
+        android:layout_height="wrap_content"
+        android:text="Descubre novedades"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#A11991"
+        android:gravity="center"
+        android:layout_marginTop="16dp"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
-    <Button
-        android:id="@+id/btnGoLogin"
-        android:text="Ir a Login"
+
+    <!-- Loader, centrado dentro del ViewPager2 y tintado en colorPrimary -->
+    <ProgressBar
+        android:id="@+id/pbLoader"
+        style="?android:attr/progressBarStyleLarge"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:indeterminateTint="?attr/colorPrimary"
+        app:layout_constraintTop_toTopOf="@id/vpSlider"
+        app:layout_constraintBottom_toBottomOf="@id/vpSlider"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
-    <Button
-        android:id="@+id/btnGoFolder"
-        android:text="Mi Carpeta"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"/>
+    <!-- Slider -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/vpSlider"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:clipToPadding="false"
+        android:clipChildren="false"
+        app:layout_constraintTop_toBottomOf="@id/tvDiscover"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.35"/>
 
-    <!-- Nuevo botón Contactos -->
-    <Button
-        android:id="@+id/btnGoContacts"
-        android:text="Contactos"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"/>
-    <!-- Nuevo botón Contactos -->
-    <Button
-        android:id="@+id/btnGoEntidades"
-        android:text="Contactos"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"/>
-    <!-- Nuevo botón Contactos -->
-    <Button
-        android:id="@+id/btnGoRecursos"
-        android:text="Contactos"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"/>
+    <!-- Resto del contenido -->
+    <ScrollView
+        android:id="@+id/scrollContent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/vpSlider"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
 
-</LinearLayout>
+    <!-- Footer -->
+    <include
+        android:id="@+id/footerNav"
+        layout="@layout/footer_navigation"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintWidth_percent="0.85"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginBottom="10dp"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

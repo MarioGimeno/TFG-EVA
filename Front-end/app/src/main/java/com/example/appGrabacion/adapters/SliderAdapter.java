@@ -1,6 +1,5 @@
 package com.example.appGrabacion.adapters;
 
-import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,11 +32,7 @@ public class SliderAdapter extends RecyclerView.Adapter<SliderAdapter.VH> {
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_slider, parent, false);
-        // ancho al 70% de pantalla
-        int screenW = parent.getContext()
-                .getResources()
-                .getDisplayMetrics().widthPixels;
-        v.getLayoutParams().width = (int)(screenW * 0.7f);
+        // ¡NO tocamos el width aquí!
         return new VH(v);
     }
 
