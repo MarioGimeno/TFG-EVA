@@ -254,6 +254,7 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
                 stopMicrophoneService();
                 stopVideoRecording();
                 combineAudioAndLocation();
+                stopLiveLocationUpdates();
                 if (callback != null) {
                     callback.onLocationReceived();
                 }
