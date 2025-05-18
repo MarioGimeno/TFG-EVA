@@ -1,22 +1,31 @@
+// src/main/java/com/example/appGrabacion/MainActivity.java
 package com.example.appGrabacion;
 
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.Html;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.widget.NestedScrollView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
@@ -39,6 +48,7 @@ import com.example.appGrabacion.utils.ContactsApi;
 import com.example.appGrabacion.utils.MyFirebaseMessagingService;
 import com.example.appGrabacion.utils.RetrofitClient;
 import com.example.appGrabacion.utils.SessionManager;
+import com.google.android.material.button.MaterialButton;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.ArrayList;
@@ -51,20 +61,15 @@ import retrofit2.Response;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final int REQ_PERMISSIONS = 100;
-
     private ViewPager2 vpSlider;
     private SliderAdapter sliderAdapter;
     private ProgressBar pbLoader;
-
     private final List<Entidad> entidades = new ArrayList<>();
     private final List<Recurso> recursos = new ArrayList<>();
     private boolean entLoaded = false, recLoaded = false;
-
     private final Handler sliderHandler = new Handler(Looper.getMainLooper());
-
     private EntityService entityService;
     private ResourceService resourceService;
-
     private static final String[] REQUIRED_PERMISSIONS = {
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO,
@@ -79,24 +84,68 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setTheme(R.style.Theme_Calculadora_Front);
         setContentView(R.layout.activity_main);
-        setupFooterButtons();
-        // referencias a views
-        vpSlider   = findViewById(R.id.vpSlider);
-        pbLoader   = findViewById(R.id.pbLoader);
 
-        // al arrancar, muestro loader y oculto slider
-        pbLoader.setVisibility(View.VISIBLE);
-        vpSlider.setVisibility(View.GONE);
+        setupFooterButtons();
+
+        // Referencias a vistas
+        vpSlider = findViewById(R.id.vpSlider);
+        pbLoader = findViewById(R.id.pbLoader);
+        TextView tvDesc = findViewById(R.id.tvSectionDesc);
+        tvDesc.setText(Html.fromHtml(getString(R.string.section_eva_desc),
+                Html.FROM_HTML_MODE_LEGACY));
+
+        //  ════════════════════════════════════════════════════
+        //  Scroll dinámico: al desplazar el NestedScrollView,
+        //  sube la card_wrapper igual que en GenericListActivity
+        //  ════════════════════════════════════════════════════
+        ImageView bg = findViewById(R.id.videoBackground);
+        FrameLayout wrapper = findViewById(R.id.card_wrapper);
+        ConstraintLayout.LayoutParams params =
+                (ConstraintLayout.LayoutParams) wrapper.getLayoutParams();
+        final int initialMarginTop = params.topMargin;
+
+        bg.post(() -> {
+            int overlapPx = Math.round(
+                    TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_DIP,
+                            40,
+                            getResources().getDisplayMetrics()
+                    )
+            );
+            int maxScroll = bg.getHeight() - overlapPx;
+
+            NestedScrollView scroll = findViewById(R.id.scrollView);
+            scroll.setOnScrollChangeListener(
+                    new NestedScrollView.OnScrollChangeListener() {
+                        @Override
+                        public void onScrollChange(NestedScrollView v,
+                                                   int scrollX, int scrollY,
+                                                   int oldX, int oldY) {
+                            int dy = Math.max(0, Math.min(scrollY, maxScroll));
+                            params.topMargin = initialMarginTop - dy;
+                            wrapper.setLayoutParams(params);
+                        }
+                    }
+            );
+        });
+        //  ════════════════════════════════════════════════════
 
         requestAllPermissions();
         syncContacts();
         registerFcmToken();
+        MaterialButton btnDownload = findViewById(R.id.btnDownloadManual);
+        btnDownload.setOnClickListener(v -> {
+            // Sustituye FILE_ID por el ID real de tu documento de Drive
+            String fileId = "1Xq8GgtBpe_kmpsBMbq-Cx_s7wquZHSwD";
+            String url = "https://drive.google.com/uc?export=download&id=" + fileId;
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            startActivity(intent);
+        });
 
-        // inicializar servicios
+        // Inicializar servicios y cargar slider
         entityService   = new EntityService(this);
         resourceService = new ResourceService(this);
 
-        // carga de datos
         entityService.fetchAll(new EntityService.EntityCallback() {
             @Override public void onSuccess(List<Entidad> list) {
                 entidades.clear();
@@ -120,11 +169,12 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // autoscroll más lento: 5 s
+        // Autoscroll cada 5s
         sliderHandler.postDelayed(new Runnable() {
             @Override public void run() {
                 if (sliderAdapter != null && sliderAdapter.getItemCount() > 0) {
-                    int next = (vpSlider.getCurrentItem() + 1) % sliderAdapter.getItemCount();
+                    int next = (vpSlider.getCurrentItem() + 1)
+                            % sliderAdapter.getItemCount();
                     vpSlider.setCurrentItem(next, true);
                 }
                 sliderHandler.postDelayed(this, 5000);
@@ -132,11 +182,9 @@ public class MainActivity extends AppCompatActivity {
         }, 5000);
     }
 
-    /** Sólo inicializa el slider cuando ambas llamadas acaben */
+    /** Inicializa el slider cuando ambos servicios han cargado */
     private void tryInitSlider() {
         if (!entLoaded || !recLoaded) return;
-
-        // mezclamos entidades y recursos
         List<SliderAdapter.Item> mixed = new ArrayList<>();
         int max = Math.max(entidades.size(), recursos.size());
         for (int i = 0; i < max; i++) {
@@ -145,8 +193,6 @@ public class MainActivity extends AppCompatActivity {
             if (i < recursos.size())
                 mixed.add(new SliderAdapter.RecursoItem(recursos.get(i)));
         }
-
-        // adapter
         sliderAdapter = new SliderAdapter(mixed, item -> {
             if (item instanceof SliderAdapter.EntidadItem) {
                 Entidad e = ((SliderAdapter.EntidadItem) item).getEntidad();
@@ -159,13 +205,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         vpSlider.setAdapter(sliderAdapter);
-
-        // desactivar clipping para el peek
         vpSlider.setClipToPadding(false);
         vpSlider.setClipChildren(false);
         ((ViewGroup) vpSlider.getParent()).setClipChildren(false);
-
-        // transformer para espacio y efecto escala
         vpSlider.setOffscreenPageLimit(3);
         CompositePageTransformer ct = new CompositePageTransformer();
         ct.addTransformer(new MarginPageTransformer(30));
@@ -175,12 +217,9 @@ public class MainActivity extends AppCompatActivity {
         });
         vpSlider.setPageTransformer(ct);
 
-        // oculto loader y muestro slider
         pbLoader.setVisibility(View.GONE);
         vpSlider.setVisibility(View.VISIBLE);
     }
-
-
 
     private void registerFcmToken() {
         FirebaseMessaging.getInstance().getToken()
@@ -200,54 +239,48 @@ public class MainActivity extends AppCompatActivity {
                 .create(ContactsApi.class);
 
         api.getContacts(bearer).enqueue(new Callback<List<ContactEntry>>() {
-            @Override
-            public void onResponse(Call<List<ContactEntry>> call,
-                                   Response<List<ContactEntry>> resp) {
+            @Override public void onResponse(Call<List<ContactEntry>> call,
+                                             Response<List<ContactEntry>> resp) {
                 if (resp.isSuccessful() && resp.body() != null) {
                     new ContactManager(MainActivity.this)
                             .saveContacts(resp.body());
-                    Log.d(TAG, "Contacts synced: " + resp.body().size());
+                    Log.d(TAG, "Contacts synced: " +
+                            resp.body().size());
                 } else {
-                    Log.e(TAG, "Error fetching contacts: " + resp.code());
+                    Log.e(TAG, "Error fetching contacts: " +
+                            resp.code());
                 }
             }
-            @Override public void onFailure(Call<List<ContactEntry>> call, Throwable t) {
+            @Override public void onFailure(Call< List<ContactEntry>> call,
+                                            Throwable t) {
                 Log.e(TAG, "Failed to sync contacts", t);
             }
         });
     }
+
     private void setupFooterButtons() {
-
-        // Referencia al layout incluido
         View footer = findViewById(R.id.footerNav);
-
-        // Ahora buscamos los botones dentro de ese footer
         footer.findViewById(R.id.btnGoFolder)
                 .setOnClickListener(v ->
-                        startActivity(new Intent(this, FolderActivity.class))
-                );
-
+                        startActivity(new Intent(this, FolderActivity.class)));
         footer.findViewById(R.id.btnGoGrabacion)
                 .setOnClickListener(v ->
-                        startActivity(new Intent(this, RecursosActivity.class))
-                );
-
+                        startActivity(new Intent(this, RecursosActivity.class)));
         footer.findViewById(R.id.btnGoLogin)
                 .setOnClickListener(v ->
-                        startActivity(new Intent(this, LoginActivity.class))
-                );
-
+                        startActivity(new Intent(this, LoginActivity.class)));
         footer.findViewById(R.id.btnGoCategorias)
                 .setOnClickListener(v -> {
                     Intent i = new Intent(this, GenericListActivity.class);
-                    i.putExtra(GenericListActivity.EXTRA_TYPE, "entidades");
+                    i.putExtra(GenericListActivity.EXTRA_TYPE,
+                            "entidades");
                     startActivity(i);
                 });
-
         footer.findViewById(R.id.btnGoContacts)
                 .setOnClickListener(v ->
-                        startActivity(new Intent(this, ContactsActivity.class))
-                );
+                        startActivity(new Intent(this,
+                                ContactsActivity.class)));
+        footer.bringToFront();
     }
 
     private void requestAllPermissions() {
@@ -268,22 +301,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override protected void onDestroy() {
+    @Override
+    protected void onDestroy() {
         super.onDestroy();
         sliderHandler.removeCallbacksAndMessages(null);
     }
 
-    @Override public void onRequestPermissionsResult(
-            int code, @NonNull String[] perms, @NonNull int[] grants
-    ) {
+    @Override
+    public void onRequestPermissionsResult(int code,
+                                           @NonNull String[] perms,
+                                           @NonNull int[] grants) {
         super.onRequestPermissionsResult(code, perms, grants);
         if (code == REQ_PERMISSIONS) {
             for (int i = 0; i < perms.length; i++) {
                 if (grants[i] != PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this,
                             "Necesito " + perms[i],
-                            Toast.LENGTH_LONG
-                    ).show();
+                            Toast.LENGTH_LONG).show();
                 }
             }
         }
