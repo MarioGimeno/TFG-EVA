@@ -11,7 +11,10 @@ const pool = new Pool({
     database: process.env.PGDATABASE,
     ssl:  { rejectUnauthorized: false }
 });
-  
+  // ¡Crea TMPDIR si no existiera!
+if (!fs.existsSync(TMPDIR)) {
+  fs.mkdirSync(TMPDIR, { recursive: true });
+}
 module.exports = {
   // servidor
   PORT: process.env.PORT || 3000,
