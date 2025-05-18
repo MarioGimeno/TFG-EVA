@@ -13,7 +13,10 @@ const TMPDIR = process.env.TMPDIR || '/mnt/uploads/tmp';
 if (!fs.existsSync(TMPDIR)) {
   fs.mkdirSync(TMPDIR, { recursive: true });
 }
-
+const magicEnv = process.env.MAGIC;
+if (!magicEnv) {
+  throw new Error('❌ La variable de entorno MAGIC no está definida');
+}
 // Pool de Postgres
 const pool = new Pool({
   host:     process.env.PGHOST,
