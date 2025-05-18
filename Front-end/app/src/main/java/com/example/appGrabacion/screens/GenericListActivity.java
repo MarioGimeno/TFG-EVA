@@ -81,12 +81,12 @@ public class GenericListActivity extends AppCompatActivity {
 
         } else if ("gratuitos".equalsIgnoreCase(listType)) {
             // Modo: Gratuitos
-            bg.setImageResource(R.drawable.servicios);
+            bg.setImageResource(R.drawable.fondo_gratuitos);
             setupGratuitosGrid();
 
         } else if ("accesibles".equalsIgnoreCase(listType)) {
             // Modo: Accesibles
-            bg.setImageResource(R.drawable.servicios);
+            bg.setImageResource(R.drawable.fondo_accesibles);
             setupAccesiblesGrid();
 
         } else {

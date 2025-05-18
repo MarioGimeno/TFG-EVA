@@ -31,6 +31,8 @@ public class CategoriasActivity extends AppCompatActivity {
         Log.d(TAG, "onCreate invoked");
         setContentView(R.layout.activity_categorias);
 
+        ImageView btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> finish());
 
         RecyclerView rv = findViewById(R.id.rvCategorias);
         rv.setNestedScrollingEnabled(false);
