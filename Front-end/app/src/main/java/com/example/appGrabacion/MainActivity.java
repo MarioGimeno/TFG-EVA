@@ -39,6 +39,7 @@ import com.example.appGrabacion.models.Entidad;
 import com.example.appGrabacion.models.Recurso;
 import com.example.appGrabacion.screens.CalculadoraScreen;
 
+import com.example.appGrabacion.screens.CategoriasActivity;
 import com.example.appGrabacion.screens.ContactsActivity;
 import com.example.appGrabacion.screens.EntidadDetailActivity;
 import com.example.appGrabacion.screens.FolderActivity;
@@ -306,8 +307,7 @@ public class MainActivity extends AppCompatActivity {
         // Categorías (siempre accesible)
         footer.findViewById(R.id.btnGoCategorias)
                 .setOnClickListener(v -> {
-                    Intent i = new Intent(this, GenericListActivity.class);
-                    i.putExtra(GenericListActivity.EXTRA_TYPE, "entidades");
+                    Intent i = new Intent(this, CategoriasActivity.class);
                     startActivity(i);
                 });
 
