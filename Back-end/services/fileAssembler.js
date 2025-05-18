@@ -1,54 +1,58 @@
 // services/fileAssembler.js
 
-const fs = require('fs');
+const fs   = require('fs');
 const path = require('path');
-const { decryptFile } = require('./decryptionService');
+const { TMPDIR } = require('../config');
+const { decryptFile }            = require('./decryptionService');
 const { uploadVideoAndLocation } = require('./gcsService');
 
 /**
- * Ensambla los chunks desde uploads/userId/fileId,
- * desencripta los archivos y sube vídeo y ubicación a GCS.
- *
- * @param {string} userId      ID del usuario.
- * @param {string} fileId      ID único para el archivo.
- * @param {number} totalChunks Número de trozos de vídeo.
- * @returns {Promise<string>}  URL pública del vídeo en GCS.
+ * Ensambla los chunks de vídeo, desencripta el fichero resultante
+ * y lo sube a GCS. Devuelve la URL pública.
  */
 async function assembleAndUpload(userId, fileId, totalChunks) {
-  // **1) Directorio donde Multer puso los chunks**
-  const fileDir = path.join('uploads', userId, fileId);
-  if (!fs.existsSync(fileDir)) {
-    throw new Error(`No existe el directorio de chunks: ${fileDir}`);
+  // 1) Directorio de los chunks dentro de TMPDIR
+  const chunksDir = path.join(TMPDIR, userId, fileId);
+  
+  // 2) Verificar que exista
+  if (!fs.existsSync(chunksDir)) {
+    throw new Error(`No existe el directorio de chunks: ${chunksDir}`);
   }
 
-  // **2) Concatenar chunks en un único .mp4 encriptado**
-  const encVideoPath = path.join(fileDir, `${fileId}-encrypted.mp4`);
-  const writeStream = fs.createWriteStream(encVideoPath);
-  for (let i = 0; i < totalChunks; i++) {
-    const chunkPath = path.join(fileDir, `chunk_${i}`);
-    if (!fs.existsSync(chunkPath)) {
-      writeStream.close();
-      throw new Error(`Falta chunk_${i} en ${fileDir}`);
-    }
-    writeStream.write(fs.readFileSync(chunkPath));
+  // 3) Listar y ordenar los archivos de chunk
+  const chunkFiles = fs.readdirSync(chunksDir)
+    .filter(name => name.startsWith('chunk_'))
+    .sort((a, b) => {
+      const ia = parseInt(a.split('_')[1], 10);
+      const ib = parseInt(b.split('_')[1], 10);
+      return ia - ib;
+    });
+
+  if (chunkFiles.length !== totalChunks) {
+    throw new Error(
+      `Chunks encontrados (${chunkFiles.length}) ` +
+      `no coinciden con total esperado (${totalChunks})`
+    );
+  }
+
+  // 4) Ensamblar en un único archivo encriptado
+  const encryptedPath = path.join(chunksDir, `${fileId}-encrypted.mp4`);
+  const writeStream   = fs.createWriteStream(encryptedPath);
+
+  for (const filename of chunkFiles) {
+    const chunkPath = path.join(chunksDir, filename);
+    const data      = fs.readFileSync(chunkPath);
+    writeStream.write(data);
   }
   writeStream.end();
+  await new Promise(resolve => writeStream.on('finish', resolve));
 
-  // **3) Desencriptar vídeo**
-  const decVideoPath = path.join(fileDir, `${fileId}-decrypted.mp4`);
-  await decryptFile(encVideoPath, decVideoPath);
+  // 5) Desencriptar el vídeo ensamblado
+  const decryptedPath = path.join(chunksDir, `${fileId}.mp4`);
+  await decryptFile(encryptedPath, decryptedPath);
 
-  // **4) Renombrar la ubicación si existe**
-  const tmpLoc = path.join(fileDir, 'location-decrypted.txt');
-  if (fs.existsSync(tmpLoc)) {
-    fs.renameSync(tmpLoc, path.join(fileDir, `${fileId}.txt`));
-  }
-
-  // **5) Subir vídeo y ubicación a GCS**
-  const publicUrl = await uploadVideoAndLocation(userId, fileId, decVideoPath);
-
-  // **6) Limpiar carpeta de este fileId**
-  fs.rmSync(fileDir, { recursive: true, force: true });
+  // 6) Subir el vídeo desencriptado a GCS
+  const publicUrl = await uploadVideoAndLocation(userId, fileId, decryptedPath);
 
   return publicUrl;
 }

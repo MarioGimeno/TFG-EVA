@@ -1,20 +1,28 @@
-
 // 2) ContactsActivity.java
 package com.example.appGrabacion.screens;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.widget.NestedScrollView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.appGrabacion.MainActivity;
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.ContactsAdapter;
 import com.example.appGrabacion.models.ContactEntry;
@@ -41,17 +49,58 @@ public class ContactsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contacts);
 
-        // UI refs
-        rv = findViewById(R.id.rvContacts);
-        progress = findViewById(R.id.progressContacts);
-        etName = findViewById(R.id.etContactName);
-        etPhone = findViewById(R.id.etEmail);
-        btnAdd = findViewById(R.id.btnAddContact);
+        // 1) Botón de vuelta a Main
+        findViewById(R.id.btnBack).setOnClickListener(v -> {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        });
 
-        // RecyclerView setup
-        rv.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new ContactsAdapter();
+        // UI refs
+        rv       = findViewById(R.id.rvContacts);
+        progress = findViewById(R.id.progressContacts);
+        etName   = findViewById(R.id.etContactName);
+        etPhone  = findViewById(R.id.etEmail);
+        btnAdd   = findViewById(R.id.btnAddContact);
+
+        // RecyclerView setup con auto-measure dentro de ScrollView
+        LinearLayoutManager lm = new LinearLayoutManager(this) {
+            @Override public boolean isAutoMeasureEnabled() {
+                return true;
+            }
+        };
+        rv.setLayoutManager(lm);
+        rv.setHasFixedSize(false);
+        rv.setNestedScrollingEnabled(false);
+
+        adapter = new ContactsAdapter(contactId -> doDelete(contactId));
         rv.setAdapter(adapter);
+
+        NestedScrollView scrollAll = findViewById(R.id.scrollAll);
+        ImageView header        = findViewById(R.id.imgHeader);
+        FrameLayout wrapper     = findViewById(R.id.card_wrapper);
+        ConstraintLayout.LayoutParams params =
+                (ConstraintLayout.LayoutParams) wrapper.getLayoutParams();
+        final int initialMarginTop = params.topMargin;
+
+// ejecutamos cuando header ya ha medido su altura
+        header.post(() -> {
+            int overlapPx = Math.round(
+                    TypedValue.applyDimension(
+                            TypedValue.COMPLEX_UNIT_DIP,
+                            40,
+                            getResources().getDisplayMetrics()
+                    )
+            );
+            int maxScroll = header.getHeight() - overlapPx;
+
+            scrollAll.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldX, oldY) -> {
+                int dy = Math.max(0, Math.min(scrollY, maxScroll));
+                params.topMargin = initialMarginTop - dy;
+                wrapper.setLayoutParams(params);
+            });
+        });
+
+        // Eliminado el bloque de scroll dinámico sobre el header
 
         // Retrofit API
         api = RetrofitClient.getRetrofitInstance(this).create(ContactsApi.class);
@@ -60,24 +109,36 @@ public class ContactsActivity extends AppCompatActivity {
 
         btnAdd.setOnClickListener(v -> addContact());
 
+        // 1) Adapter ahora recibe un listener de borrado:
+        adapter = new ContactsAdapter(contactId -> {
+            // (Opcional) pides confirmación:
+            new AlertDialog.Builder(this)
+                    .setTitle("Borrar contacto")
+                    .setMessage("¿Seguro que quieres borrarlo?")
+                    .setPositiveButton("Sí", (d,w) -> doDelete(contactId))
+                    .setNegativeButton("No", null)
+                    .show();
+        });
+        rv.setAdapter(adapter);
+
         loadContacts();
     }
-
     private void loadContacts() {
-        progress.setVisibility(View.VISIBLE);
+        progress.setVisibility(ProgressBar.VISIBLE);
         api.getContacts(token).enqueue(new Callback<List<ContactEntry>>() {
             @Override
             public void onResponse(Call<List<ContactEntry>> call, Response<List<ContactEntry>> res) {
-                progress.setVisibility(View.GONE);
+                progress.setVisibility(ProgressBar.GONE);
                 if (res.isSuccessful()) {
                     adapter.setContacts(res.body());
-                } else
+                } else {
                     Toast.makeText(ContactsActivity.this, "Error cargando contactos", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
             public void onFailure(Call<List<ContactEntry>> call, Throwable t) {
-                progress.setVisibility(View.GONE);
+                progress.setVisibility(ProgressBar.GONE);
                 Toast.makeText(ContactsActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
             }
         });
@@ -87,18 +148,16 @@ public class ContactsActivity extends AppCompatActivity {
         String name = etName.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
         if (TextUtils.isEmpty(name) || TextUtils.isEmpty(phone)) {
-            Toast.makeText(this, "Nombre y teléfono son obligatorios", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Nombre y email son obligatorios", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Usamos el constructor de cuatro parámetros, dejando los IDs a 0
         ContactEntry c = new ContactEntry(0, 0, name, phone);
-
-        progress.setVisibility(View.VISIBLE);
+        progress.setVisibility(ProgressBar.VISIBLE);
         api.addContact(token, c).enqueue(new Callback<ContactEntry>() {
             @Override
             public void onResponse(Call<ContactEntry> call, Response<ContactEntry> res) {
-                progress.setVisibility(View.GONE);
+                progress.setVisibility(ProgressBar.GONE);
                 if (res.isSuccessful()) {
                     etName.setText("");
                     etPhone.setText("");
@@ -110,10 +169,33 @@ public class ContactsActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<ContactEntry> call, Throwable t) {
-                progress.setVisibility(View.GONE);
+                progress.setVisibility(ProgressBar.GONE);
                 Toast.makeText(ContactsActivity.this, "Error de red", Toast.LENGTH_SHORT).show();
             }
         });
     }
-}
 
+    // 2) Nuevo método para realizar el DELETE
+    private void doDelete(int contactId) {
+        progress.setVisibility(View.VISIBLE);
+        api.deleteContact(token, contactId)
+                .enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> res) {
+                        progress.setVisibility(View.GONE);
+                        if (res.isSuccessful()) {
+                            loadContacts();  // recarga lista tras el borrado
+                        } else {
+                            Toast.makeText(ContactsActivity.this,
+                                    "Error borrando", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        progress.setVisibility(View.GONE);
+                        Toast.makeText(ContactsActivity.this,
+                                "Error de red", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+}

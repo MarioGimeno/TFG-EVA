@@ -1,15 +1,19 @@
 // src/middleware/multerConfig.js
+
 const multer = require('multer');
-const fs    = require('fs');
+const path   = require('path');
 const { TMPDIR } = require('../config');
 
-if (!fs.existsSync(TMPDIR)) {
-  fs.mkdirSync(TMPDIR, { recursive: true });
-}
-
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, TMPDIR),
-  filename:    (req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`)
+  destination: (req, file, cb) => {
+    cb(null, TMPDIR);
+  },
+  filename: (req, file, cb) => {
+    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    // conserva la extensión original
+    const ext = path.extname(file.originalname);
+    cb(null, `${unique}-${file.fieldname}${ext}`);
+  }
 });
 
 module.exports = multer({ storage });

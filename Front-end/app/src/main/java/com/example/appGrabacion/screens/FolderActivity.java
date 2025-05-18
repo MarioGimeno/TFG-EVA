@@ -26,6 +26,8 @@ import com.example.appGrabacion.services.FolderService;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class FolderActivity extends AppCompatActivity {
@@ -124,6 +126,16 @@ public class FolderActivity extends AppCompatActivity {
         service.fetchFiles(token, new FolderService.FilesCallback() {
             @Override
             public void onSuccess(List<FileEntry> fetched) {
+                // 1) Ordenar por fecha (asumiendo que FileEntry tiene un método getDate() que devuelve java.util.Date)
+                Collections.sort(fetched, new Comparator<FileEntry>() {
+                    @Override
+                    public int compare(FileEntry f1, FileEntry f2) {
+                        // f2 antes que f1 → más recientes primero
+                        return f2.getCreated().compareTo(f1.getCreated());
+                    }
+                });
+
+                // 2) Refrescar el adaptador
                 files.clear();
                 files.addAll(fetched);
                 runOnUiThread(adapter::notifyDataSetChanged);
@@ -139,7 +151,6 @@ public class FolderActivity extends AppCompatActivity {
             }
         });
     }
-
     private void uploadFile(Uri uri) {
         service.uploadFile(token, uri, new FolderService.UploadCallback() {
             @Override

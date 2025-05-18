@@ -11,19 +11,20 @@ import retrofit2.http.Header;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 
+// src/main/java/com/example/appGrabacion/utils/ContactsApi.java
 public interface ContactsApi {
-    @GET("/api/contacts")
+    @GET("api/contacts")
     Call<List<ContactEntry>> getContacts(@Header("Authorization") String bearer);
 
-    @POST("/api/contacts")
+    @POST("api/contacts")
     Call<ContactEntry> addContact(
             @Header("Authorization") String bearer,
             @Body ContactEntry contact
     );
 
-    @DELETE("/api/contacts/{id}")
+    @DELETE("api/contacts/{id}")
     Call<Void> deleteContact(
             @Header("Authorization") String bearer,
-            @Path("id") String contactId
+            @Path("id") int contactId    // ← de String a int
     );
 }
