@@ -2,7 +2,7 @@
 
 const fs    = require('fs');
 const path  = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../../keys.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '../keys.env') });
 
 const { Pool } = require('pg');
 
