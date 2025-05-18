@@ -39,6 +39,8 @@ public class CalculadoraScreen extends AppCompatActivity implements TextureView.
     // Elementos de UI: TextureView para la previsualización y btnDot para indicar el estado de grabación.
     private TextureView textureView;
     private Button btnDot;
+    // Marca si la superficie ya está lista
+    private boolean surfaceReady = false;
 
     // Objeto que controla la grabación en segundo plano
     private BackgroundRecordingManager recordingManager;
@@ -50,38 +52,42 @@ public class CalculadoraScreen extends AppCompatActivity implements TextureView.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.calculadora_screen); // Crea un layout nuevo para esta pantalla
 
-        // Solicita permisos si no están concedidos
-        if (!hasPermissions(appPermissions)) {
-            ActivityCompat.requestPermissions(this, appPermissions, PERMISSION_REQUEST_ALL);
-        }
 
         btnDot = findViewById(R.id.btnDot);
         textureView = findViewById(R.id.textureView);
 
-        // Configura el TextureView; se debe disponer de uno en el layout "activity_calculadora_screen.xml"
-        if (textureView != null) {
-            textureView.setSurfaceTextureListener(this);
-        }
 
-        // Inicializa BackgroundRecordingManager con el contexto y el TextureView
+        // 1) Inicializa el manager ANTES de volver a enganchar el listener
         recordingManager = new BackgroundRecordingManager(this, textureView);
+        Log.d(TAG, "BackgroundRecordingManager inicializado");
 
-        // Si se pasó el extra "autoStartRecording" (desde el widget) se inicia la grabación
-        boolean autoStart = getIntent().getBooleanExtra("autoStartRecording", false);
-        if (autoStart) {
-            startRecording();
+        // 2) Volvemos a enganchar nuestro SurfaceTextureListener
+        textureView.setSurfaceTextureListener(this);
+        Log.d(TAG, "SurfaceTextureListener asignado a TextureView");
+
+        // 3) Si la superficie ya estaba lista, marcamos y probamos
+        if (textureView.isAvailable()) {
+            Log.d(TAG, "onCreate ▶ Surface YA estaba disponible");
+            surfaceReady = true;
+            startRecordingIfPossible();
         }
 
-        // Configura el botón de manera que al tocarlo se alterne la grabación
-        // pero solo cambia su color (no muestra texto de "iniciar" o "detener")
-        btnDot.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!isRecording) {
-                    startRecording();
-                } else {
-                    stopRecording();
-                }
+        // 4) Comprueba permisos
+        if (!hasPermissions(appPermissions)) {
+            Log.d(TAG, "onCreate ▶ Permisos NO concedidos, solicitando...");
+            ActivityCompat.requestPermissions(this, appPermissions, PERMISSION_REQUEST_ALL);
+        } else {
+            Log.d(TAG, "onCreate ▶ Permisos YA concedidos, llamando startRecordingIfPossible()");
+            startRecordingIfPossible();
+        }
+
+        // 5) Botón toggle para grabar / detener
+        btnDot.setOnClickListener(v -> {
+            Log.d(TAG, "btnDot clic ► isRecording=" + isRecording);
+            if (!isRecording) {
+                startRecording();
+            } else {
+                stopRecording();
             }
         });
         // — Inicializa la parte de la calculadora —
@@ -92,7 +98,16 @@ public class CalculadoraScreen extends AppCompatActivity implements TextureView.
 
     }
 
-
+    /** Llama a startRecording() solo si tenemos permisos y superficie preparada */
+    private void startRecordingIfPossible() {
+        Log.d(TAG, "startRecordingIfPossible() → isRecording=" + isRecording + ", surfaceReady=" + surfaceReady);
+        if (!isRecording && surfaceReady) {
+            Log.d(TAG, " condiciones ok → startRecording()");
+            startRecording();
+        } else {
+            Log.d(TAG, " no cumple condiciones, no graba");
+        }
+    }
     /**
      * Verifica que se tengan todos los permisos necesarios.
      */
@@ -145,15 +160,12 @@ public class CalculadoraScreen extends AppCompatActivity implements TextureView.
                     break;
                 }
             }
-            if (!allGranted) {
-                Log.e(TAG, "No se concedieron todos los permisos necesarios.");
+            if (allGranted) {
+                startRecordingIfPossible();
             } else {
-                Log.d(TAG, "Todos los permisos fueron concedidos.");
-                // Si la actividad ya tenía el extra autoStart, inicia la grabación
-                if (getIntent().getBooleanExtra("autoStartRecording", false)) {
-                    startRecording();
-                }
+                Log.e(TAG, "Faltan permisos, no se puede grabar.");
             }
+
         }
     }
 
@@ -278,7 +290,8 @@ public class CalculadoraScreen extends AppCompatActivity implements TextureView.
     // Métodos del TextureView.SurfaceTextureListener
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
-        Log.d(TAG, "SurfaceTexture disponible");
+        surfaceReady = true;
+        startRecordingIfPossible();
     }
 
     @Override
@@ -286,7 +299,7 @@ public class CalculadoraScreen extends AppCompatActivity implements TextureView.
 
     @Override
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
-        Log.d(TAG, "SurfaceTexture destruido");
+        surfaceReady = false;
         return true;
     }
 

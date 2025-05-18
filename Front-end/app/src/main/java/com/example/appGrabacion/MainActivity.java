@@ -34,6 +34,7 @@ import com.example.appGrabacion.adapters.SliderAdapter;
 import com.example.appGrabacion.models.ContactEntry;
 import com.example.appGrabacion.models.Entidad;
 import com.example.appGrabacion.models.Recurso;
+import com.example.appGrabacion.screens.CalculadoraScreen;
 import com.example.appGrabacion.screens.ContactsActivity;
 import com.example.appGrabacion.screens.EntidadDetailActivity;
 import com.example.appGrabacion.screens.FolderActivity;
@@ -260,26 +261,59 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupFooterButtons() {
         View footer = findViewById(R.id.footerNav);
+        SessionManager session = new SessionManager(this);
+        boolean loggedIn = session.getToken(this) != null && !session.getToken(this).isEmpty();
+
+        // Helper lambda para redirigir si no hay sesión
+        View.OnClickListener requireLogin = v -> {
+            Toast.makeText(this, "Debes iniciar sesión primero", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, LoginActivity.class));
+        };
+
+        // Carpeta (FolderActivity)
         footer.findViewById(R.id.btnGoFolder)
-                .setOnClickListener(v ->
-                        startActivity(new Intent(this, FolderActivity.class)));
+                .setOnClickListener(v -> {
+                    if (loggedIn) {
+                        startActivity(new Intent(this, FolderActivity.class));
+                    } else {
+                        requireLogin.onClick(v);
+                    }
+                });
+
+        // Grabación (CalculadoraScreen)
         footer.findViewById(R.id.btnGoGrabacion)
-                .setOnClickListener(v ->
-                        startActivity(new Intent(this, RecursosActivity.class)));
+                .setOnClickListener(v -> {
+                    if (loggedIn) {
+                        startActivity(new Intent(this, CalculadoraScreen.class));
+                    } else {
+                        requireLogin.onClick(v);
+                    }
+                });
+
+        // Login (siempre accesible)
         footer.findViewById(R.id.btnGoLogin)
                 .setOnClickListener(v ->
-                        startActivity(new Intent(this, LoginActivity.class)));
+                        startActivity(new Intent(this, LoginActivity.class))
+                );
+
+        // Categorías (siempre accesible)
         footer.findViewById(R.id.btnGoCategorias)
                 .setOnClickListener(v -> {
                     Intent i = new Intent(this, GenericListActivity.class);
-                    i.putExtra(GenericListActivity.EXTRA_TYPE,
-                            "entidades");
+                    i.putExtra(GenericListActivity.EXTRA_TYPE, "entidades");
                     startActivity(i);
                 });
+
+        // Contactos (ContactsActivity)
         footer.findViewById(R.id.btnGoContacts)
-                .setOnClickListener(v ->
-                        startActivity(new Intent(this,
-                                ContactsActivity.class)));
+                .setOnClickListener(v -> {
+                    if (loggedIn) {
+                        startActivity(new Intent(this, ContactsActivity.class));
+                    } else {
+                        requireLogin.onClick(v);
+                    }
+                });
+
         footer.bringToFront();
     }
 
