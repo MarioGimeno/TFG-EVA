@@ -32,9 +32,13 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.appGrabacion.adapters.SliderAdapter;
 import com.example.appGrabacion.models.ContactEntry;
+
+
+
 import com.example.appGrabacion.models.Entidad;
 import com.example.appGrabacion.models.Recurso;
 import com.example.appGrabacion.screens.CalculadoraScreen;
+
 import com.example.appGrabacion.screens.ContactsActivity;
 import com.example.appGrabacion.screens.EntidadDetailActivity;
 import com.example.appGrabacion.screens.FolderActivity;
@@ -143,6 +147,8 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+
+
         // Inicializar servicios y cargar slider
         entityService   = new EntityService(this);
         resourceService = new ResourceService(this);
@@ -182,6 +188,7 @@ public class MainActivity extends AppCompatActivity {
             }
         }, 5000);
     }
+
 
     /** Inicializa el slider cuando ambos servicios han cargado */
     private void tryInitSlider() {

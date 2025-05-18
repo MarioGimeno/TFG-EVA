@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:background="@android:color/black">
 
+
     <!-- 1) Toda tu UI "normal" en un ConstraintLayout -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/content_constraint"
@@ -189,6 +190,7 @@
     <include
         android:id="@+id/footerNav"
         layout="@layout/footer_navigation"
+
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"

@@ -63,8 +63,8 @@ public class ResourceService {
     /**
      * Obtiene los recursos filtrados por categoría
      */
-    public void fetchByCategory(String categoria, final ResourceCallback callback) {
-        api.getResourcesByCategory(categoria).enqueue(new Callback<List<Recurso>>() {
+    public void fetchByCategory(int categoria, final ResourceCallback callback) {
+        api.getResourcesByCategoria(categoria).enqueue(new Callback<List<Recurso>>() {
             @Override
             public void onResponse(Call<List<Recurso>> call,
                                    Response<List<Recurso>> resp) {
@@ -102,4 +102,47 @@ public class ResourceService {
             }
         });
     }
+    public void fetchByCategoria(int categoriaId, final ResourceCallback callback) {
+        api.getResourcesByCategoria(categoriaId)
+                .enqueue(new Callback<List<Recurso>>() {
+                    @Override
+                    public void onResponse(Call<List<Recurso>> call,
+                                           Response<List<Recurso>> resp) {
+                        if (resp.isSuccessful() && resp.body() != null) {
+                            callback.onSuccess(resp.body());
+                        } else {
+                            callback.onError(
+                                    new RuntimeException("Código: " + resp.code()));
+                        }
+                    }
+                    @Override
+                    public void onFailure(Call<List<Recurso>> call, Throwable t) {
+                        callback.onError(t);
+                    }
+                });
+    }
+    public void fetchGratuitos(final ResourceCallback cb) {
+        api.getResourcesGratuitos().enqueue(new Callback<List<Recurso>>() {
+            @Override public void onResponse(Call<List<Recurso>> c, Response<List<Recurso>> r) {
+                if (r.isSuccessful() && r.body()!=null) cb.onSuccess(r.body());
+                else cb.onError(new RuntimeException("Código:"+r.code()));
+            }
+            @Override public void onFailure(Call<List<Recurso>> c, Throwable t) {
+                cb.onError(t);
+            }
+        });
+    }
+
+    public void fetchAccesibles(final ResourceCallback cb) {
+        api.getResourcesAccesibles().enqueue(new Callback<List<Recurso>>() {
+            @Override public void onResponse(Call<List<Recurso>> c, Response<List<Recurso>> r) {
+                if (r.isSuccessful() && r.body()!=null) cb.onSuccess(r.body());
+                else cb.onError(new RuntimeException("Código:"+r.code()));
+            }
+            @Override public void onFailure(Call<List<Recurso>> c, Throwable t) {
+                cb.onError(t);
+            }
+        });
+    }
+
 }

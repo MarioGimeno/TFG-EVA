@@ -47,9 +47,33 @@ public class GenericActivityService {
     }
 
     /** Carga servicios filtrados por categoría */
-    public void loadServiciosPorCategoria(String categoria,
+    public void loadServiciosPorCategoria(int categoria,
                                           final LoadCallback<Recurso> cb) {
-        resourceService.fetchByCategory(categoria, new ResourceService.ResourceCallback() {
+        resourceService.fetchByCategoria(categoria, new ResourceService.ResourceCallback() {
+            @Override public void onSuccess(List<Recurso> list) {
+                cb.onSuccess(list);
+            }
+            @Override public void onError(Throwable t) {
+                cb.onError(t);
+            }
+        });
+    }
+
+    /** Carga solo recursos gratuitos */
+    public void loadGratuitos(final LoadCallback<Recurso> cb) {
+        resourceService.fetchGratuitos(new ResourceService.ResourceCallback() {
+            @Override public void onSuccess(List<Recurso> list) {
+                cb.onSuccess(list);
+            }
+            @Override public void onError(Throwable t) {
+                cb.onError(t);
+            }
+        });
+    }
+
+    /** Carga solo recursos accesibles */
+    public void loadAccesibles(final LoadCallback<Recurso> cb) {
+        resourceService.fetchAccesibles(new ResourceService.ResourceCallback() {
             @Override public void onSuccess(List<Recurso> list) {
                 cb.onSuccess(list);
             }
