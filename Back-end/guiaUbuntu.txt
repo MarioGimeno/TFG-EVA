@@ -39,4 +39,18 @@ sudo mount -a
 # Mostrar el punto de montaje
 df -h | grep /mnt/uploads
 
+Para arreglar el bcrypt
+cd ~/TFG-Somos-M-s/Back-end
+
+# 1) Borra módulos y lockfile
+rm -rf node_modules package-lock.json
+
+# 2) Vuelve a instalar todo, compilando cualquier binding nativo en tu Linux
+npm install
+
+# 3) Fuerza la reconstrucción de bcrypt desde código fuente
+npm rebuild bcrypt --build-from-source
+
+# 4) Arranca de nuevo tu servidor
+node server.js
 
