@@ -8,6 +8,7 @@ const auth    = require('../middleware/authMiddleware');
 const router  = express.Router();
 const { decryptFile }         = require('../services/decryptionService');
 const { uploadVideoAndLocation } = require('../services/gcsService');
+const { TMPDIR } = require('../config');
 router.post(
     '/upload-chunk',
     auth,
@@ -15,14 +16,13 @@ router.post(
     async (req, res) => {
       const userId  = String(req.userId);
       const { fileId, chunkIndex, totalChunks } = req.body;
-      const userDir    = path.join('uploads', userId, fileId);      if (!fs.existsSync(userDir)) fs.mkdirSync(userDir, { recursive: true });
-  
+      const userDir     = path.join(TMPDIR, userId, fileId);  
       // Nombre de fichero según tipo
       const filename = chunkIndex === '-1'
         ? 'location.txt'
         : `chunk_${chunkIndex}`;
-      const destPath = path.join(userDir, filename);
-      fs.renameSync(req.file.path, destPath);
+        const destPath   = path.join(userDir, filename);
+              fs.renameSync(req.file.path, destPath);
   
       console.log(`▶︎ Recibido ${filename} -> ${destPath}`);
   
