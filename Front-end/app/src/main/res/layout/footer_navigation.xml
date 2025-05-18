@@ -89,7 +89,7 @@
             android:layout_height="60dp"
             android:padding="12dp"
             android:scaleType="centerInside"
-            android:src="@drawable/contactos"
+            android:src="@drawable/contactos_icon"
             android:tint="#A11991"
             android:background="@null"
             app:layout_constraintStart_toEndOf="@id/btnGoCategorias"
