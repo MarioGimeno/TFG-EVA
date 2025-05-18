@@ -23,10 +23,12 @@ import com.example.appGrabacion.screens.PdfViewerActivity;
 import com.example.appGrabacion.screens.TextViewerActivity;
 import com.example.appGrabacion.screens.VideoPlayerActivity;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class FileAdapter extends RecyclerView.Adapter<FileAdapter.VH> {
     private final List<FileEntry> entries;
@@ -150,16 +152,24 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.VH> {
     // Helper: formatea ISO-8601 a dd/MM/yyyy HH:mm
     private String formatDate(String isoDate) {
         try {
+            // 1) Parseador en UTC
             SimpleDateFormat in = new SimpleDateFormat(
                     "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault());
+            in.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+            // 2) Formateador en zona local
             SimpleDateFormat out = new SimpleDateFormat(
                     "dd/MM/yyyy HH:mm", Locale.getDefault());
+            out.setTimeZone(TimeZone.getDefault());
+
+            // 3) Parse y formatea
             Date d = in.parse(isoDate);
             return out.format(d);
-        } catch (Exception ex) {
+        } catch (ParseException ex) {
             return isoDate;
         }
     }
+
 
     static class VH extends RecyclerView.ViewHolder {
         ImageView   imgPreview;
