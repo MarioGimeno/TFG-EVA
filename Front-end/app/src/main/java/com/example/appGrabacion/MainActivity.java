@@ -1,4 +1,3 @@
-// src/main/java/com/example/appGrabacion/MainActivity.java
 package com.example.appGrabacion;
 
 import android.Manifest;
@@ -22,31 +21,27 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.biometric.BiometricPrompt;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.widget.NestedScrollView;
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.CompositePageTransformer;
 import androidx.viewpager2.widget.MarginPageTransformer;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.example.appGrabacion.adapters.SliderAdapter;
 import com.example.appGrabacion.models.ContactEntry;
-
-
-
 import com.example.appGrabacion.models.Entidad;
 import com.example.appGrabacion.models.Recurso;
 import com.example.appGrabacion.screens.CalculadoraScreen;
-
 import com.example.appGrabacion.screens.CategoriasActivity;
 import com.example.appGrabacion.screens.ContactsActivity;
 import com.example.appGrabacion.screens.EntidadDetailActivity;
 import com.example.appGrabacion.screens.FolderActivity;
-import com.example.appGrabacion.screens.GenericListActivity;
 import com.example.appGrabacion.screens.LoginActivity;
 import com.example.appGrabacion.screens.RecursoDetailActivity;
-import com.example.appGrabacion.screens.RecursosActivity;
 import com.example.appGrabacion.services.EntityService;
 import com.example.appGrabacion.services.ResourceService;
 import com.example.appGrabacion.utils.ContactManager;
@@ -59,6 +54,7 @@ import com.google.firebase.messaging.FirebaseMessaging;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -80,9 +76,7 @@ public class MainActivity extends AppCompatActivity {
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO,
             Manifest.permission.ACCESS_FINE_LOCATION,
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
-                    ? Manifest.permission.POST_NOTIFICATIONS
-                    : null
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU ? Manifest.permission.POST_NOTIFICATIONS : null
     };
 
     @Override
@@ -97,19 +91,17 @@ public class MainActivity extends AppCompatActivity {
         vpSlider = findViewById(R.id.vpSlider);
         pbLoader = findViewById(R.id.pbLoader);
         TextView tvDesc = findViewById(R.id.tvSectionDesc);
-        tvDesc.setText(Html.fromHtml(getString(R.string.section_eva_desc),
-                Html.FROM_HTML_MODE_LEGACY));
+        tvDesc.setText(Html.fromHtml(
+                getString(R.string.section_eva_desc),
+                Html.FROM_HTML_MODE_LEGACY
+        ));
 
-        //  ════════════════════════════════════════════════════
-        //  Scroll dinámico: al desplazar el NestedScrollView,
-        //  sube la card_wrapper igual que en GenericListActivity
-        //  ════════════════════════════════════════════════════
+        // Scroll dinámico
         ImageView bg = findViewById(R.id.videoBackground);
         FrameLayout wrapper = findViewById(R.id.card_wrapper);
         ConstraintLayout.LayoutParams params =
                 (ConstraintLayout.LayoutParams) wrapper.getLayoutParams();
         final int initialMarginTop = params.topMargin;
-
         bg.post(() -> {
             int overlapPx = Math.round(
                     TypedValue.applyDimension(
@@ -119,41 +111,29 @@ public class MainActivity extends AppCompatActivity {
                     )
             );
             int maxScroll = bg.getHeight() - overlapPx;
-
             NestedScrollView scroll = findViewById(R.id.scrollView);
             scroll.setOnScrollChangeListener(
-                    new NestedScrollView.OnScrollChangeListener() {
-                        @Override
-                        public void onScrollChange(NestedScrollView v,
-                                                   int scrollX, int scrollY,
-                                                   int oldX, int oldY) {
-                            int dy = Math.max(0, Math.min(scrollY, maxScroll));
-                            params.topMargin = initialMarginTop - dy;
-                            wrapper.setLayoutParams(params);
-                        }
+                    (NestedScrollView v, int scrollX, int scrollY, int oldX, int oldY) -> {
+                        int dy = Math.max(0, Math.min(scrollY, maxScroll));
+                        params.topMargin = initialMarginTop - dy;
+                        wrapper.setLayoutParams(params);
                     }
             );
         });
-        //  ════════════════════════════════════════════════════
 
         requestAllPermissions();
         syncContacts();
         registerFcmToken();
         MaterialButton btnDownload = findViewById(R.id.btnDownloadManual);
         btnDownload.setOnClickListener(v -> {
-            // Sustituye FILE_ID por el ID real de tu documento de Drive
             String fileId = "1Xq8GgtBpe_kmpsBMbq-Cx_s7wquZHSwD";
             String url = "https://drive.google.com/uc?export=download&id=" + fileId;
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            startActivity(intent);
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
         });
 
-
-
         // Inicializar servicios y cargar slider
-        entityService   = new EntityService(this);
+        entityService = new EntityService(this);
         resourceService = new ResourceService(this);
-
         entityService.fetchAll(new EntityService.EntityCallback() {
             @Override public void onSuccess(List<Entidad> list) {
                 entidades.clear();
@@ -176,20 +156,16 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "Error cargando recursos", t);
             }
         });
-
-        // Autoscroll cada 5s
         sliderHandler.postDelayed(new Runnable() {
             @Override public void run() {
                 if (sliderAdapter != null && sliderAdapter.getItemCount() > 0) {
-                    int next = (vpSlider.getCurrentItem() + 1)
-                            % sliderAdapter.getItemCount();
+                    int next = (vpSlider.getCurrentItem() + 1) % sliderAdapter.getItemCount();
                     vpSlider.setCurrentItem(next, true);
                 }
                 sliderHandler.postDelayed(this, 5000);
             }
         }, 5000);
     }
-
 
     /** Inicializa el slider cuando ambos servicios han cargado */
     private void tryInitSlider() {
@@ -215,7 +191,6 @@ public class MainActivity extends AppCompatActivity {
         });
         vpSlider.setAdapter(sliderAdapter);
 
-
         vpSlider.setClipToPadding(false);
         vpSlider.setClipChildren(false);
         ((ViewGroup) vpSlider.getParent()).setClipChildren(false);
@@ -232,6 +207,107 @@ public class MainActivity extends AppCompatActivity {
         vpSlider.setVisibility(View.VISIBLE);
     }
 
+    /** Muestra el diálogo de huella o PIN del sistema */
+    private void showAuthenticationPrompt() {
+        Executor executor = ContextCompat.getMainExecutor(this);
+        BiometricPrompt.AuthenticationCallback callback =
+                new BiometricPrompt.AuthenticationCallback() {
+                    @Override public void onAuthenticationError(int errorCode, @NonNull CharSequence errString) {
+                        super.onAuthenticationError(errorCode, errString);
+                        Toast.makeText(MainActivity.this,
+                                "Error de autenticación: " + errString,
+                                Toast.LENGTH_SHORT).show();
+                    }
+                    @Override public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
+                        super.onAuthenticationSucceeded(result);
+                        openCarpetaPersonal();
+                    }
+                    @Override public void onAuthenticationFailed() {
+                        super.onAuthenticationFailed();
+                    }
+                };
+        BiometricPrompt prompt = new BiometricPrompt(this, executor, callback);
+        BiometricPrompt.PromptInfo info = new BiometricPrompt.PromptInfo.Builder()
+                .setTitle("Acceso a carpeta personal")
+                .setSubtitle("Identifícate para continuar")
+                .setDescription("Usa tu huella o el PIN/patrón del dispositivo")
+                .setDeviceCredentialAllowed(true)
+                .build();
+        prompt.authenticate(info);
+    }
+
+    /** Abre la carpeta personal tras autenticar */
+    private void openCarpetaPersonal() {
+        startActivity(new Intent(this, FolderActivity.class));
+    }
+
+    private void setupFooterButtons() {
+        View footer = findViewById(R.id.footerNav);
+        SessionManager session = new SessionManager(this);
+        boolean loggedIn = session.getToken(this) != null && !session.getToken(this).isEmpty();
+        View.OnClickListener requireLogin = v -> {
+            Toast.makeText(this, "Debes iniciar sesión primero", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(this, LoginActivity.class));
+        };
+        footer.findViewById(R.id.btnGoFolder)
+                .setOnClickListener(v -> {
+                    if (loggedIn) showAuthenticationPrompt();
+                    else requireLogin.onClick(v);
+                });
+        footer.findViewById(R.id.btnGoGrabacion)
+                .setOnClickListener(v -> {
+                    if (loggedIn) startActivity(new Intent(this, CalculadoraScreen.class));
+                    else requireLogin.onClick(v);
+                });
+        footer.findViewById(R.id.btnGoLogin)
+                .setOnClickListener(v -> startActivity(new Intent(this, LoginActivity.class)));
+        footer.findViewById(R.id.btnGoCategorias)
+                .setOnClickListener(v -> startActivity(new Intent(this, CategoriasActivity.class)));
+        footer.findViewById(R.id.btnGoContacts)
+                .setOnClickListener(v -> {
+                    if (loggedIn) startActivity(new Intent(this, ContactsActivity.class));
+                    else requireLogin.onClick(v);
+                });
+        footer.bringToFront();
+    }
+
+    private void requestAllPermissions() {
+        List<String> toReq = new ArrayList<>();
+        for (String p : REQUIRED_PERMISSIONS) {
+            if (p != null && ContextCompat.checkSelfPermission(this, p)
+                    != PackageManager.PERMISSION_GRANTED) {
+                toReq.add(p);
+            }
+        }
+        if (!toReq.isEmpty()) {
+            ActivityCompat.requestPermissions(
+                    this, toReq.toArray(new String[0]), REQ_PERMISSIONS
+            );
+        }
+    }
+
+    private void syncContacts() {
+        String bearer = "Bearer " + SessionManager.getToken(this);
+        ContactsApi api = RetrofitClient.getRetrofitInstance(this)
+                .create(ContactsApi.class);
+        api.getContacts(bearer).enqueue(new Callback<List<ContactEntry>>() {
+            @Override public void onResponse(Call<List<ContactEntry>> call,
+                                             Response<List<ContactEntry>> resp) {
+                if (resp.isSuccessful() && resp.body() != null) {
+                    new ContactManager(MainActivity.this)
+                            .saveContacts(resp.body());
+                    Log.d(TAG, "Contacts synced: " + resp.body().size());
+                } else {
+                    Log.e(TAG, "Error fetching contacts: " + resp.code());
+                }
+            }
+            @Override public void onFailure(Call<List<ContactEntry>> call,
+                                            Throwable t) {
+                Log.e(TAG, "Failed to sync contacts", t);
+            }
+        });
+    }
+
     private void registerFcmToken() {
         FirebaseMessaging.getInstance().getToken()
                 .addOnCompleteListener(task -> {
@@ -241,113 +317,6 @@ public class MainActivity extends AppCompatActivity {
                         );
                     }
                 });
-    }
-
-    private void syncContacts() {
-        String bearer = "Bearer " + SessionManager.getToken(this);
-        ContactsApi api = RetrofitClient
-                .getRetrofitInstance(this)
-                .create(ContactsApi.class);
-
-        api.getContacts(bearer).enqueue(new Callback<List<ContactEntry>>() {
-            @Override public void onResponse(Call<List<ContactEntry>> call,
-                                             Response<List<ContactEntry>> resp) {
-                if (resp.isSuccessful() && resp.body() != null) {
-                    new ContactManager(MainActivity.this)
-                            .saveContacts(resp.body());
-                    Log.d(TAG, "Contacts synced: " +
-                            resp.body().size());
-                } else {
-                    Log.e(TAG, "Error fetching contacts: " +
-                            resp.code());
-                }
-            }
-            @Override public void onFailure(Call< List<ContactEntry>> call,
-                                            Throwable t) {
-                Log.e(TAG, "Failed to sync contacts", t);
-            }
-        });
-    }
-
-    private void setupFooterButtons() {
-        View footer = findViewById(R.id.footerNav);
-        SessionManager session = new SessionManager(this);
-        boolean loggedIn = session.getToken(this) != null && !session.getToken(this).isEmpty();
-
-        // Helper lambda para redirigir si no hay sesión
-        View.OnClickListener requireLogin = v -> {
-            Toast.makeText(this, "Debes iniciar sesión primero", Toast.LENGTH_SHORT).show();
-            startActivity(new Intent(this, LoginActivity.class));
-        };
-
-        // Carpeta (FolderActivity)
-        footer.findViewById(R.id.btnGoFolder)
-                .setOnClickListener(v -> {
-                    if (loggedIn) {
-                        startActivity(new Intent(this, FolderActivity.class));
-                    } else {
-                        requireLogin.onClick(v);
-                    }
-                });
-
-        // Grabación (CalculadoraScreen)
-        footer.findViewById(R.id.btnGoGrabacion)
-                .setOnClickListener(v -> {
-                    if (loggedIn) {
-                        startActivity(new Intent(this, CalculadoraScreen.class));
-                    } else {
-                        requireLogin.onClick(v);
-                    }
-                });
-
-        // Login (siempre accesible)
-        footer.findViewById(R.id.btnGoLogin)
-                .setOnClickListener(v ->
-                        startActivity(new Intent(this, LoginActivity.class))
-                );
-
-        // Categorías (siempre accesible)
-        footer.findViewById(R.id.btnGoCategorias)
-                .setOnClickListener(v -> {
-                    Intent i = new Intent(this, CategoriasActivity.class);
-                    startActivity(i);
-                });
-
-        // Contactos (ContactsActivity)
-        footer.findViewById(R.id.btnGoContacts)
-                .setOnClickListener(v -> {
-                    if (loggedIn) {
-                        startActivity(new Intent(this, ContactsActivity.class));
-                    } else {
-                        requireLogin.onClick(v);
-                    }
-                });
-
-        footer.bringToFront();
-    }
-
-    private void requestAllPermissions() {
-        List<String> toReq = new ArrayList<>();
-        for (String p : REQUIRED_PERMISSIONS) {
-            if (p != null &&
-                    ContextCompat.checkSelfPermission(this, p)
-                            != PackageManager.PERMISSION_GRANTED) {
-                toReq.add(p);
-            }
-        }
-        if (!toReq.isEmpty()) {
-            ActivityCompat.requestPermissions(
-                    this,
-                    toReq.toArray(new String[0]),
-                    REQ_PERMISSIONS
-            );
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        sliderHandler.removeCallbacksAndMessages(null);
     }
 
     @Override
@@ -364,5 +333,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        sliderHandler.removeCallbacksAndMessages(null);
     }
 }
