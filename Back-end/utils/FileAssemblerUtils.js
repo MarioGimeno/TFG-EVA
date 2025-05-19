@@ -2,9 +2,9 @@
 
 const fs   = require('fs');
 const path = require('path');
-const { TMPDIR } = require('../config');
-const { decryptFile }            = require('./decryptionService');
-const { uploadVideoAndLocation } = require('./gcsService');
+const { TMPDIR } = require('../config/Pool');
+const { decryptFile }            = require('./DecryptionUtils');
+const { uploadVideoAndLocation } = require('../services/GcsService');
 
 /**
  * Ensambla los chunks de vídeo, desencripta el fichero resultante

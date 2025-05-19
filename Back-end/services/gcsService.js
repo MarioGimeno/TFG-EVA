@@ -1,54 +1,46 @@
-// src/services/gcsService.js
+// src/services/GcsService.js
+const path          = require('path');
+const fs            = require('fs');
+const gcsRepo       = require('../repositories/GcsRepository');
 
-const { Storage } = require('@google-cloud/storage');
-const fs          = require('fs');
-const path        = require('path');
-const { GCS_BUCKET, GCS_KEYFILE } = require('../config');
+class GcsService {
+  /**
+   * Sube el vídeo (.mp4) y, si existe, el fichero de ubicación desencriptado.
+   * Devuelve la URL firmada del vídeo.
+   */
+  async uploadVideoAndLocation(userId, fileId, videoFilePath) {
+    const videoDest = `${userId}/${fileId}.mp4`;
+    await gcsRepo.uploadFile(videoFilePath, videoDest, 'video/mp4', true);
 
-const storage = new Storage({ keyFilename: GCS_KEYFILE });
-const bucket  = storage.bucket(GCS_BUCKET);
+    const folder       = path.dirname(videoFilePath);
+    const locPath      = path.join(folder, 'location-decrypted.txt');
+    if (fs.existsSync(locPath)) {
+      const locDest = `${userId}/${fileId}.txt`;
+      await gcsRepo.uploadFile(locPath, locDest, 'text/plain', true);
+    }
 
-async function uploadVideoAndLocation(userId, fileId, videoFilePath) {
-  // 1) Subir el vídeo como antes
-  const videoDestination = `${userId}/${fileId}.mp4`;
-  await bucket.upload(videoFilePath, {
-    destination: videoDestination,
-    metadata:    { contentType: 'video/mp4' },
-    resumable:   true
-  });
-
-  // 2) Ahora buscamos el archivo location-decrypted.txt en la misma carpeta
-  const folder = path.dirname(videoFilePath);
-  const txtLocalPath = path.join(folder, 'location-decrypted.txt');
-
-  if (fs.existsSync(txtLocalPath)) {
-    const txtDestination = `${userId}/${fileId}.txt`;
-    await bucket.upload(txtLocalPath, {
-      destination: txtDestination,
-      metadata:    { contentType: 'text/plain' },
-      resumable:   true
-    });
-    console.log('📍 location-decrypted.txt subido como', txtDestination);
-  } else {
-    console.log('⚠️ No se encontró location-decrypted.txt en', folder);
+    // URL para la descarga del vídeo
+    return await gcsRepo.getSignedUrl(
+      videoDest,
+      Date.now() + 60 * 60 * 1000
+    );
   }
 
-  // 3) Devolvemos la URL del vídeo principal (puedes cambiarlo para devolver un objeto con ambas URLs)
-  return `https://storage.googleapis.com/${GCS_BUCKET}/${videoDestination}`;
+  /**
+   * Lista todos los archivos de un usuario y devuelve name+url.
+   */
+  async listUserFiles(userId) {
+    const prefix = `${userId}/`;
+    const files  = await gcsRepo.listFiles(prefix);
+
+    return Promise.all(files.map(async file => ({
+      name: path.basename(file.name),
+      url:  await gcsRepo.getSignedUrl(
+              file.name,
+              Date.now() + 60 * 60 * 1000
+            )
+    })));
+  }
 }
 
-async function listUserFiles(userId) {
-  const [files] = await bucket.getFiles({ prefix: `${userId}/` });
-  return Promise.all(files.map(async file => {
-    const [signedUrl] = await file.getSignedUrl({
-      action: 'read',
-      expires: Date.now() + 60 * 60 * 1000
-    });
-    return { name: file.name, url: signedUrl };
-  }));
-}
-
-module.exports = {
-  uploadVideoAndLocation,
-  listUserFiles
-};
+module.exports = new GcsService();

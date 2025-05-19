@@ -1,24 +1,18 @@
-// services/categoriaService.js
-const { pool } = require('../config');
+// services/categoriasService.js
+const repo = require('../repositories/CategoriasRepository');
 
-async function getAllCategorias() {
-  const { rows } = await pool.query(`
-    SELECT id_categoria, nombre, img_categoria
-      FROM categoria
-     ORDER BY id_categoria
-  `);
-  return rows;
+class CategoriasService {
+  async getAllCategorias() {
+    // aquí podrías mapear DTOs, filtrar campos, etc.
+    return repo.findAll();
+  }
+
+  async getCategoriaById(id) {
+    if (isNaN(id)) throw new Error('ID inválido');
+    const cat = await repo.findById(id);
+    if (!cat) return null;
+    return cat;
+  }
 }
 
-async function getCategoriaById(id) {
-  const { rows } = await pool.query(
-    `SELECT * FROM categoria WHERE id_categoria = $1`,
-    [id]
-  );
-  return rows[0];
-}
-
-module.exports = {
-  getAllCategorias,
-  getCategoriaById
-};
+module.exports = new CategoriasService();
