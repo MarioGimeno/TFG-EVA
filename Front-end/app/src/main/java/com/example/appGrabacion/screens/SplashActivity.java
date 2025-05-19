@@ -22,5 +22,17 @@ public class SplashActivity extends AppCompatActivity {
             finish();
         }, 1000);
     }
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        // Si se abre desde el launcher, relanza Splash
+        if (Intent.ACTION_MAIN.equals(intent.getAction())) {
+            Intent splashIntent = new Intent(this, SplashActivity.class);
+            splashIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(splashIntent);
+            finish();
+        }
+    }
+
 
 }

@@ -57,8 +57,11 @@ public class CalculadoraScreen extends AppCompatActivity implements TextureView.
         textureView = findViewById(R.id.textureView);
 
 
-        // 1) Inicializa el manager ANTES de volver a enganchar el listener
-        recordingManager = new BackgroundRecordingManager(this, textureView);
+        // Obtén el singleton (asocia también el TextureView)
+        recordingManager = BackgroundRecordingManager.getInstance(this, textureView);
+
+        // Ahora siempre que necesites saber si está grabando:
+        boolean alreadyRecording = recordingManager.isRecording;
         Log.d(TAG, "BackgroundRecordingManager inicializado");
 
         // 2) Volvemos a enganchar nuestro SurfaceTextureListener
@@ -83,8 +86,8 @@ public class CalculadoraScreen extends AppCompatActivity implements TextureView.
 
         // 5) Botón toggle para grabar / detener
         btnDot.setOnClickListener(v -> {
-            Log.d(TAG, "btnDot clic ► isRecording=" + isRecording);
-            if (!isRecording) {
+            Log.d(TAG, "btnDot clic ► isRecording=" + recordingManager.isRecording);
+            if (!recordingManager.isRecording) {
                 startRecording();
             } else {
                 stopRecording();
