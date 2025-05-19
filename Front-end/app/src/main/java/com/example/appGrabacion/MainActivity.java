@@ -214,6 +214,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         vpSlider.setAdapter(sliderAdapter);
+
+
         vpSlider.setClipToPadding(false);
         vpSlider.setClipChildren(false);
         ((ViewGroup) vpSlider.getParent()).setClipChildren(false);

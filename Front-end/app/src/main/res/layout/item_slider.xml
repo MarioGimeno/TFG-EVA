@@ -30,15 +30,7 @@
                 android:scaleType="centerCrop"
                 android:contentDescription="@null"/>
 
-            <TextView
-                android:id="@+id/sliderTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:background="#80000000"
-                android:padding="8dp"
-                android:textColor="@android:color/white"
-                android:textSize="16sp"/>
+       
         </FrameLayout>
 
     </com.google.android.material.card.MaterialCardView>
