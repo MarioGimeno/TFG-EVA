@@ -172,6 +172,6 @@
                 </androidx.core.widget.NestedScrollView>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
-     
+
     </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
