@@ -55,7 +55,7 @@
         <!-- 2) Icono interno -->
         <ImageView
             android:layout_width="50dp"
-            android:layout_height="45dp"
+            android:layout_height="50dp"
             android:src="@drawable/ic_logo_eva"
             android:contentDescription="Logo"
             android:layout_gravity="center"/>
