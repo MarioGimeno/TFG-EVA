@@ -71,7 +71,8 @@ import com.google.gson.Gson;
 public class BackgroundRecordingManager implements TextureView.SurfaceTextureListener {
 
     private static final String TAG = "BackgroundRecordingManager";
-
+    // 1) Campo estático que guardará la instancia singleton
+    private static BackgroundRecordingManager instance;
     private Context context;
     private TextureView textureView;
     private FusedLocationProviderClient fusedLocationClient;
@@ -99,7 +100,15 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
         }
     }
 
-
+    /**
+     * 3) Punto de acceso al singleton
+     */
+    public static synchronized BackgroundRecordingManager getInstance(Context context, TextureView textureView) {
+        if (instance == null) {
+            instance = new BackgroundRecordingManager(context, textureView);
+        }
+        return instance;
+    }
     /**
      * Interfaz para el callback de la obtención de la ubicación.
      */
@@ -234,6 +243,7 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
             startVideoRecording();
             if (callback != null) callback.onLocationReceived();
         });
+        isRecording = true;
     }
 
 
@@ -260,6 +270,7 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
                 }
             }
         });
+        isRecording = false;
     }
 
     /**
@@ -414,7 +425,6 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
             cameraDevice.close();
             cameraDevice = null;
         }
-        isRecording = false;
         Log.d(TAG, "Grabación de video detenida");
     }
     /**

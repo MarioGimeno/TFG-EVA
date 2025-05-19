@@ -32,7 +32,8 @@
         android:networkSecurityConfig="@xml/network_security_config"
         android:allowBackup="true"
         android:label="EVA"
-        android:supportsRtl="true">
+        android:supportsRtl="true"
+        >
         <!-- Aquí pones tu Google Maps API Key -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -59,7 +60,8 @@
         <activity
             android:name=".screens.SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.App.Splash">
+            android:theme="@style/Theme.App.Splash"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
