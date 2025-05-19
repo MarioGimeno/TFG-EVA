@@ -40,6 +40,7 @@
         android:layout_marginTop="-40dp"
         android:background="@drawable/card_border_wrapper_detail"
         android:padding="2dp"
+
         android:elevation="12dp"
         app:layout_constraintTop_toBottomOf="@id/videoBackground"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -48,6 +49,8 @@
 
         <!-- Container con esquinas redondeadas sólo arriba -->
         <FrameLayout
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             >
