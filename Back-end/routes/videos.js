@@ -1,15 +1,14 @@
-const express = require('express');
-const auth    = require('../middleware/authMiddleware');
-const { listUserFiles } = require('../services/gcsService');
-const router  = express.Router();
+// src/routes/videos.js
+const express           = require('express');
+const router            = express.Router();
+const auth              = require('../middleware/authMiddleware');
+const VideosController  = require('../controllers/VideosController');
 
-router.get('/videos', auth, async (req, res) => {
-  try {
-    const urls = await listUserFiles(req.userId);
-    res.json({ videos: urls });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
+// GET /api/videos — requiere token
+router.get(
+  '/videos',
+  auth,
+  (req, res, next) => VideosController.list(req, res, next)
+);
 
 module.exports = router;

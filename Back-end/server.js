@@ -2,18 +2,18 @@
 const express = require('express');
 const cors    = require('cors');
 const admin  = require('firebase-admin');
-const { pool, PORT } = require('./config');
-const authRoutes   = require('./routes/auth');
-const uploadRoutes = require('./routes/upload');
-const videosRoutes = require('./routes/videos');
-const fileRoutes   = require('./routes/files');
-const emailRouter = require('./routes/email');
-const contactsRouter = require('./routes/contatcs');
-const tokensRouter = require('./routes/tokens');
-const notificationsRouter = require('./routes/notifications');
-const entidadesRouter = require('./routes/entidades');
-const serviciosRouter   = require('./routes/servicios');
-const categoriasRouter = require('./routes/categorias');
+const { pool, PORT } = require('./config/Pool');
+const authRoutes   = require('./routes/Auth');
+const uploadRoutes = require('./routes/Upload');
+const videosRoutes = require('./routes/Videos');
+const fileRoutes   = require('./routes/Files');
+const contactsRouter = require('./routes/Contacts');
+const tokensRouter = require('./routes/Tokens');
+const notificationsRouter = require('./routes/Notifications');
+const entidadesRouter = require('./routes/Entidades');
+const serviciosRouter   = require('./routes/Recursos');
+const categoriasRouter = require('./routes/Categorias');
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -39,7 +39,6 @@ pool.connect()
 
     // ¡Importante! monta *antes* del 404 genérico:
     app.use('/api/files', fileRoutes);
-    app.use('/api/email', emailRouter);
     app.use('/api/contacts', contactsRouter);
 
     app.use('/api/notifications', notificationsRouter);
