@@ -38,23 +38,14 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="-40dp"
-        android:background="@drawable/card_border_wrapper"
+        android:background="@drawable/card_border_wrapper_detail"
         android:padding="2dp"
         app:layout_constraintTop_toBottomOf="@id/imgHeader"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- 3) CardView blanca con esquinas redondeadas arriba -->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/main_card"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:cardBackgroundColor="@android:color/white"
-            app:cardCornerRadius="20dp"
-            app:cardUseCompatPadding="false"
-            app:cardPreventCornerOverlap="false"
-            app:cardElevation="12dp">
+
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
@@ -181,6 +172,6 @@
                 </androidx.core.widget.NestedScrollView>
 
             </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.cardview.widget.CardView>
+     
     </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
