@@ -69,7 +69,6 @@ public class EntidadesAdapter
             if (e.getImagen()!=null && !e.getImagen().isEmpty()) {
                 Picasso.get()
                         .load(e.getImagen())
-                        .placeholder(R.drawable.eva)
                         .error(R.drawable.eva)
                         .into(img);
             } else img.setImageResource(R.drawable.eva);

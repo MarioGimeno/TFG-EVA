@@ -117,7 +117,6 @@ public class EntidadDetailActivity extends AppCompatActivity
         if (!TextUtils.isEmpty(e.getImagen())) {
             Picasso.get()
                     .load(e.getImagen())
-                    .placeholder(R.drawable.eva)
                     .into(imgEntidadDetail, new Callback() {
                         @Override public void onSuccess() {
                             progressImage.animate()

@@ -7,6 +7,7 @@
     android:layout_height="match_parent"
     android:background="@android:color/white">
 
+    <!-- Imagen + loader -->
     <FrameLayout
         android:id="@+id/flImagenLoader"
         android:layout_width="0dp"
@@ -32,6 +33,7 @@
             android:indeterminateTint="#A11991"/>
     </FrameLayout>
 
+    <!-- CardWrapper -->
     <LinearLayout
         android:id="@+id/cardWrapper"
         android:layout_width="0dp"
@@ -56,13 +58,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-
+                <!-- Web link -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingBottom="8dp">
+                    android:paddingBottom="8dp"
+                    android:weightSum="1">
 
                     <ImageView
                         android:id="@+id/ivWebInline"
@@ -72,20 +75,23 @@
 
                     <TextView
                         android:id="@+id/tvWebLink"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:paddingStart="8dp"
                         android:text="Accede aquí"
                         android:textColor="@android:color/black"
-                        android:textSize="16sp"
-                        android:paddingStart="8dp"/>
+                        android:textSize="16sp"/>
                 </LinearLayout>
 
+                <!-- Email -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingBottom="8dp">
+                    android:paddingBottom="8dp"
+                    android:weightSum="1">
 
                     <ImageView
                         android:id="@+id/ivEmailInline"
@@ -95,20 +101,22 @@
 
                     <TextView
                         android:id="@+id/tvEmailText"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp"
+                        android:layout_weight="1"
                         android:paddingStart="8dp"
-                        android:justificationMode="inter_word"/>
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp"/>
                 </LinearLayout>
 
+                <!-- Phone -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingBottom="8dp">
+                    android:paddingBottom="8dp"
+                    android:weightSum="1">
 
                     <ImageView
                         android:id="@+id/ivPhoneInline"
@@ -118,19 +126,21 @@
 
                     <TextView
                         android:id="@+id/tvPhoneText"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp"
+                        android:layout_weight="1"
                         android:paddingStart="8dp"
-                        android:justificationMode="inter_word"/>
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp"/>
                 </LinearLayout>
 
+                <!-- Horario -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:paddingBottom="8dp">
+                    android:paddingBottom="8dp"
+                    android:weightSum="1">
 
                     <ImageView
                         android:id="@+id/ivHorarioInline"
@@ -140,20 +150,22 @@
 
                     <TextView
                         android:id="@+id/tvHorarioText"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp"
+                        android:layout_weight="1"
                         android:paddingStart="8dp"
-                        android:justificationMode="inter_word"/>
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp"/>
                 </LinearLayout>
 
+                <!-- Address -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingBottom="16dp">
+                    android:paddingBottom="16dp"
+                    android:weightSum="1">
 
                     <ImageView
                         android:id="@+id/ivAddressInline"
@@ -163,14 +175,15 @@
 
                     <TextView
                         android:id="@+id/tvAddressText"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:textColor="@android:color/black"
-                        android:textSize="16sp"
+                        android:layout_weight="1"
                         android:paddingStart="8dp"
-                        android:justificationMode="inter_word"/>
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp"/>
                 </LinearLayout>
 
+                <!-- Section Rec -->
                 <TextView
                     android:id="@+id/tvSectionRecursos"
                     android:layout_width="match_parent"
@@ -182,6 +195,7 @@
                     android:textColor="#A11991"
                     android:paddingBottom="8dp"/>
 
+                <!-- Slider loader -->
                 <FrameLayout
                     android:id="@+id/flLoaderSlider"
                     android:layout_width="match_parent"
@@ -207,19 +221,18 @@
             </LinearLayout>
         </ScrollView>
     </LinearLayout>
+
     <ImageButton
         android:id="@+id/btnBack"
         android:layout_width="58dp"
         android:layout_height="58dp"
         android:padding="12dp"
         android:src="@drawable/ic_atras"
-        android:tint="@android:color/white"
+
         android:clickable="true"
         android:focusable="true"
         android:background="?attr/selectableItemBackgroundBorderless"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
