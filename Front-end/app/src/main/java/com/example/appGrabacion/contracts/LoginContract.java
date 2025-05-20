@@ -14,4 +14,12 @@ public interface LoginContract {
         void detachView();
         void performLogin(String email, String password);
     }
+
+    interface Service {
+        interface LoginCallback {
+            void onSuccess(String token);
+            void onError(Throwable t);
+        }
+        void login(String email, String password, LoginCallback callback);
+    }
 }

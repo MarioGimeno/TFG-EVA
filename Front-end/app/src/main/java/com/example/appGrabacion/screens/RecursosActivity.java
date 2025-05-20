@@ -15,7 +15,7 @@ import com.example.appGrabacion.adapters.RecursosAdapter;
 import com.example.appGrabacion.contracts.ResourceContract;
 import com.example.appGrabacion.models.Recurso;
 import com.example.appGrabacion.presenters.ResourcePresenter;
-import com.example.appGrabacion.services.ResourceService;
+import com.example.appGrabacion.services.ResourceModel;
 
 import java.util.List;
 
@@ -41,7 +41,7 @@ public class RecursosActivity extends AppCompatActivity implements ResourceContr
         rvRecursos.setAdapter(adapter);
 
         // Inicializar service y presenter
-        ResourceService service = new ResourceService(this);
+        ResourceModel service = new ResourceModel(this);
         presenter = new ResourcePresenter(service);
         presenter.attachView(this);
 

@@ -13,11 +13,11 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ResourceService implements ResourceContract.Service {
+public class ResourceModel implements ResourceContract.Service {
 
     private final ResourcesApi api;
 
-    public ResourceService(Context ctx) {
+    public ResourceModel(Context ctx) {
         api = RetrofitClient
                 .getRetrofitInstance(ctx)
                 .create(ResourcesApi.class);

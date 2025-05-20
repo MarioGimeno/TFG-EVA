@@ -1,17 +1,15 @@
-// src/main/java/com/example/appGrabacion/presenters/CategoriasPresenter.java
 package com.example.appGrabacion.presenters;
 
 import com.example.appGrabacion.contracts.CategoriasContract;
 import com.example.appGrabacion.models.Categoria;
-import com.example.appGrabacion.services.CategoriaService;
-import com.example.appGrabacion.services.CategoriaService.CategoriaCallback;
+
 import java.util.List;
 
 public class CategoriasPresenter implements CategoriasContract.Presenter {
     private CategoriasContract.View view;
-    private final CategoriaService service;
+    private final CategoriasContract.Service service;
 
-    public CategoriasPresenter(CategoriaService service) {
+    public CategoriasPresenter(CategoriasContract.Service service) {
         this.service = service;
     }
 
@@ -29,12 +27,34 @@ public class CategoriasPresenter implements CategoriasContract.Presenter {
     public void loadCategories() {
         if (view == null) return;
         view.showLoading();
-        service.fetchAll(new CategoriaCallback() {
+        service.fetchAll(new CategoriasContract.Service.Callback<List<Categoria>>() {
             @Override
-            public void onSuccess(List<Categoria> list) {
+            public void onSuccess(List<Categoria> categorias) {
                 if (view != null) {
                     view.hideLoading();
-                    view.showCategories(list);
+                    view.showCategories(categorias);
+                }
+            }
+            @Override
+            public void onError(Throwable t) {
+                if (view != null) {
+                    view.hideLoading();
+                    view.showError(t.getMessage());
+                }
+            }
+        });
+    }
+
+    @Override
+    public void loadCategoryById(int categoryId) {
+        if (view == null) return;
+        view.showLoading();
+        service.fetchById(categoryId, new CategoriasContract.Service.Callback<Categoria>() {
+            @Override
+            public void onSuccess(Categoria categoria) {
+                if (view != null) {
+                    view.hideLoading();
+                    view.showCategory(categoria);
                 }
             }
             @Override

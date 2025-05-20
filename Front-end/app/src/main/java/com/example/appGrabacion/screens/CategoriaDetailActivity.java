@@ -16,8 +16,8 @@ import com.example.appGrabacion.contracts.CategoriaDetailContract;
 import com.example.appGrabacion.models.Categoria;
 import com.example.appGrabacion.models.Recurso;
 import com.example.appGrabacion.presenters.CategoriaDetailPresenter;
-import com.example.appGrabacion.services.CategoriaService;
-import com.example.appGrabacion.services.ResourceService;
+import com.example.appGrabacion.services.CategoriaModel;
+import com.example.appGrabacion.services.ResourceModel;
 
 import java.util.List;
 
@@ -54,8 +54,8 @@ public class CategoriaDetailActivity extends AppCompatActivity
 
         // Inicializar Presenter y cargar datos
         presenter = new CategoriaDetailPresenter(
-                new CategoriaService(this),
-                new ResourceService(this)
+                new CategoriaModel(this),
+                new ResourceModel(this)
         );
         presenter.attachView(this);
         presenter.loadCategoryAndResources(idCat);

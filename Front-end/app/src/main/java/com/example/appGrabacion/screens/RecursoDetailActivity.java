@@ -17,7 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.models.Recurso;
-import com.example.appGrabacion.services.ResourceService;
+import com.example.appGrabacion.services.ResourceModel;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -71,7 +71,7 @@ public class RecursoDetailActivity extends AppCompatActivity {
             return;
         }
 
-        new ResourceService(this).fetchById(idRecurso, new ResourceService.ResourceDetailCallback() {
+        new ResourceModel(this).fetchById(idRecurso, new ResourceModel.ResourceDetailCallback() {
             @Override
             public void onSuccess(Recurso r) {
                 // Imagen + loader

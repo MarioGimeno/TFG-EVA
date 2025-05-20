@@ -4,21 +4,21 @@ package com.example.appGrabacion.presenters;
 import com.example.appGrabacion.contracts.EntidadDetailContract;
 import com.example.appGrabacion.models.Entidad;
 import com.example.appGrabacion.models.Recurso;
-import com.example.appGrabacion.services.EntityService;
-import com.example.appGrabacion.services.ResourceService;
+import com.example.appGrabacion.services.EntityModel;
+import com.example.appGrabacion.services.ResourceModel;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class EntidadDetailPresenter implements EntidadDetailContract.Presenter {
     private EntidadDetailContract.View view;
-    private final EntityService   entityService;
-    private final ResourceService resourceService;
+    private final EntityModel entityModel;
+    private final ResourceModel resourceModel;
 
-    public EntidadDetailPresenter(EntityService entityService,
-                                  ResourceService resourceService) {
-        this.entityService   = entityService;
-        this.resourceService = resourceService;
+    public EntidadDetailPresenter(EntityModel entityModel,
+                                  ResourceModel resourceModel) {
+        this.entityModel = entityModel;
+        this.resourceModel = resourceModel;
     }
 
     @Override
@@ -36,13 +36,13 @@ public class EntidadDetailPresenter implements EntidadDetailContract.Presenter {
         if (view == null) return;
         view.showLoading();
 
-        entityService.fetchById(entidadId, new EntityService.EntityDetailCallback() {
+        entityModel.fetchById(entidadId, new EntityModel.EntityDetailCallback() {
             @Override
             public void onSuccess(Entidad e) {
                 if (view == null) return;
                 view.showEntidad(e);
 
-                resourceService.fetchAll(new ResourceService.ResourceCallback() {
+                resourceModel.fetchAll(new ResourceModel.ResourceCallback() {
                     @Override
                     public void onSuccess(List<Recurso> list) {
                         if (view == null) return;

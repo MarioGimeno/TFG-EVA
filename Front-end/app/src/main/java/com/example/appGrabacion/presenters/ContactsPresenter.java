@@ -4,16 +4,16 @@ import android.content.Context;
 
 import com.example.appGrabacion.contracts.ContactsContract;
 import com.example.appGrabacion.models.ContactEntry;
-import com.example.appGrabacion.services.ContactService;
+import com.example.appGrabacion.services.ContactModel;
 
 import java.util.List;
 
 public class ContactsPresenter implements ContactsContract.Presenter {
     private ContactsContract.View view;
-    private final ContactService service;
+    private final ContactModel service;
 
     public ContactsPresenter(Context ctx, String token) {
-        this.service = new ContactService(ctx, token);
+        this.service = new ContactModel(ctx, token);
     }
 
     @Override
@@ -31,7 +31,7 @@ public class ContactsPresenter implements ContactsContract.Presenter {
         if (view == null) return;
         view.showLoading();
 
-        service.loadContacts(new ContactService.ContactCallback<List<ContactEntry>>() {
+        service.loadContacts(new ContactModel.ContactCallback<List<ContactEntry>>() {
             @Override
             public void onSuccess(List<ContactEntry> result) {
                 if (view == null) return;
@@ -54,7 +54,7 @@ public class ContactsPresenter implements ContactsContract.Presenter {
         view.showLoading();
 
         ContactEntry newEntry = new ContactEntry(0, 0, name, email);
-        service.addContact(newEntry, new ContactService.ContactCallback<ContactEntry>() {
+        service.addContact(newEntry, new ContactModel.ContactCallback<ContactEntry>() {
             @Override
             public void onSuccess(ContactEntry result) {
                 if (view == null) return;
@@ -77,7 +77,7 @@ public class ContactsPresenter implements ContactsContract.Presenter {
         if (view == null) return;
         view.showLoading();
 
-        service.deleteContact(contactId, new ContactService.ContactCallback<Void>() {
+        service.deleteContact(contactId, new ContactModel.ContactCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
                 if (view == null) return;

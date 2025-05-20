@@ -6,12 +6,10 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -20,7 +18,7 @@ import com.example.appGrabacion.adapters.CategoriasAdapter;
 import com.example.appGrabacion.contracts.CategoriasContract;
 import com.example.appGrabacion.models.Categoria;
 import com.example.appGrabacion.presenters.CategoriasPresenter;
-import com.example.appGrabacion.services.CategoriaService;
+import com.example.appGrabacion.services.CategoriaModel;
 
 import java.util.List;
 
@@ -76,7 +74,7 @@ public class CategoriasActivity extends AppCompatActivity implements CategoriasC
         });
 
         // 2) Presenter setup
-        presenter = new CategoriasPresenter(new CategoriaService(this));
+        presenter = new CategoriasPresenter(new CategoriaModel(this));
         presenter.attachView(this);
 
         // 3) Load data
@@ -104,6 +102,11 @@ public class CategoriasActivity extends AppCompatActivity implements CategoriasC
     @Override
     public void showCategories(List<Categoria> categorias) {
         adapter.submitList(categorias);
+    }
+
+    @Override
+    public void showCategory(Categoria categoria) {
+
     }
 
     @Override

@@ -42,8 +42,9 @@ import com.example.appGrabacion.screens.EntidadDetailActivity;
 import com.example.appGrabacion.screens.FolderActivity;
 import com.example.appGrabacion.screens.LoginActivity;
 import com.example.appGrabacion.screens.RecursoDetailActivity;
-import com.example.appGrabacion.services.EntityService;
-import com.example.appGrabacion.services.ResourceService;
+import com.example.appGrabacion.services.EntityModel;
+import com.example.appGrabacion.services.ResourceModel;
+
 import com.example.appGrabacion.utils.ContactManager;
 import com.example.appGrabacion.utils.ContactsApi;
 import com.example.appGrabacion.utils.MyFirebaseMessagingService;
@@ -70,8 +71,8 @@ public class MainActivity extends AppCompatActivity {
     private final List<Recurso> recursos = new ArrayList<>();
     private boolean entLoaded = false, recLoaded = false;
     private final Handler sliderHandler = new Handler(Looper.getMainLooper());
-    private EntityService entityService;
-    private ResourceService resourceService;
+    private EntityModel entityModel;
+    private ResourceModel resourceModel;
     private static final String[] REQUIRED_PERMISSIONS = {
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO,
@@ -132,9 +133,12 @@ public class MainActivity extends AppCompatActivity {
         });
 
         // Inicializar servicios y cargar slider
-        entityService = new EntityService(this);
-        resourceService = new ResourceService(this);
-        entityService.fetchAll(new EntityService.EntityCallback() {
+
+        entityModel = new EntityModel(this);
+        resourceModel = new ResourceModel(this);
+
+        entityModel.fetchAll(new EntityModel.EntityCallback() {
+
             @Override public void onSuccess(List<Entidad> list) {
                 entidades.clear();
                 entidades.addAll(list);
@@ -145,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.e(TAG, "Error cargando entidades", t);
             }
         });
-        resourceService.fetchAll(new ResourceService.ResourceCallback() {
+        resourceModel.fetchAll(new ResourceModel.ResourceCallback() {
             @Override public void onSuccess(List<Recurso> list) {
                 recursos.clear();
                 recursos.addAll(list);

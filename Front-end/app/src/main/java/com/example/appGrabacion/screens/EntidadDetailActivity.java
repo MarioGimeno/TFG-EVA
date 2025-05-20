@@ -23,8 +23,8 @@ import com.example.appGrabacion.contracts.EntidadDetailContract;
 import com.example.appGrabacion.models.Entidad;
 import com.example.appGrabacion.models.Recurso;
 import com.example.appGrabacion.presenters.EntidadDetailPresenter;
-import com.example.appGrabacion.services.EntityService;
-import com.example.appGrabacion.services.ResourceService;
+import com.example.appGrabacion.services.EntityModel;
+import com.example.appGrabacion.services.ResourceModel;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 
@@ -84,8 +84,8 @@ public class EntidadDetailActivity extends AppCompatActivity
 
         // Presenter setup
         presenter = new EntidadDetailPresenter(
-                new EntityService(this),
-                new ResourceService(this)
+                new EntityModel(this),
+                new ResourceModel(this)
         );
         presenter.attachView(this);
         presenter.loadEntidadAndResources(idEntidad);
