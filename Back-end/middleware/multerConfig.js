@@ -2,7 +2,7 @@
 
 const multer = require('multer');
 const path   = require('path');
-const { TMPDIR } = require('../config');
+const { TMPDIR } = require('../config/Pool');
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {

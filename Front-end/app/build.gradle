@@ -99,6 +99,10 @@ dependencies {
 
     implementation "com.google.android.material:material:1.9.0"
 
+    //huella o pin
+    implementation "androidx.biometric:biometric:1.1.0"
+
+
 
 
 

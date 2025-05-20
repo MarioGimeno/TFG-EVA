@@ -1,18 +1,16 @@
 package com.example.appGrabacion.screens;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.OpenableColumns;
 import android.util.TypedValue;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -21,35 +19,35 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.appGrabacion.MainActivity;
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.FileAdapter;
+import com.example.appGrabacion.contracts.FolderContract;
 import com.example.appGrabacion.models.FileEntry;
-import com.example.appGrabacion.services.FolderService;
+import com.example.appGrabacion.presenters.FolderPresenter;
+import com.example.appGrabacion.services.FolderModel;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class FolderActivity extends AppCompatActivity {
+public class FolderActivity extends AppCompatActivity implements FolderContract.View {
+
     private static final int REQUEST_PICK_FILE = 1234;
 
     private final List<FileEntry> files = new ArrayList<>();
     private FileAdapter adapter;
     private String token;
-    private FolderService service;
+    private FolderPresenter presenter;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_folder);
 
-        // Botón de vuelta a Main
         findViewById(R.id.btnBack).setOnClickListener(v -> {
             startActivity(new Intent(FolderActivity.this, MainActivity.class));
             finish();
         });
 
-        // Comprueba sesión
         SharedPreferences prefs = getSharedPreferences("app_prefs", MODE_PRIVATE);
         token = prefs.getString("auth_token", "");
         if (token.isEmpty()) {
@@ -58,32 +56,21 @@ public class FolderActivity extends AppCompatActivity {
             return;
         }
 
-        // RecyclerView
         RecyclerView rv = findViewById(R.id.rvFiles);
         rv.setLayoutManager(new LinearLayoutManager(this));
         adapter = new FileAdapter(this, files);
         rv.setAdapter(adapter);
 
-        // Servicio Retrofit
-        service = new FolderService(this);
-
-        // Botón subir
-        findViewById(R.id.imgUpload).setOnClickListener(v -> pickFile());
-
-        // Scroll dinámico
+        // Scroll dinámico (igual que antes)
         ImageView videoBg = findViewById(R.id.videoBackground);
         FrameLayout wrapper = findViewById(R.id.card_wrapper);
-        ConstraintLayout.LayoutParams params =
-                (ConstraintLayout.LayoutParams) wrapper.getLayoutParams();
+        ConstraintLayout.LayoutParams params = (ConstraintLayout.LayoutParams) wrapper.getLayoutParams();
         final int initialMarginTop = params.topMargin;
         videoBg.post(() -> {
-            int overlapPx = Math.round(
-                    TypedValue.applyDimension(
-                            TypedValue.COMPLEX_UNIT_DIP,
-                            40,
-                            getResources().getDisplayMetrics()
-                    )
-            );
+            int overlapPx = Math.round(TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    40,
+                    getResources().getDisplayMetrics()));
             int maxScroll = videoBg.getHeight() - overlapPx;
             rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 int accumulatedDy = 0;
@@ -97,8 +84,11 @@ public class FolderActivity extends AppCompatActivity {
             });
         });
 
-        // Carga inicial
-        loadFiles();
+        presenter = new FolderPresenter(new FolderModel(this));
+        presenter.attachView(this);
+        presenter.loadFiles(token);
+
+        findViewById(R.id.imgUpload).setOnClickListener(v -> pickFile());
     }
 
     private void pickFile() {
@@ -112,64 +102,53 @@ public class FolderActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_PICK_FILE && resultCode == Activity.RESULT_OK && data != null) {
+        if (requestCode == REQUEST_PICK_FILE && resultCode == RESULT_OK && data != null) {
             Uri uri = data.getData();
             if (uri != null) {
-                uploadFile(uri);
+                presenter.uploadFile(token, uri);
             }
         }
     }
 
-    private void loadFiles() {
-        service.fetchFiles(token, new FolderService.FilesCallback() {
-            @Override
-            public void onSuccess(List<FileEntry> fetched) {
-                // 1) Ordenar por fecha (asumiendo que FileEntry tiene un método getDate() que devuelve java.util.Date)
-                Collections.sort(fetched, new Comparator<FileEntry>() {
-                    @Override
-                    public int compare(FileEntry f1, FileEntry f2) {
-                        // f2 antes que f1 → más recientes primero
-                        return f2.getCreated().compareTo(f1.getCreated());
-                    }
-                });
-
-                // 2) Refrescar el adaptador
-                files.clear();
-                files.addAll(fetched);
-                runOnUiThread(adapter::notifyDataSetChanged);
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                runOnUiThread(() ->
-                        Toast.makeText(FolderActivity.this,
-                                "Error al cargar: " + t.getMessage(),
-                                Toast.LENGTH_SHORT).show()
-                );
-            }
-        });
+    @Override
+    public void showLoading() {
+        // Puedes mostrar un progress bar
     }
-    private void uploadFile(Uri uri) {
-        service.uploadFile(token, uri, new FolderService.UploadCallback() {
-            @Override
-            public void onSuccess() {
-                runOnUiThread(() -> {
-                    Toast.makeText(FolderActivity.this,
-                            "Subida exitosa", Toast.LENGTH_SHORT).show();
-                    loadFiles();
-                });
-            }
 
+    @Override
+    public void hideLoading() {
+        // Ocultar progress bar
+    }
+
+    @Override
+    public void showFiles(List<FileEntry> fetchedFiles) {
+        // Ordenar por fecha descendente
+        Collections.sort(fetchedFiles, new Comparator<FileEntry>() {
             @Override
-            public void onError(Throwable t) {
-                runOnUiThread(() ->
-                        Toast.makeText(FolderActivity.this,
-                                "Error al subir: " + t.getMessage(),
-                                Toast.LENGTH_SHORT).show()
-                );
+            public int compare(FileEntry f1, FileEntry f2) {
+                return f2.getCreated().compareTo(f1.getCreated());
             }
         });
+        files.clear();
+        files.addAll(fetchedFiles);
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void showUploadSuccess() {
+        Toast.makeText(this, "Subida exitosa", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void showError(String message) {
+        Toast.makeText(this, "Error: " + message, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        presenter.detachView();
     }
 }

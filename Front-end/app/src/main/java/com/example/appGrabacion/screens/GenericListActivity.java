@@ -3,14 +3,11 @@ package com.example.appGrabacion.screens;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -20,11 +17,12 @@ import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 import com.example.appGrabacion.MainActivity;
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.ImageGridAdapter;
+import com.example.appGrabacion.contracts.CategoriasContract;
 import com.example.appGrabacion.models.Categoria;
 import com.example.appGrabacion.models.Entidad;
 import com.example.appGrabacion.models.Recurso;
-import com.example.appGrabacion.services.CategoriaService;
-import com.example.appGrabacion.services.GenericActivityService;
+import com.example.appGrabacion.services.CategoriaModel;
+import com.example.appGrabacion.services.GenericActivityModel;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.RequestCreator;
@@ -41,7 +39,7 @@ public class GenericListActivity extends AppCompatActivity {
     public static final String EXTRA_TYPE         = "type";           // lo mantenemos
 
     private RecyclerView rv;
-    private GenericActivityService service;
+    private GenericActivityModel service;
     private final Set<String> loadedUrls = new HashSet<>();
 
     @Override
@@ -62,7 +60,7 @@ public class GenericListActivity extends AppCompatActivity {
             finish();
         });
 
-        service = new GenericActivityService(this);
+        service = new GenericActivityModel(this);
 
         if (hasCategory) {
             // Modo: categoría
@@ -98,7 +96,7 @@ public class GenericListActivity extends AppCompatActivity {
 
     /** 1) Categoría → fondo + grid */
     private void loadCategoryAndServicios(int categoryId, ImageView bg) {
-        new CategoriaService(this).fetchById(categoryId, new CategoriaService.CategoriaDetailCallback() {
+        new CategoriaModel(this).fetchById(categoryId, new CategoriasContract.Service.Callback<Categoria>() {
             @Override public void onSuccess(Categoria cat) {
                 Log.d("GenericList",
                         "Cat → id:" + cat.getIdCategoria() +
@@ -137,7 +135,7 @@ public class GenericListActivity extends AppCompatActivity {
         ImageGridAdapter<Recurso> grid = new ImageGridAdapter<>(diff, binder, listener);
         rv.setAdapter(grid);
 
-        service.loadServiciosPorCategoria(categoryId, new GenericActivityService.LoadCallback<Recurso>() {
+        service.loadServiciosPorCategoria(categoryId, new GenericActivityModel.LoadCallback<Recurso>() {
             @Override public void onSuccess(List<Recurso> items) {
                 runOnUiThread(() -> {
                     if (items.size() < 2) {
@@ -193,7 +191,7 @@ public class GenericListActivity extends AppCompatActivity {
         ImageGridAdapter<Entidad> grid = new ImageGridAdapter<>(diff, binder, listener);
         rv.setAdapter(grid);
 
-        service.loadEntidades(new GenericActivityService.LoadCallback<Entidad>() {
+        service.loadEntidades(new GenericActivityModel.LoadCallback<Entidad>() {
             @Override public void onSuccess(List<Entidad> items) {
                 List<Entidad> reordered = new ArrayList<>(items);
                 // desplaza email especial al frente
@@ -230,7 +228,7 @@ public class GenericListActivity extends AppCompatActivity {
         ImageGridAdapter<Recurso> grid = new ImageGridAdapter<>(diff, binder, listener);
         rv.setAdapter(grid);
 
-        service.loadServicios(new GenericActivityService.LoadCallback<Recurso>() {
+        service.loadServicios(new GenericActivityModel.LoadCallback<Recurso>() {
             @Override public void onSuccess(List<Recurso> items) {
                 Collections.shuffle(items);
                 runOnUiThread(() -> grid.submitList(items));
@@ -258,7 +256,7 @@ public class GenericListActivity extends AppCompatActivity {
         ImageGridAdapter<Recurso> grid = new ImageGridAdapter<>(diff, binder, listener);
         rv.setAdapter(grid);
 
-        service.loadGratuitos(new GenericActivityService.LoadCallback<Recurso>() {
+        service.loadGratuitos(new GenericActivityModel.LoadCallback<Recurso>() {
             @Override public void onSuccess(List<Recurso> items) {
                 runOnUiThread(() -> grid.submitList(items));
             }
@@ -285,7 +283,7 @@ public class GenericListActivity extends AppCompatActivity {
         ImageGridAdapter<Recurso> grid = new ImageGridAdapter<>(diff, binder, listener);
         rv.setAdapter(grid);
 
-        service.loadAccesibles(new GenericActivityService.LoadCallback<Recurso>() {
+        service.loadAccesibles(new GenericActivityModel.LoadCallback<Recurso>() {
             @Override public void onSuccess(List<Recurso> items) {
                 runOnUiThread(() -> grid.submitList(items));
             }

@@ -1,47 +1,102 @@
-// src/services/authService.js
-const bcrypt = require('bcrypt');
-const jwt    = require('jsonwebtoken');
-const { createUser, findUserByEmail } = require('./userService');
-const { JWT_SECRET, JWT_EXPIRES, REFRESH_EXPIRES } = require('../config');
+// src/services/AuthService.js
+const bcrypt    = require('bcrypt');
+const jwt       = require('jsonwebtoken');
+const userRepo  = require('../repositories/UserRepository');
+const {
+  JWT_SECRET,
+  JWT_EXPIRES,
+  REFRESH_EXPIRES
+} = require('../config/Pool');
 
-/**
- * Registra un nuevo usuario y devuelve tokens.
- */
-async function register({ email, password }) {
-  if (await findUserByEmail(email)) {
-    throw new Error('Usuario ya existe');
+class AuthService {
+  /**
+   * Registra un usuario nuevo y devuelve { token, refreshToken }.
+   */
+  async register({ email, password }) {
+    console.log('[AuthService] register called with:', { email, password });
+    if (await userRepo.findByEmail(email)) {
+      const err = new Error('Usuario ya existe');
+      err.status = 400;
+      throw err;
+    }
+    const hash = await bcrypt.hash(password, 10);
+    console.log('[AuthService] password hashed:', hash);
+    const user = await userRepo.createUser({ email, passwordHash: hash });
+    console.log('[AuthService] new user created:', { id: user.id, email: user.email });
+    const tokens = this._generateTokens(user.id);
+    console.log('[AuthService] tokens generated on register:', tokens);
+    return tokens;
   }
-  const hash = await bcrypt.hash(password, 10);
-  const user = await createUser({ email, passwordHash: hash });
-  return _generateTokens(user.id);
-}
 
-/**
- * Login de usuario, comprueba contraseña y emite tokens.
- */
-async function login({ email, password }) {
-  const user = await findUserByEmail(email);
-  if (!user || !await bcrypt.compare(password, user.password)) {
-    throw new Error('Credenciales inválidas');
+  /**
+   * Valida credenciales y devuelve { token, refreshToken }.
+   */
+  async login({ email, password }) {
+    console.log('[AuthService] login called with:', { email, password });
+    const user = await userRepo.findByEmail(email);
+    console.log('[AuthService] fetched user:', user);
+    if (!user) {
+      console.log('[AuthService] no user found for email');
+      const err = new Error('Credenciales inválidas');
+      err.status = 400;
+      throw err;
+    }
+    const match = await bcrypt.compare(password, user.passwordHash);
+    console.log('[AuthService] password match result:', match);
+    if (!match) {
+      const err = new Error('Credenciales inválidas');
+      err.status = 400;
+      throw err;
+    }
+    const tokens = this._generateTokens(user.id);
+    console.log('[AuthService] tokens generated on login:', tokens);
+    return tokens;
   }
-  return _generateTokens(user.id);
-}
 
-/** Genera JWT y refresh token */
-function _generateTokens(userId) {
-  const payload = { sub: userId };
-  const token        = jwt.sign(payload, JWT_SECRET, { expiresIn: JWT_EXPIRES });
-  const refreshToken = jwt.sign(payload, JWT_SECRET, { expiresIn: REFRESH_EXPIRES });
-  return { token, refreshToken };
-}
+  /**
+   * Renueva tokens a partir de un refreshToken válido.
+   */
+  async refresh(refreshToken) {
+    console.log('[AuthService] refresh called with token:', refreshToken);
+    const payload = this.verifyToken(refreshToken);
+    console.log('[AuthService] refresh payload:', payload);
+    if (!payload) {
+      const err = new Error('Refresh inválido');
+      err.status = 401;
+      throw err;
+    }
+    const tokens = this._generateTokens(payload.sub);
+    console.log('[AuthService] tokens generated on refresh:', tokens);
+    return tokens;
+  }
 
-/** Verifica un token JWT */
-function verifyToken(token) {
-  try {
-    return jwt.verify(token, JWT_SECRET);
-  } catch {
-    return null;
+  /**
+   * Verifica un JWT y devuelve el payload, o null si es inválido.
+   */
+  verifyToken(token) {
+    try {
+      console.log(token);
+      const payload = jwt.verify(token, JWT_SECRET);
+      console.log('[AuthService] verifyToken payload:', payload);
+      return payload;
+    } catch (e) {
+      console.log('[AuthService] verifyToken error:', e.message);
+      return null;
+    }
+  }
+
+  /**
+   * Genera ambos tokens (access + refresh).
+   */
+  _generateTokens(userId) {
+    const payload      = { sub: userId };
+    const token        = jwt.sign(payload, JWT_SECRET,     { expiresIn: JWT_EXPIRES });
+    const refreshToken = jwt.sign(payload, JWT_SECRET,     { expiresIn: REFRESH_EXPIRES });
+    console.log('[AuthService] generated tokens for userId:', userId);
+    console.log('[AuthService] access token:', token);
+    console.log('[AuthService] refresh token:', refreshToken);
+    return { token, refreshToken };
   }
 }
 
-module.exports = { register, login, verifyToken };
+module.exports = new AuthService();

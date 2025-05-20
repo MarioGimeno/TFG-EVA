@@ -1,4 +1,4 @@
-// com/example/appGrabacion/screens/EntidadesActivity.java
+// com/example/appGrabacion/activities/EntidadesActivity.java
 package com.example.appGrabacion.screens;
 
 import android.content.Intent;
@@ -13,13 +13,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.EntidadesAdapter;
+import com.example.appGrabacion.contracts.EntidadesContract;
 import com.example.appGrabacion.models.Entidad;
-import com.example.appGrabacion.services.EntityService;
+import com.example.appGrabacion.presenters.EntidadesPresenter;
+import com.example.appGrabacion.services.EntityModel;
 
 import java.util.List;
 
-public class EntidadesActivity extends AppCompatActivity {
+public class EntidadesActivity extends AppCompatActivity implements EntidadesContract.View {
     private static final String TAG = "EntidadesActivity";
+
+    private EntidadesPresenter presenter;
+    private EntidadesAdapter adapter;
 
     @Override
     protected void onCreate(@Nullable Bundle s) {
@@ -29,22 +34,42 @@ public class EntidadesActivity extends AppCompatActivity {
         RecyclerView rv = findViewById(R.id.rvEntidades);
         rv.setLayoutManager(new LinearLayoutManager(this));
 
-        EntidadesAdapter adapter = new EntidadesAdapter(ent -> {
+        adapter = new EntidadesAdapter(ent -> {
             Intent i = new Intent(this, EntidadDetailActivity.class);
             i.putExtra("id_entidad", ent.getIdEntidad());
             startActivity(i);
         });
         rv.setAdapter(adapter);
 
-        new EntityService(this).fetchAll(new EntityService.EntityCallback() {
-            @Override public void onSuccess(List<Entidad> list) {
-                adapter.submitList(list);
-            }
-            @Override public void onError(Throwable t) {
-                Log.e(TAG, "Error al cargar", t);
-                Toast.makeText(EntidadesActivity.this,
-                        "Error: "+t.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
+        presenter = new EntidadesPresenter(new EntityModel(this));
+        presenter.attachView(this);
+        presenter.loadEntidades();
+    }
+
+    @Override
+    public void showLoading() {
+        // Opcional: mostrar progress bar
+    }
+
+    @Override
+    public void hideLoading() {
+        // Opcional: ocultar progress bar
+    }
+
+    @Override
+    public void showEntidades(List<Entidad> entidades) {
+        adapter.submitList(entidades);
+    }
+
+    @Override
+    public void showError(String message) {
+        Log.e(TAG, "Error al cargar entidades: " + message);
+        Toast.makeText(this, "Error: " + message, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        presenter.detachView();
     }
 }

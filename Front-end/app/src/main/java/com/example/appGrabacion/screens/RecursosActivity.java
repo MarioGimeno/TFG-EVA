@@ -12,49 +12,74 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.RecursosAdapter;
+import com.example.appGrabacion.contracts.ResourceContract;
 import com.example.appGrabacion.models.Recurso;
-import com.example.appGrabacion.services.ResourceService;
-import com.example.appGrabacion.services.ResourceService.ResourceCallback;
+import com.example.appGrabacion.presenters.ResourcePresenter;
+import com.example.appGrabacion.services.ResourceModel;
 
 import java.util.List;
 
-public class RecursosActivity extends AppCompatActivity {
+public class RecursosActivity extends AppCompatActivity implements ResourceContract.View {
+
     private static final String TAG = "RecursosActivity";
     private RecyclerView rvRecursos;
     private RecursosAdapter adapter;
+    private ResourceContract.Presenter presenter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recursos);
 
-        // 1) Configurar RecyclerView y Adapter
         rvRecursos = findViewById(R.id.rvRecursos);
         rvRecursos.setLayoutManager(new LinearLayoutManager(this));
         adapter = new RecursosAdapter(recurso -> {
             Intent i = new Intent(RecursosActivity.this, RecursoDetailActivity.class);
             i.putExtra("id_recurso", recurso.getId());
             startActivity(i);
-        });        rvRecursos.setAdapter(adapter);
-
-        // 2) Llamar al servicio para cargar recursos
-        ResourceService service = new ResourceService(this);
-        service.fetchAll(new ResourceCallback() {
-            @Override
-            public void onSuccess(List<Recurso> lista) {
-                Log.d(TAG, "Recursos cargados: " + lista.size());
-                adapter.submitList(lista);
-            }
-
-            @Override
-            public void onError(Throwable t) {
-                Log.e(TAG, "Error al cargar recursos", t);
-                Toast.makeText(
-                        RecursosActivity.this,
-                        "Error al cargar recursos: " + t.getMessage(),
-                        Toast.LENGTH_LONG
-                ).show();
-            }
         });
+        rvRecursos.setAdapter(adapter);
+
+        // Inicializar service y presenter
+        ResourceModel service = new ResourceModel(this);
+        presenter = new ResourcePresenter(service);
+        presenter.attachView(this);
+
+        presenter.loadAllResources();
+    }
+
+    @Override
+    public void showLoading() {
+        // Aquí podrías mostrar un ProgressBar si quieres
+        Log.d(TAG, "Cargando recursos...");
+    }
+
+    @Override
+    public void hideLoading() {
+        // Ocultar ProgressBar aquí si lo implementas
+        Log.d(TAG, "Carga finalizada");
+    }
+
+    @Override
+    public void showResources(List<Recurso> recursos) {
+        Log.d(TAG, "Recursos cargados: " + recursos.size());
+        adapter.submitList(recursos);
+    }
+
+    @Override
+    public void showResourceDetail(Recurso recurso) {
+        // No se usa aquí, pero está en el contrato
+    }
+
+    @Override
+    public void showError(String message) {
+        Log.e(TAG, "Error al cargar recursos: " + message);
+        Toast.makeText(this, "Error al cargar recursos: " + message, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        presenter.detachView();
+        super.onDestroy();
     }
 }
