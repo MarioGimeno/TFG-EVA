@@ -23,7 +23,9 @@ class AuthService {
     console.log('[AuthService] password hashed:', hash);
     const user = await userRepo.createUser({ email, passwordHash: hash });
     console.log('[AuthService] new user created:', { id: user.id, email: user.email });
-    return this._generateTokens(user.id);
+    const tokens = this._generateTokens(user.id);
+    console.log('[AuthService] tokens generated on register:', tokens);
+    return tokens;
   }
 
   /**
@@ -46,7 +48,9 @@ class AuthService {
       err.status = 400;
       throw err;
     }
-    return this._generateTokens(user.id);
+    const tokens = this._generateTokens(user.id);
+    console.log('[AuthService] tokens generated on login:', tokens);
+    return tokens;
   }
 
   /**
@@ -61,7 +65,9 @@ class AuthService {
       err.status = 401;
       throw err;
     }
-    return this._generateTokens(payload.sub);
+    const tokens = this._generateTokens(payload.sub);
+    console.log('[AuthService] tokens generated on refresh:', tokens);
+    return tokens;
   }
 
   /**
@@ -69,6 +75,7 @@ class AuthService {
    */
   verifyToken(token) {
     try {
+      console.log(token);
       const payload = jwt.verify(token, JWT_SECRET);
       console.log('[AuthService] verifyToken payload:', payload);
       return payload;
@@ -86,6 +93,8 @@ class AuthService {
     const token        = jwt.sign(payload, JWT_SECRET,     { expiresIn: JWT_EXPIRES });
     const refreshToken = jwt.sign(payload, JWT_SECRET,     { expiresIn: REFRESH_EXPIRES });
     console.log('[AuthService] generated tokens for userId:', userId);
+    console.log('[AuthService] access token:', token);
+    console.log('[AuthService] refresh token:', refreshToken);
     return { token, refreshToken };
   }
 }

@@ -292,6 +292,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void syncContacts() {
         String bearer = "Bearer " + SessionManager.getToken(this);
+        Log.d(TAG, "Contacts synced: " + SessionManager.getToken(this));
         ContactsApi api = RetrofitClient.getRetrofitInstance(this)
                 .create(ContactsApi.class);
         api.getContacts(bearer).enqueue(new Callback<List<ContactEntry>>() {

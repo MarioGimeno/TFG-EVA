@@ -2,12 +2,14 @@ package com.example.appGrabacion.services;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.example.appGrabacion.contracts.LoginContract;
 import com.example.appGrabacion.models.LoginRequest;
 import com.example.appGrabacion.models.LoginResponse;
 import com.example.appGrabacion.utils.AuthApi;
 import com.example.appGrabacion.utils.RetrofitClient;
+import com.example.appGrabacion.utils.SessionManager;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -29,10 +31,12 @@ public class LoginModel implements LoginContract.Service {
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String token = response.body().token;
+                    Log.d("LoginService", "Token recibido del servidor: " + token);
 
                     // Guardar token localmente
                     SharedPreferences prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE);
                     prefs.edit().putString("auth_token", token).apply();
+                    new SessionManager(context).saveToken(token);
 
                     callback.onSuccess(token);
                 } else {
