@@ -107,7 +107,6 @@ public class GenericListActivity extends AppCompatActivity {
                 if (url != null && !url.isEmpty()) {
                     Picasso.get()
                             .load(url)
-                            .placeholder(R.drawable.eva)
                             .error(R.drawable.eva)
                             .into(bg);
                 }

@@ -57,7 +57,6 @@ public class CategoriasRecursosAdapter
         if (r.getImagen() != null && !r.getImagen().isEmpty()) {
             Picasso.get()
                     .load(r.getImagen())
-                    .placeholder(R.drawable.eva)
                     .error(R.drawable.eva)
                     .into(holder.imgRecurso);
         } else {

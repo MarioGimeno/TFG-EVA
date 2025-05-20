@@ -74,7 +74,6 @@ public class RecursosAdapter
             if (rec.getImagen() != null && !rec.getImagen().isEmpty()) {
                 Picasso.get()
                         .load(rec.getImagen())
-                        .placeholder(R.drawable.eva)
                         .error(R.drawable.eva)
                         .into(imgRecurso);
             } else {
