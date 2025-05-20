@@ -17,14 +17,17 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.CategoriasAdapter;
+import com.example.appGrabacion.contracts.CategoriasContract;
 import com.example.appGrabacion.models.Categoria;
+import com.example.appGrabacion.presenters.CategoriasPresenter;
 import com.example.appGrabacion.services.CategoriaService;
 
 import java.util.List;
 
-public class CategoriasActivity extends AppCompatActivity {
+public class CategoriasActivity extends AppCompatActivity implements CategoriasContract.View {
     private static final String TAG = "CategoriasActivity";
-
+    private CategoriasPresenter presenter;
+    private  CategoriasAdapter adapter;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,7 +41,7 @@ public class CategoriasActivity extends AppCompatActivity {
         rv.setNestedScrollingEnabled(false);
         rv.setLayoutManager(new GridLayoutManager(this, 2));
 
-        CategoriasAdapter adapter = new CategoriasAdapter(cat -> {
+         adapter = new CategoriasAdapter(cat -> {
             Intent i = new Intent(this, GenericListActivity.class);
             i.putExtra(GenericListActivity.EXTRA_CATEGORY_ID, cat.getIdCategoria());
             startActivity(i);
@@ -72,18 +75,12 @@ public class CategoriasActivity extends AppCompatActivity {
             startActivity(i);
         });
 
+        // 2) Presenter setup
+        presenter = new CategoriasPresenter(new CategoriaService(this));
+        presenter.attachView(this);
 
-        new CategoriaService(this).fetchAll(new CategoriaService.CategoriaCallback() {
-            @Override public void onSuccess(List<Categoria> list) {
-                Log.d(TAG, "onSuccess: fetched " + list.size());
-                adapter.submitList(list);
-            }
-            @Override public void onError(Throwable t) {
-                Log.e(TAG, "Error al cargar categorías", t);
-                Toast.makeText(CategoriasActivity.this,
-                        "Error: " + t.getMessage(), Toast.LENGTH_LONG).show();
-            }
-        });
+        // 3) Load data
+        presenter.loadCategories();
 
     }
     private void setupFilter(View card, @DrawableRes int iconRes,String label, Runnable onClick) {
@@ -92,5 +89,25 @@ public class CategoriasActivity extends AppCompatActivity {
         iv.setImageResource(iconRes);
         tv.setText(label);
         card.setOnClickListener(v -> onClick.run());
+    }
+
+    @Override
+    public void showLoading() {
+
+    }
+
+    @Override
+    public void hideLoading() {
+
+    }
+
+    @Override
+    public void showCategories(List<Categoria> categorias) {
+        adapter.submitList(categorias);
+    }
+
+    @Override
+    public void showError(String message) {
+
     }
 }
