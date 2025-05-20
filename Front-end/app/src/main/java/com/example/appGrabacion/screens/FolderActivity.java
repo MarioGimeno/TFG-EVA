@@ -22,7 +22,7 @@ import com.example.appGrabacion.adapters.FileAdapter;
 import com.example.appGrabacion.contracts.FolderContract;
 import com.example.appGrabacion.models.FileEntry;
 import com.example.appGrabacion.presenters.FolderPresenter;
-import com.example.appGrabacion.services.FolderService;
+import com.example.appGrabacion.services.FolderModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -84,7 +84,7 @@ public class FolderActivity extends AppCompatActivity implements FolderContract.
             });
         });
 
-        presenter = new FolderPresenter(new FolderService(this));
+        presenter = new FolderPresenter(new FolderModel(this));
         presenter.attachView(this);
         presenter.loadFiles(token);
 

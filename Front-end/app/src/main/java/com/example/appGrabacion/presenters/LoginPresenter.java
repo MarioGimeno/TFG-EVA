@@ -3,14 +3,14 @@ package com.example.appGrabacion.presenters;
 import android.content.Context;
 
 import com.example.appGrabacion.contracts.LoginContract;
-import com.example.appGrabacion.services.LoginService;
+import com.example.appGrabacion.services.LoginModel;
 
 public class LoginPresenter implements LoginContract.Presenter {
     private LoginContract.View view;
-    private final LoginService service;
+    private final LoginModel service;
 
     public LoginPresenter(Context ctx) {
-        this.service = new LoginService(ctx);
+        this.service = new LoginModel(ctx);
     }
 
     @Override
@@ -27,7 +27,7 @@ public class LoginPresenter implements LoginContract.Presenter {
     public void performLogin(String email, String password) {
         if (view != null) view.showLoading();
 
-        service.login(email, password, new LoginService.LoginCallback() {
+        service.login(email, password, new LoginModel.LoginCallback() {
             @Override
             public void onSuccess(String token) {
                 if (view != null) {

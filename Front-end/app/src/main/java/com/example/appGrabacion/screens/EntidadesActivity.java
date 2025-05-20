@@ -16,8 +16,7 @@ import com.example.appGrabacion.adapters.EntidadesAdapter;
 import com.example.appGrabacion.contracts.EntidadesContract;
 import com.example.appGrabacion.models.Entidad;
 import com.example.appGrabacion.presenters.EntidadesPresenter;
-import com.example.appGrabacion.screens.EntidadDetailActivity;
-import com.example.appGrabacion.services.EntityService;
+import com.example.appGrabacion.services.EntityModel;
 
 import java.util.List;
 
@@ -42,7 +41,7 @@ public class EntidadesActivity extends AppCompatActivity implements EntidadesCon
         });
         rv.setAdapter(adapter);
 
-        presenter = new EntidadesPresenter(new EntityService(this));
+        presenter = new EntidadesPresenter(new EntityModel(this));
         presenter.attachView(this);
         presenter.loadEntidades();
     }

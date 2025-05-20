@@ -3,15 +3,15 @@ package com.example.appGrabacion.presenters;
 import com.example.appGrabacion.contracts.GenericListContract;
 import com.example.appGrabacion.models.Entidad;
 import com.example.appGrabacion.models.Recurso;
-import com.example.appGrabacion.services.GenericActivityService;
+import com.example.appGrabacion.services.GenericActivityModel;
 
 import java.util.List;
 
 public class GenericListPresenter implements GenericListContract.Presenter {
     private GenericListContract.View view;
-    private GenericActivityService service;
+    private GenericActivityModel service;
 
-    public GenericListPresenter(GenericActivityService service) {
+    public GenericListPresenter(GenericActivityModel service) {
         this.service = service;
     }
 
@@ -32,7 +32,7 @@ public class GenericListPresenter implements GenericListContract.Presenter {
 
         switch (type.toLowerCase()) {
             case "entidades":
-                service.loadEntidades(new GenericActivityService.LoadCallback<Entidad>() {
+                service.loadEntidades(new GenericActivityModel.LoadCallback<Entidad>() {
                     @Override
                     public void onSuccess(List<Entidad> items) {
                         if (view != null) {
@@ -50,7 +50,7 @@ public class GenericListPresenter implements GenericListContract.Presenter {
                 });
                 break;
             case "servicios":
-                service.loadServicios(new GenericActivityService.LoadCallback<Recurso>() {
+                service.loadServicios(new GenericActivityModel.LoadCallback<Recurso>() {
                     @Override
                     public void onSuccess(List<Recurso> items) {
                         if (view != null) {
@@ -68,7 +68,7 @@ public class GenericListPresenter implements GenericListContract.Presenter {
                 });
                 break;
             case "gratuitos":
-                service.loadGratuitos(new GenericActivityService.LoadCallback<Recurso>() {
+                service.loadGratuitos(new GenericActivityModel.LoadCallback<Recurso>() {
                     @Override
                     public void onSuccess(List<Recurso> items) {
                         if (view != null) {
@@ -86,7 +86,7 @@ public class GenericListPresenter implements GenericListContract.Presenter {
                 });
                 break;
             case "accesibles":
-                service.loadAccesibles(new GenericActivityService.LoadCallback<Recurso>() {
+                service.loadAccesibles(new GenericActivityModel.LoadCallback<Recurso>() {
                     @Override
                     public void onSuccess(List<Recurso> items) {
                         if (view != null) {
@@ -105,7 +105,7 @@ public class GenericListPresenter implements GenericListContract.Presenter {
                 break;
             default:
                 if (categoryId > 0) {
-                    service.loadServiciosPorCategoria(categoryId, new GenericActivityService.LoadCallback<Recurso>() {
+                    service.loadServiciosPorCategoria(categoryId, new GenericActivityModel.LoadCallback<Recurso>() {
                         @Override
                         public void onSuccess(List<Recurso> items) {
                             if (view != null) {

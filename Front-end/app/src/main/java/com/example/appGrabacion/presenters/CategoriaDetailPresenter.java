@@ -1,22 +1,22 @@
-// src/main/java/com/example/appGrabacion/presenters/CategoriaDetailPresenter.java
 package com.example.appGrabacion.presenters;
 
 import com.example.appGrabacion.contracts.CategoriaDetailContract;
 import com.example.appGrabacion.models.Categoria;
 import com.example.appGrabacion.models.Recurso;
-import com.example.appGrabacion.services.CategoriaService;
-import com.example.appGrabacion.services.ResourceService;
+import com.example.appGrabacion.services.CategoriaModel;
+import com.example.appGrabacion.services.ResourceModel;
+
 import java.util.List;
 
 public class CategoriaDetailPresenter implements CategoriaDetailContract.Presenter {
     private CategoriaDetailContract.View view;
-    private final CategoriaService categoriaService;
-    private final ResourceService   resourceService;
+    private final CategoriaModel categoriaModel;
+    private final ResourceModel resourceModel;
 
-    public CategoriaDetailPresenter(CategoriaService categoriaService,
-                                    ResourceService resourceService) {
-        this.categoriaService = categoriaService;
-        this.resourceService  = resourceService;
+    public CategoriaDetailPresenter(CategoriaModel categoriaModel,
+                                    ResourceModel resourceModel) {
+        this.categoriaModel = categoriaModel;
+        this.resourceModel = resourceModel;
     }
 
     @Override
@@ -34,21 +34,27 @@ public class CategoriaDetailPresenter implements CategoriaDetailContract.Present
         if (view == null) return;
         view.showLoading();
 
-        // 1) Cargar detalles de la categoría
-        categoriaService.fetchById(categoryId, new CategoriaService.CategoriaDetailCallback() {
+        // Cargar detalles de la categoría
+        categoriaModel.fetchById(categoryId, new CategoriaModel.Callback<Categoria>() {
             @Override
-            public void onSuccess(Categoria c) {
+            public void onSuccess(Categoria categoria) {
                 if (view == null) return;
-                view.showCategory(c);
+                if (categoria == null) {
+                    view.hideLoading();
+                    view.showError("Categoría no encontrada");
+                    return;
+                }
+                view.showCategory(categoria);
 
-                // 2) Cargar recursos de esa categoría
-                resourceService.fetchByCategory(categoryId, new ResourceService.ResourceCallback() {
+                // Cargar recursos de esa categoría
+                resourceModel.fetchByCategory(categoryId, new ResourceModel.ResourceCallback() {
                     @Override
-                    public void onSuccess(List<Recurso> list) {
+                    public void onSuccess(List<Recurso> recursos) {
                         if (view == null) return;
                         view.hideLoading();
-                        view.showResources(list);
+                        view.showResources(recursos);
                     }
+
                     @Override
                     public void onError(Throwable t) {
                         if (view == null) return;

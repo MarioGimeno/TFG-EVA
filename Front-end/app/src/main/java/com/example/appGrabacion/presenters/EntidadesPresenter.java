@@ -3,16 +3,16 @@ package com.example.appGrabacion.presenters;
 
 import com.example.appGrabacion.contracts.EntidadesContract;
 import com.example.appGrabacion.models.Entidad;
-import com.example.appGrabacion.services.EntityService;
+import com.example.appGrabacion.services.EntityModel;
 
 import java.util.List;
 
 public class EntidadesPresenter implements EntidadesContract.Presenter {
 
     private EntidadesContract.View view;
-    private final EntityService service;
+    private final EntityModel service;
 
-    public EntidadesPresenter(EntityService service) {
+    public EntidadesPresenter(EntityModel service) {
         this.service = service;
     }
 
@@ -30,7 +30,7 @@ public class EntidadesPresenter implements EntidadesContract.Presenter {
     public void loadEntidades() {
         if (view != null) {
             view.showLoading();
-            service.fetchAll(new EntityService.EntityCallback() {
+            service.fetchAll(new EntityModel.EntityCallback() {
                 @Override
                 public void onSuccess(List<Entidad> list) {
                     if (view != null) {

@@ -1,7 +1,8 @@
-// com/example/appGrabacion/contracts/EntidadesContract.java
 package com.example.appGrabacion.contracts;
 
 import com.example.appGrabacion.models.Entidad;
+import com.example.appGrabacion.services.EntityModel;
+
 import java.util.List;
 
 public interface EntidadesContract {
@@ -15,5 +16,10 @@ public interface EntidadesContract {
         void attachView(View view);
         void detachView();
         void loadEntidades();
+    }
+
+    interface Service {
+        void fetchAll(EntityModel.EntityCallback callback);
+        void fetchById(int id, EntityModel.EntityDetailCallback callback);
     }
 }

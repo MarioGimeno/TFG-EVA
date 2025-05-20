@@ -3,16 +3,16 @@ package com.example.appGrabacion.presenters;
 import android.net.Uri;
 import com.example.appGrabacion.contracts.FolderContract;
 import com.example.appGrabacion.models.FileEntry;
-import com.example.appGrabacion.services.FolderService;
+import com.example.appGrabacion.services.FolderModel;
 
 import java.util.List;
 
 public class FolderPresenter implements FolderContract.Presenter {
 
     private FolderContract.View view;
-    private final FolderService service;
+    private final FolderModel service;
 
-    public FolderPresenter(FolderService service) {
+    public FolderPresenter(FolderModel service) {
         this.service = service;
     }
 
@@ -30,7 +30,7 @@ public class FolderPresenter implements FolderContract.Presenter {
     public void loadFiles(String token) {
         if (view != null) {
             view.showLoading();
-            service.fetchFiles(token, new FolderService.FilesCallback() {
+            service.fetchFiles(token, new FolderModel.FilesCallback() {
                 @Override
                 public void onSuccess(List<FileEntry> fetched) {
                     if (view != null) {
@@ -54,7 +54,7 @@ public class FolderPresenter implements FolderContract.Presenter {
     public void uploadFile(String token, Uri uri) {
         if (view != null) {
             view.showLoading();
-            service.uploadFile(token, uri, new FolderService.UploadCallback() {
+            service.uploadFile(token, uri, new FolderModel.UploadCallback() {
                 @Override
                 public void onSuccess() {
                     if (view != null) {

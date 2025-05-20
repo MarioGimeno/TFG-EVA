@@ -3,6 +3,7 @@ package com.example.appGrabacion.services;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.example.appGrabacion.contracts.LoginContract;
 import com.example.appGrabacion.models.LoginRequest;
 import com.example.appGrabacion.models.LoginResponse;
 import com.example.appGrabacion.utils.AuthApi;
@@ -12,21 +13,17 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class LoginService {
+public class LoginModel implements LoginContract.Service {
     private final AuthApi api;
     private final Context context;
 
-    public interface LoginCallback {
-        void onSuccess(String token);
-        void onError(Throwable t);
-    }
-
-    public LoginService(Context context) {
+    public LoginModel(Context context) {
         this.context = context;
         this.api = RetrofitClient.getRetrofitInstance(context).create(AuthApi.class);
     }
 
-    public void login(String email, String password, LoginCallback callback) {
+    @Override
+    public void login(String email, String password, LoginContract.Service.LoginCallback callback) {
         api.login(new LoginRequest(email, password)).enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
