@@ -58,31 +58,31 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
-
-
                 <!-- Descripción -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingTop="4dp"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:paddingBottom="8dp">
+                    android:padding="0dp"
+                    android:weightSum="1">
 
                     <ImageView
                         android:id="@+id/ivDescripcionInline"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:visibility="gone"/>
+
                     <TextView
                         android:id="@+id/tvDescripcionDetail"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:textAlignment="viewStart"
                         android:textSize="16sp"
-                        android:textColor="@android:color/black"
-                        android:justificationMode="inter_word"/>
+                        android:textColor="@android:color/black"/>
                 </LinearLayout>
 
                 <!-- Requisitos -->
@@ -90,10 +90,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:paddingTop="4dp"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:paddingBottom="8dp">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -104,12 +101,12 @@
 
                     <TextView
                         android:id="@+id/tvRequisitosDetail"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:paddingTop="4dp"
+                        android:textAlignment="viewStart"
                         android:textSize="16sp"
-                        android:textColor="@android:color/black"
-                        android:justificationMode="inter_word"/>
+                        android:textColor="@android:color/black"/>
                 </LinearLayout>
 
                 <!-- Gratuito -->
@@ -117,10 +114,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:paddingTop="4dp"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:paddingBottom="8dp">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -131,12 +125,12 @@
 
                     <TextView
                         android:id="@+id/tvGratuitoDetail"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:paddingTop="4dp"
+                        android:textAlignment="viewStart"
                         android:textSize="16sp"
-                        android:textColor="@android:color/black"
-                        android:justificationMode="inter_word"/>
+                        android:textColor="@android:color/black"/>
                 </LinearLayout>
 
                 <!-- Accesible -->
@@ -144,10 +138,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:paddingTop="4dp"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:paddingBottom="16dp">
+                    android:padding="8dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -158,12 +149,12 @@
 
                     <TextView
                         android:id="@+id/tvAccesibleDetail"
-                        android:layout_width="wrap_content"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:paddingTop="4dp"
+                        android:textAlignment="viewStart"
                         android:textSize="16sp"
-                        android:textColor="@android:color/black"
-                        android:justificationMode="inter_word"/>
+                        android:textColor="@android:color/black"/>
                 </LinearLayout>
 
                 <!-- Email -->
@@ -172,22 +163,24 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:paddingBottom="8dp">
+                    android:padding="8dp"
+                    android:weightSum="1">
 
                     <ImageView
                         android:id="@+id/ivEmailInline"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/email"/>
+
                     <TextView
                         android:id="@+id/tvEmailDetail"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:paddingStart="8dp"
-                        android:textColor="@android:color/black"
-                        android:justificationMode="inter_word"/>
+                        android:textAlignment="viewStart"
+                        android:textSize="16sp"
+                        android:textColor="@android:color/black"/>
                 </LinearLayout>
 
                 <!-- Teléfono -->
@@ -196,22 +189,24 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:paddingBottom="8dp">
+                    android:padding="8dp"
+                    android:weightSum="1">
 
                     <ImageView
                         android:id="@+id/ivPhoneInline"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/telefonodetail"/>
+
                     <TextView
                         android:id="@+id/tvTelefonoDetail"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:paddingStart="8dp"
-                        android:textColor="@android:color/black"
-                        android:justificationMode="inter_word"/>
+                        android:textAlignment="viewStart"
+                        android:textSize="16sp"
+                        android:textColor="@android:color/black"/>
                 </LinearLayout>
 
                 <!-- Dirección -->
@@ -220,22 +215,24 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:paddingBottom="8dp">
+                    android:padding="8dp"
+                    android:weightSum="1">
 
                     <ImageView
                         android:id="@+id/ivAddressInline"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/direccion"/>
+
                     <TextView
                         android:id="@+id/tvDireccionDetail"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:paddingStart="8dp"
-                        android:textColor="@android:color/black"
-                        android:justificationMode="inter_word"/>
+                        android:textAlignment="viewStart"
+                        android:textSize="16sp"
+                        android:textColor="@android:color/black"/>
                 </LinearLayout>
 
                 <!-- Horario -->
@@ -243,22 +240,25 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:paddingBottom="8dp">
+                    android:gravity="center_vertical"
+                    android:padding="8dp"
+                    android:weightSum="1">
 
                     <ImageView
                         android:id="@+id/ivHorarioInline"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/horario"/>
+
                     <TextView
                         android:id="@+id/tvHorarioDetail"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:paddingStart="8dp"
-                        android:textColor="@android:color/black"
-                        android:justificationMode="inter_word"/>
+                        android:textAlignment="viewStart"
+                        android:textSize="16sp"
+                        android:textColor="@android:color/black"/>
                 </LinearLayout>
 
                 <!-- Web -->
@@ -267,22 +267,24 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:paddingBottom="8dp">
+                    android:padding="8dp"
+                    android:weightSum="1">
 
                     <ImageView
                         android:id="@+id/ivWebContact"
                         android:layout_width="32dp"
                         android:layout_height="32dp"
                         android:src="@drawable/web"/>
+
                     <TextView
                         android:id="@+id/tvWebDetail"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
+                        android:layout_weight="1"
                         android:paddingStart="8dp"
-                        android:textColor="@android:color/black"
-                        android:justificationMode="inter_word"/>
+                        android:textAlignment="viewStart"
+                        android:textSize="16sp"
+                        android:textColor="@android:color/black"/>
                 </LinearLayout>
 
             </LinearLayout>
@@ -295,12 +297,10 @@
         android:layout_height="58dp"
         android:padding="12dp"
         android:src="@drawable/ic_atras"
-        android:tint="@android:color/white"
         android:clickable="true"
         android:focusable="true"
         android:background="?attr/selectableItemBackgroundBorderless"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>
