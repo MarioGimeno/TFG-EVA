@@ -49,7 +49,7 @@ public class GenericActivityService {
     /** Carga servicios filtrados por categoría */
     public void loadServiciosPorCategoria(int categoria,
                                           final LoadCallback<Recurso> cb) {
-        resourceService.fetchByCategoria(categoria, new ResourceService.ResourceCallback() {
+        resourceService.fetchByCategory(categoria, new ResourceService.ResourceCallback() {
             @Override public void onSuccess(List<Recurso> list) {
                 cb.onSuccess(list);
             }

@@ -2,6 +2,7 @@ package com.example.appGrabacion.services;
 
 import android.content.Context;
 
+import com.example.appGrabacion.contracts.ResourceContract;
 import com.example.appGrabacion.models.Recurso;
 import com.example.appGrabacion.utils.ResourcesApi;
 import com.example.appGrabacion.utils.RetrofitClient;
@@ -12,7 +13,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ResourceService {
+public class ResourceService implements ResourceContract.Service {
 
     private final ResourcesApi api;
 
@@ -22,30 +23,11 @@ public class ResourceService {
                 .create(ResourcesApi.class);
     }
 
-    /**
-     * Callback propio para resultados de lista de Recurso
-     */
-    public interface ResourceCallback {
-        void onSuccess(List<Recurso> recursos);
-        void onError(Throwable t);
-    }
-
-    /**
-     * Callback propio para detalle de un solo Recurso
-     */
-    public interface ResourceDetailCallback {
-        void onSuccess(Recurso recurso);
-        void onError(Throwable t);
-    }
-
-    /**
-     * Obtiene la lista completa de recursos
-     */
+    @Override
     public void fetchAll(final ResourceCallback callback) {
         api.getResources().enqueue(new Callback<List<Recurso>>() {
             @Override
-            public void onResponse(Call<List<Recurso>> call,
-                                   Response<List<Recurso>> resp) {
+            public void onResponse(Call<List<Recurso>> call, Response<List<Recurso>> resp) {
                 if (resp.isSuccessful() && resp.body() != null) {
                     callback.onSuccess(resp.body());
                 } else {
@@ -60,14 +42,11 @@ public class ResourceService {
         });
     }
 
-    /**
-     * Obtiene los recursos filtrados por categoría
-     */
+    @Override
     public void fetchByCategory(int categoria, final ResourceCallback callback) {
         api.getResourcesByCategoria(categoria).enqueue(new Callback<List<Recurso>>() {
             @Override
-            public void onResponse(Call<List<Recurso>> call,
-                                   Response<List<Recurso>> resp) {
+            public void onResponse(Call<List<Recurso>> call, Response<List<Recurso>> resp) {
                 if (resp.isSuccessful() && resp.body() != null) {
                     callback.onSuccess(resp.body());
                 } else {
@@ -82,9 +61,7 @@ public class ResourceService {
         });
     }
 
-    /**
-     * Obtiene un recurso por su id
-     */
+    @Override
     public void fetchById(int id, final ResourceDetailCallback callback) {
         api.getResourceById(id).enqueue(new Callback<Recurso>() {
             @Override
@@ -102,47 +79,40 @@ public class ResourceService {
             }
         });
     }
-    public void fetchByCategoria(int categoriaId, final ResourceCallback callback) {
-        api.getResourcesByCategoria(categoriaId)
-                .enqueue(new Callback<List<Recurso>>() {
-                    @Override
-                    public void onResponse(Call<List<Recurso>> call,
-                                           Response<List<Recurso>> resp) {
-                        if (resp.isSuccessful() && resp.body() != null) {
-                            callback.onSuccess(resp.body());
-                        } else {
-                            callback.onError(
-                                    new RuntimeException("Código: " + resp.code()));
-                        }
-                    }
-                    @Override
-                    public void onFailure(Call<List<Recurso>> call, Throwable t) {
-                        callback.onError(t);
-                    }
-                });
-    }
-    public void fetchGratuitos(final ResourceCallback cb) {
+
+    @Override
+    public void fetchGratuitos(final ResourceCallback callback) {
         api.getResourcesGratuitos().enqueue(new Callback<List<Recurso>>() {
-            @Override public void onResponse(Call<List<Recurso>> c, Response<List<Recurso>> r) {
-                if (r.isSuccessful() && r.body()!=null) cb.onSuccess(r.body());
-                else cb.onError(new RuntimeException("Código:"+r.code()));
+            @Override
+            public void onResponse(Call<List<Recurso>> call, Response<List<Recurso>> resp) {
+                if (resp.isSuccessful() && resp.body() != null) {
+                    callback.onSuccess(resp.body());
+                } else {
+                    callback.onError(new RuntimeException("Código: " + resp.code()));
+                }
             }
-            @Override public void onFailure(Call<List<Recurso>> c, Throwable t) {
-                cb.onError(t);
+            @Override
+            public void onFailure(Call<List<Recurso>> call, Throwable t) {
+                callback.onError(t);
             }
         });
     }
 
-    public void fetchAccesibles(final ResourceCallback cb) {
+    @Override
+    public void fetchAccesibles(final ResourceCallback callback) {
         api.getResourcesAccesibles().enqueue(new Callback<List<Recurso>>() {
-            @Override public void onResponse(Call<List<Recurso>> c, Response<List<Recurso>> r) {
-                if (r.isSuccessful() && r.body()!=null) cb.onSuccess(r.body());
-                else cb.onError(new RuntimeException("Código:"+r.code()));
+            @Override
+            public void onResponse(Call<List<Recurso>> call, Response<List<Recurso>> resp) {
+                if (resp.isSuccessful() && resp.body() != null) {
+                    callback.onSuccess(resp.body());
+                } else {
+                    callback.onError(new RuntimeException("Código: " + resp.code()));
+                }
             }
-            @Override public void onFailure(Call<List<Recurso>> c, Throwable t) {
-                cb.onError(t);
+            @Override
+            public void onFailure(Call<List<Recurso>> call, Throwable t) {
+                callback.onError(t);
             }
         });
     }
-
 }
