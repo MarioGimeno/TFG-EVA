@@ -1,25 +1,25 @@
 package com.example.appGrabacion.contracts;
 
 public interface RegisterContract {
-
     interface View {
         void showLoading();
         void hideLoading();
-        void showSuccess();
         void showError(String message);
+        void showSuccess();
     }
 
     interface Presenter {
         void attachView(View view);
         void detachView();
-        void register(String email, String password);
+        void register(String fullName, String email, String password);
     }
 
     interface Service {
+        void performRegister(String fullName, String email, String password, Callback callback);
         interface Callback {
-            void onSuccess();
+            void onSuccess(String token);
             void onError(String errorMessage);
         }
-        void performRegister(String email, String password, Callback callback);
+
     }
 }

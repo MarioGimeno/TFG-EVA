@@ -40,7 +40,7 @@ public class RegisterActivity extends AppCompatActivity implements RegisterContr
                 return;
             }
 
-            presenter.register(email, password);
+            //presenter.register(email, password);
         });
     }
 

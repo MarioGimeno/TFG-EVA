@@ -22,13 +22,13 @@ public class RegisterPresenter implements RegisterContract.Presenter {
     }
 
     @Override
-    public void register(String email, String password) {
+    public void register(String fullName, String email, String password) {
         if (view == null) return;
         view.showLoading();
 
-        service.performRegister(email, password, new RegisterContract.Service.Callback() {
+        service.performRegister(fullName, email, password, new RegisterContract.Service.Callback() {
             @Override
-            public void onSuccess() {
+            public void onSuccess(String token) {
                 if (view == null) return;
                 view.hideLoading();
                 view.showSuccess();
@@ -42,4 +42,5 @@ public class RegisterPresenter implements RegisterContract.Presenter {
             }
         });
     }
+
 }
