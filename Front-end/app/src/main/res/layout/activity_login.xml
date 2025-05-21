@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:app   ="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root_constraint"
     android:layout_width="match_parent"
@@ -9,7 +9,7 @@
     android:background="@android:color/black"
     tools:context=".screens.LoginActivity">
 
-    <!-- 1) VideoView ocupa el 40% de la altura -->
+    <!-- Vídeo de fondo al 40% -->
     <VideoView
         android:id="@+id/videoBackground"
         android:layout_width="0dp"
@@ -19,7 +19,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHeight_percent="0.40" />
 
-    <!-- Botón Atrás (mismo icono que en la otra pantalla) -->
+    <!-- Botón Atrás -->
     <ImageView
         android:id="@+id/btnBack"
         android:layout_width="58dp"
@@ -27,12 +27,10 @@
         android:padding="12dp"
         android:src="@drawable/ic_atras"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:clickable="true"
-        android:focusable="true"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
-    <!-- 2) FrameLayout con borde color #A11991 alrededor -->
+    <!-- Contenedor principal blanco con borde -->
     <FrameLayout
         android:layout_width="0dp"
         android:layout_height="0dp"
@@ -43,20 +41,19 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- 4) ScrollView para login/registro -->
+        <!-- 1) ScrollView con login/registro -->
         <ScrollView
             android:id="@+id/login_register_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:fillViewport="true">
-
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- LOGIN -->
+                <!-- LOGIN FORM -->
                 <LinearLayout
                     android:id="@+id/login_form"
                     android:layout_width="match_parent"
@@ -75,17 +72,15 @@
                         android:textSize="32sp"
                         android:textStyle="bold" />
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="30dp" />
+                    <View android:layout_width="match_parent" android:layout_height="30dp"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:alpha="0.9"
                         android:text="Email address"
-                        android:textStyle="bold"
-                        android:textColor="#20032e" />
+                        android:textColor="#20032e"
+                        android:textStyle="bold"/>
 
                     <EditText
                         android:id="@+id/etEmail"
@@ -93,19 +88,17 @@
                         android:layout_height="wrap_content"
                         android:inputType="textEmailAddress"
                         android:backgroundTint="#A11991"
-                        android:textColor="#000000" />
+                        android:textColor="#000"/>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="20dp" />
+                    <View android:layout_width="match_parent" android:layout_height="20dp"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:alpha="0.7"
                         android:text="Password"
-                        android:textStyle="bold"
-                        android:textColor="#20032e" />
+                        android:textColor="#20032e"
+                        android:textStyle="bold"/>
 
                     <EditText
                         android:id="@+id/etPassword"
@@ -113,7 +106,7 @@
                         android:layout_height="wrap_content"
                         android:inputType="textPassword"
                         android:backgroundTint="#A11991"
-                        android:textColor="#000000" />
+                        android:textColor="#000"/>
 
                     <CheckBox
                         android:layout_width="wrap_content"
@@ -122,7 +115,7 @@
                         android:alpha="0.7"
                         android:text="Remember me"
                         android:buttonTint="#A11991"
-                        android:textColor="#20032e" />
+                        android:textColor="#20032e"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnLogin"
@@ -132,7 +125,7 @@
                         android:text="Iniciar sesión"
                         android:backgroundTint="#A11991"
                         android:textColor="@android:color/white"
-                        app:cornerRadius="32dp" />
+                        app:cornerRadius="32dp"/>
 
                     <TextView
                         android:id="@+id/tvGoRegister"
@@ -142,10 +135,10 @@
                         android:layout_gravity="center_horizontal"
                         android:text="¿No tienes cuenta? Regístrate aquí"
                         android:textColor="#A11991"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"/>
                 </LinearLayout>
 
-                <!-- REGISTRO -->
+                <!-- REGISTER FORM -->
                 <LinearLayout
                     android:id="@+id/register_form"
                     android:layout_width="match_parent"
@@ -161,19 +154,17 @@
                         android:text="Registro"
                         android:textColor="#A11991"
                         android:textSize="32sp"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"/>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="30dp" />
+                    <View android:layout_width="match_parent" android:layout_height="30dp"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:alpha="0.9"
                         android:text="Nombre completo"
-                        android:textStyle="bold"
-                        android:textColor="#20032e" />
+                        android:textColor="#20032e"
+                        android:textStyle="bold"/>
 
                     <EditText
                         android:id="@+id/rspFullName"
@@ -181,19 +172,17 @@
                         android:layout_height="wrap_content"
                         android:inputType="textPersonName"
                         android:backgroundTint="#A11991"
-                        android:textColor="#20032e" />
+                        android:textColor="#20032e"/>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="20dp" />
+                    <View android:layout_width="match_parent" android:layout_height="20dp"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:alpha="0.9"
                         android:text="Email address"
-                        android:textStyle="bold"
-                        android:textColor="#20032e" />
+                        android:textColor="#20032e"
+                        android:textStyle="bold"/>
 
                     <EditText
                         android:id="@+id/rspEmailRegister"
@@ -201,19 +190,17 @@
                         android:layout_height="wrap_content"
                         android:inputType="textEmailAddress"
                         android:backgroundTint="#A11991"
-                        android:textColor="#20032e" />
+                        android:textColor="#20032e"/>
 
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="20dp" />
+                    <View android:layout_width="match_parent" android:layout_height="20dp"/>
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:alpha="0.9"
                         android:text="Contraseña"
-                        android:textStyle="bold"
-                        android:textColor="#20032e" />
+                        android:textColor="#20032e"
+                        android:textStyle="bold"/>
 
                     <EditText
                         android:id="@+id/rspPasswordRegister"
@@ -221,7 +208,7 @@
                         android:layout_height="wrap_content"
                         android:inputType="textPassword"
                         android:backgroundTint="#A11991"
-                        android:textColor="#20032e" />
+                        android:textColor="#20032e"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnRegister"
@@ -231,7 +218,7 @@
                         android:text="Registrarse"
                         android:backgroundTint="#A11991"
                         android:textColor="@android:color/white"
-                        app:cornerRadius="32dp" />
+                        app:cornerRadius="32dp"/>
 
                     <TextView
                         android:id="@+id/txtLogin"
@@ -241,11 +228,88 @@
                         android:layout_gravity="center_horizontal"
                         android:text="¿Ya tienes cuenta? Inicia sesión aquí"
                         android:textColor="#A11991"
-                        android:textStyle="bold" />
+                        android:textStyle="bold"/>
                 </LinearLayout>
+                <!-- TARJETA DE BIENVENIDA -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/card_welcome"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    app:cardBackgroundColor="@android:color/transparent"
+                    app:cardCornerRadius="0dp"
+                    app:cardElevation="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:padding="24dp"
+                        android:background="@android:color/transparent">
+
+                        <!-- Texto principal de bienvenida más grande -->
+                        <TextView
+                            android:id="@+id/tvWelcome"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="¡Bienvenida!"
+                            android:textColor="#A11991"
+                            android:textSize="40sp"
+                            android:textStyle="bold"
+                            android:gravity="center"/>
+
+                        <!-- Subtexto -->
+                        <TextView
+                            android:id="@+id/tvSubtitle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="26dp"
+                            android:text="Tú seguridad,"
+                            android:textColor="#2f0338"
+                            android:textSize="25sp"
+                            android:gravity="center"/>
+
+                        <!-- Logo EVA -->
+                        <ImageView
+                            android:id="@+id/ivLogoEva"
+                            android:layout_width="120dp"
+                            android:layout_height="120dp"
+                            android:layout_marginTop="16dp"
+                            android:src="@drawable/eva"
+                            android:contentDescription="logo_eva"
+                            android:adjustViewBounds="true"
+                            android:scaleType="centerInside"/>
+
+                        <TextView
+                            android:id="@+id/tvSubtitlee"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:text="nuestra misión."
+                            android:textColor="#2f0338"
+                            android:textSize="25sp"
+                            android:gravity="center"/>
+
+                        <!-- Botón de cerrar sesión -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnLogout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="26dp"
+                            android:text="Cerrar sesión"
+                            android:backgroundTint="#A11991"
+                            android:textColor="@android:color/white"
+                            app:cornerRadius="24dp"/>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
 
             </LinearLayout>
-        </ScrollView>
-    </FrameLayout>
 
+
+        </ScrollView>
+
+
+
+    </FrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

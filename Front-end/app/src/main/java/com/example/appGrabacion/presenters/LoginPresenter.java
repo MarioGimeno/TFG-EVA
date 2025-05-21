@@ -32,7 +32,8 @@ public class LoginPresenter implements LoginContract.Presenter {
             public void onSuccess(String token) {
                 if (view != null) {
                     view.hideLoading();
-                    view.navigateToMain();
+                    // Mostramos bienvenida con el email como nombre
+                    view.showLoginSuccess(email);
                 }
             }
 
