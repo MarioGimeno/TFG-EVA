@@ -1,24 +1,32 @@
-// src/services/contactsService.js
-const contactsRepo = require('../repositories/ContactsRepository');
-
 class ContactsService {
-  async getContacts(userId) {
-    return contactsRepo.findAllByUserId(userId);
-  }
-
-  async addContact(userId, { name, email }) {
-    if (!name || !email) {
-      const err = new Error('Faltan name o email');
-      err.status = 400;
-      throw err;
+    constructor(contactsRepository) {
+      this.contactsRepository = contactsRepository;
     }
-    const contactUserId = await contactsRepo.findUserIdByEmail(email);
-    return contactsRepo.createContact(userId, name, email, contactUserId);
+  
+    async getContacts(userId) {
+      return this.contactsRepository.findAllByUserId(userId);
+    }
+  
+    async addContact(contactData) {
+      try {
+        const userId = await this.contactsRepository.findUserIdByEmail(contactData.email);
+        // lógica para añadir contacto usando userId
+      } catch (error) {
+        if (error.message === 'El email no existe') {
+          const err = new Error('El email no existe');
+          err.statusCode = 404;
+          throw err;
+        }
+        throw error;
+      }
+    }
+  
+    async removeContact(userId, contactId) {
+      await this.contactsRepository.deleteContact(contactId, userId);
+    }
   }
-
-  async removeContact(userId, contactId) {
-    await contactsRepo.deleteContact(contactId, userId);
-  }
-}
-
-module.exports = new ContactsService();
+  
+  // Luego exportas pasando la instancia del repositorio
+  const contactsRepo = require('../repositories/ContactsRepository');
+  module.exports = new ContactsService(contactsRepo);
+  

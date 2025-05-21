@@ -1,6 +1,6 @@
 package com.example.appGrabacion.utils;
 
-import com.example.appGrabacion.models.Categoria;
+import com.example.appGrabacion.entities.Categoria;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.GET;

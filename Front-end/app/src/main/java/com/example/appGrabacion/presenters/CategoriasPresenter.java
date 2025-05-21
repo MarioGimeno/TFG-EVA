@@ -1,7 +1,7 @@
 package com.example.appGrabacion.presenters;
 
 import com.example.appGrabacion.contracts.CategoriasContract;
-import com.example.appGrabacion.models.Categoria;
+import com.example.appGrabacion.entities.Categoria;
 
 import java.util.List;
 

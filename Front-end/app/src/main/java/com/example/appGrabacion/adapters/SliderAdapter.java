@@ -9,8 +9,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appGrabacion.R;
-import com.example.appGrabacion.models.Entidad;
-import com.example.appGrabacion.models.Recurso;
+import com.example.appGrabacion.entities.Entidad;
+import com.example.appGrabacion.entities.Recurso;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;

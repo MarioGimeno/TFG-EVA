@@ -1,8 +1,8 @@
 // src/main/java/com/example/appGrabacion/contracts/CategoriaDetailContract.java
 package com.example.appGrabacion.contracts;
 
-import com.example.appGrabacion.models.Categoria;
-import com.example.appGrabacion.models.Recurso;
+import com.example.appGrabacion.entities.Categoria;
+import com.example.appGrabacion.entities.Recurso;
 import java.util.List;
 
 public interface CategoriaDetailContract {

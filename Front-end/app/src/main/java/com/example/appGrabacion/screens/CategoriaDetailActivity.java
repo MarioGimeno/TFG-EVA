@@ -13,11 +13,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.CategoriasRecursosAdapter;
 import com.example.appGrabacion.contracts.CategoriaDetailContract;
-import com.example.appGrabacion.models.Categoria;
-import com.example.appGrabacion.models.Recurso;
+import com.example.appGrabacion.entities.Categoria;
+import com.example.appGrabacion.entities.Recurso;
 import com.example.appGrabacion.presenters.CategoriaDetailPresenter;
-import com.example.appGrabacion.services.CategoriaModel;
-import com.example.appGrabacion.services.ResourceModel;
+import com.example.appGrabacion.models.CategoriaModel;
+import com.example.appGrabacion.models.ResourceModel;
 
 import java.util.List;
 

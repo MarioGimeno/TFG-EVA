@@ -1,7 +1,7 @@
 // 1) ContactsApi.java (Retrofit interface)
 package com.example.appGrabacion.utils;
 
-import com.example.appGrabacion.models.ContactEntry;
+import com.example.appGrabacion.entities.ContactEntry;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.Body;

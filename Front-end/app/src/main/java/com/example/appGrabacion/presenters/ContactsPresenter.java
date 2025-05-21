@@ -3,8 +3,8 @@ package com.example.appGrabacion.presenters;
 import android.content.Context;
 
 import com.example.appGrabacion.contracts.ContactsContract;
-import com.example.appGrabacion.models.ContactEntry;
-import com.example.appGrabacion.services.ContactModel;
+import com.example.appGrabacion.entities.ContactEntry;
+import com.example.appGrabacion.models.ContactModel;
 
 import java.util.List;
 

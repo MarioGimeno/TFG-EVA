@@ -1,4 +1,4 @@
-package com.example.appGrabacion.services;
+package com.example.appGrabacion.models;
 
 import android.content.Context;
 import android.net.Uri;
@@ -8,8 +8,8 @@ import java.io.InputStream;
 import java.util.List;
 
 import com.example.appGrabacion.contracts.FolderContract;
-import com.example.appGrabacion.models.FileEntry;
-import com.example.appGrabacion.models.FilesResponse;
+import com.example.appGrabacion.entities.FileEntry;
+import com.example.appGrabacion.entities.FilesResponse;
 import com.example.appGrabacion.utils.FolderApi;
 import com.example.appGrabacion.utils.RetrofitClient;
 

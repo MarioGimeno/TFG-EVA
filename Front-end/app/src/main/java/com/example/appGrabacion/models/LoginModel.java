@@ -1,12 +1,13 @@
-package com.example.appGrabacion.services;
+package com.example.appGrabacion.models;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.util.Patterns;
 
 import com.example.appGrabacion.contracts.LoginContract;
-import com.example.appGrabacion.models.LoginRequest;
-import com.example.appGrabacion.models.LoginResponse;
+import com.example.appGrabacion.entities.LoginRequest;
+import com.example.appGrabacion.entities.LoginResponse;
 import com.example.appGrabacion.utils.AuthApi;
 import com.example.appGrabacion.utils.RetrofitClient;
 import com.example.appGrabacion.utils.SessionManager;
@@ -26,6 +27,11 @@ public class LoginModel implements LoginContract.Service {
 
     @Override
     public void login(String email, String password, LoginContract.Service.LoginCallback callback) {
+        // Validar formato email
+        if (email == null || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            callback.onError(new Exception("Formato de correo inválido"));
+            return;
+        }
         api.login(new LoginRequest(email, password)).enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {

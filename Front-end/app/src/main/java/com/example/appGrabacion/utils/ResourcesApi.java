@@ -1,11 +1,10 @@
 package com.example.appGrabacion.utils;
 
-import com.example.appGrabacion.models.Recurso;
+import com.example.appGrabacion.entities.Recurso;
 import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
-import retrofit2.http.Query;
 
 public interface ResourcesApi {
     /** GET /api/servicios — no requiere Authorization */

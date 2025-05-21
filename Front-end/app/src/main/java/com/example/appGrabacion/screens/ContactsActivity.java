@@ -20,7 +20,7 @@ import com.example.appGrabacion.MainActivity;
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.ContactsAdapter;
 import com.example.appGrabacion.contracts.ContactsContract;
-import com.example.appGrabacion.models.ContactEntry;
+import com.example.appGrabacion.entities.ContactEntry;
 import com.example.appGrabacion.presenters.ContactsPresenter;
 
 import java.util.List;

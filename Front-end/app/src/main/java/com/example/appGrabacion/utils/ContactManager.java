@@ -4,7 +4,7 @@ package com.example.appGrabacion.utils;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import com.example.appGrabacion.models.ContactEntry;
+import com.example.appGrabacion.entities.ContactEntry;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

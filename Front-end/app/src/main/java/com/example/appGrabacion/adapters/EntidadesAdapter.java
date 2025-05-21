@@ -13,7 +13,7 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appGrabacion.R;
-import com.example.appGrabacion.models.Entidad;
+import com.example.appGrabacion.entities.Entidad;
 import com.squareup.picasso.Picasso;
 
 public class EntidadesAdapter

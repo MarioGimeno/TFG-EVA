@@ -16,8 +16,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.appGrabacion.R;
-import com.example.appGrabacion.models.Recurso;
-import com.example.appGrabacion.services.ResourceModel;
+import com.example.appGrabacion.entities.Recurso;
+import com.example.appGrabacion.models.ResourceModel;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 

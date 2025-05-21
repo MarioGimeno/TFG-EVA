@@ -3,7 +3,7 @@ package com.example.appGrabacion.presenters;
 import android.content.Context;
 
 import com.example.appGrabacion.contracts.LoginContract;
-import com.example.appGrabacion.services.LoginModel;
+import com.example.appGrabacion.models.LoginModel;
 
 public class LoginPresenter implements LoginContract.Presenter {
     private LoginContract.View view;

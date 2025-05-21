@@ -1,12 +1,12 @@
-package com.example.appGrabacion.services;
+package com.example.appGrabacion.models;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.util.Log;
+import android.util.Patterns;
 
 import com.example.appGrabacion.contracts.RegisterContract;
-import com.example.appGrabacion.models.RegisterRequest;
-import com.example.appGrabacion.models.RegisterResponse;
+import com.example.appGrabacion.entities.RegisterRequest;
+import com.example.appGrabacion.entities.RegisterResponse;
 import com.example.appGrabacion.utils.AuthApi;
 import com.example.appGrabacion.utils.RetrofitClient;
 import com.example.appGrabacion.utils.SessionManager;
@@ -26,6 +26,11 @@ public class RegisterModel implements RegisterContract.Service {
     }
     @Override
     public void performRegister(String fullName, String email, String password, Callback callback) {
+        // Validar formato email
+        if (email == null || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            callback.onError("Formato de correo inválido");
+            return;
+        }
         RegisterRequest body = new RegisterRequest(fullName, email, password);
 
         api.register(body).enqueue(new retrofit2.Callback<RegisterResponse>() {

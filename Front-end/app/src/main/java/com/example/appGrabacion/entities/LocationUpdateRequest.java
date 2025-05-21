@@ -1,4 +1,4 @@
-package com.example.appGrabacion.models;
+package com.example.appGrabacion.entities;
 
 // com/example/appGrabacion/models/LocationUpdateRequest.java
 

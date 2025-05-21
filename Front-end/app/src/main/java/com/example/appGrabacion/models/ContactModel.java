@@ -1,10 +1,12 @@
-package com.example.appGrabacion.services;
+package com.example.appGrabacion.models;
 
 import android.content.Context;
 
-import com.example.appGrabacion.models.ContactEntry;
+import com.example.appGrabacion.entities.ContactEntry;
 import com.example.appGrabacion.utils.ContactsApi;
 import com.example.appGrabacion.utils.RetrofitClient;
+
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -43,15 +45,21 @@ public class ContactModel {
             }
         });
     }
-
     public void addContact(ContactEntry entry, ContactCallback<ContactEntry> callback) {
-        api.addContact(token, entry).enqueue(new Callback<ContactEntry>() { // retrofit callback
+        api.addContact(token, entry).enqueue(new Callback<ContactEntry>() {
             @Override
             public void onResponse(Call<ContactEntry> call, Response<ContactEntry> response) {
                 if (response.isSuccessful()) {
                     callback.onSuccess(response.body());
                 } else {
-                    callback.onError(new Exception("Error guardando: " + response.code()));
+                    try {
+                        String errorBody = response.errorBody().string();
+                        JSONObject jsonObject = new JSONObject(errorBody);
+                        String message = jsonObject.optString("message", "Error desconocido");
+                        callback.onError(new Exception(message)); // Pasar como Exception
+                    } catch (Exception e) {
+                        callback.onError(new Exception("Error desconocido"));
+                    }
                 }
             }
 
@@ -61,6 +69,9 @@ public class ContactModel {
             }
         });
     }
+
+
+
 
     public void deleteContact(int contactId, ContactCallback<Void> callback) {
         api.deleteContact(token, contactId).enqueue(new Callback<Void>() { // retrofit callback

@@ -19,7 +19,7 @@ import com.example.appGrabacion.contracts.LoginContract;
 import com.example.appGrabacion.contracts.RegisterContract;
 import com.example.appGrabacion.presenters.LoginPresenter;
 import com.example.appGrabacion.presenters.RegisterPresenter;
-import com.example.appGrabacion.services.RegisterModel;
+import com.example.appGrabacion.models.RegisterModel;
 import com.google.android.material.button.MaterialButton;
 
 public class LoginActivity extends AppCompatActivity implements LoginContract.View, RegisterContract.View {

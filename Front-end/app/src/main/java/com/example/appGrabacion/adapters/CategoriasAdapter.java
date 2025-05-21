@@ -12,8 +12,7 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appGrabacion.R;
-import com.example.appGrabacion.models.Categoria;
-import com.squareup.picasso.Picasso;
+import com.example.appGrabacion.entities.Categoria;
 
 import java.util.HashMap;
 import java.util.Map;

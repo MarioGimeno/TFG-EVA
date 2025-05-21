@@ -12,15 +12,18 @@ class ContactsRepository {
     );
     return rows;
   }
-
   async findUserIdByEmail(email) {
     const { rows, rowCount } = await pool.query(
       `SELECT id FROM users WHERE email = $1`,
       [email]
     );
-    return rowCount ? rows[0].id : null;
+    if (rowCount === 0) {
+      throw new Error('El email no existe');
+    }
+    return rows[0].id;
   }
-
+  
+  
   async createContact(ownerId, name, email, contactUserId) {
     const { rows } = await pool.query(
       `INSERT INTO contacts(user_id, name, email, contact_user_id)

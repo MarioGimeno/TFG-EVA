@@ -17,7 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appGrabacion.R;
-import com.example.appGrabacion.models.FileEntry;
+import com.example.appGrabacion.entities.FileEntry;
 import com.example.appGrabacion.screens.ImageViewerActivity;
 import com.example.appGrabacion.screens.PdfViewerActivity;
 import com.example.appGrabacion.screens.TextViewerActivity;

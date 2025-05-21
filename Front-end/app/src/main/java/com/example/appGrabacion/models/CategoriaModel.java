@@ -1,8 +1,8 @@
-package com.example.appGrabacion.services;
+package com.example.appGrabacion.models;
 
 import android.content.Context;
 import com.example.appGrabacion.contracts.CategoriasContract;
-import com.example.appGrabacion.models.Categoria;
+import com.example.appGrabacion.entities.Categoria;
 import com.example.appGrabacion.utils.CategoriasApi;
 import com.example.appGrabacion.utils.RetrofitClient;
 

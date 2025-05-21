@@ -14,8 +14,12 @@ exports.create = async (req, res, next) => {
   try {
     const newContact = await service.addContact(req.userId, req.body);
     res.status(201).json(newContact);
-  } catch (err) {
-    next(err);
+  } catch (error) {
+    if (error.statusCode === 404) {
+      return res.status(404).json({ message: error.message });
+    }
+    console.error(error);
+    res.status(500).json({ message: 'Error interno del servidor' });
   }
 };
 

@@ -1,6 +1,6 @@
 package com.example.appGrabacion.contracts;
 
-import com.example.appGrabacion.models.Categoria;
+import com.example.appGrabacion.entities.Categoria;
 import java.util.List;
 
 public interface CategoriasContract {

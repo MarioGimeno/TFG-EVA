@@ -1,8 +1,8 @@
 package com.example.appGrabacion.contracts;
 
 import android.net.Uri;
-import com.example.appGrabacion.models.FileEntry;
-import com.example.appGrabacion.services.FolderModel;
+import com.example.appGrabacion.entities.FileEntry;
+import com.example.appGrabacion.models.FolderModel;
 
 import java.util.List;
 

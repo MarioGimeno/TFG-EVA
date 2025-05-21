@@ -1,6 +1,6 @@
 package com.example.appGrabacion.contracts;
 
-import com.example.appGrabacion.models.ContactEntry;
+import com.example.appGrabacion.entities.ContactEntry;
 import java.util.List;
 
 public interface ContactsContract {
