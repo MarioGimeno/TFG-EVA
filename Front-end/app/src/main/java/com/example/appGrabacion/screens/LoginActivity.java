@@ -1,17 +1,21 @@
 package com.example.appGrabacion.screens;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.View;
+import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 
 import com.example.appGrabacion.MainActivity;
 import com.example.appGrabacion.R;
@@ -22,134 +26,169 @@ import com.example.appGrabacion.presenters.RegisterPresenter;
 import com.example.appGrabacion.models.RegisterModel;
 import com.google.android.material.button.MaterialButton;
 
-public class LoginActivity extends AppCompatActivity implements LoginContract.View, RegisterContract.View {
+public class LoginActivity extends AppCompatActivity
+        implements LoginContract.View, RegisterContract.View {
 
-    private RegisterPresenter registerPresenter;
-    private LoginPresenter presenter;
+    private static final String PREFS      = "app_prefs";
+    private static final String KEY_USER   = "logged_in_user";
 
+    private SharedPreferences prefs;
+
+    // Formularios
     private LinearLayout loginForm, registerForm;
-    private TextView tvGoRegister, txtLogin;
-    private EditText etEmail, etPassword;
-    private EditText rspFullName, rspEmailRegister, rspPasswordRegister;
+    private TextView     tvGoRegister, txtLogin;
+    private EditText     etEmail, etPassword;
+    private EditText     rspFullName, rspEmailRegister, rspPasswordRegister;
+    private MaterialButton btnLogin, btnRegister;
+
+    // Bienvenida
+    private CardView     cardWelcome;
+    private TextView     tvWelcome;
+    private MaterialButton btnLogout;
+
+    private LoginPresenter    loginPresenter;
+    private RegisterPresenter registerPresenter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        ImageView btnBack = findViewById(R.id.btnBack);
-        btnBack.setOnClickListener(v -> {
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
-        });
 
-        loginForm = findViewById(R.id.login_form);
-        registerForm = findViewById(R.id.register_form);
-        tvGoRegister = findViewById(R.id.tvGoRegister);
-        txtLogin = findViewById(R.id.txtLogin);
+        prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
 
-        etEmail = findViewById(R.id.etEmail);
-        etPassword = findViewById(R.id.etPassword);
-        MaterialButton btnLogin = findViewById(R.id.btnLogin);
-        MaterialButton btnRegister = findViewById(R.id.btnRegister);
-
-        rspFullName = findViewById(R.id.rspFullName);
-        rspEmailRegister = findViewById(R.id.rspEmailRegister);
-        rspPasswordRegister = findViewById(R.id.rspPasswordRegister);
-
-        loginForm.setVisibility(View.VISIBLE);
-        registerForm.setVisibility(View.GONE);
-
-        // Video background setup
+        // Vídeo de fondo
         VideoView videoBg = findViewById(R.id.videoBackground);
         Uri videoUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.evalogin2);
         videoBg.setVideoURI(videoUri);
-        videoBg.setMediaController(null);
         videoBg.setOnPreparedListener(mp -> {
             mp.setLooping(true);
             mp.setVolume(0f, 0f);
         });
         videoBg.start();
 
-        // Login presenter setup
-        presenter = new LoginPresenter(this);
-        presenter.attachView(this);
+        // Botón Atrás
+        ImageView btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
 
+        // Bind formularios
+        loginForm        = findViewById(R.id.login_form);
+        registerForm     = findViewById(R.id.register_form);
+        tvGoRegister     = findViewById(R.id.tvGoRegister);
+        txtLogin         = findViewById(R.id.txtLogin);
+        etEmail          = findViewById(R.id.etEmail);
+        etPassword       = findViewById(R.id.etPassword);
+        rspFullName      = findViewById(R.id.rspFullName);
+        rspEmailRegister = findViewById(R.id.rspEmailRegister);
+        rspPasswordRegister = findViewById(R.id.rspPasswordRegister);
+        btnLogin         = findViewById(R.id.btnLogin);
+        btnRegister      = findViewById(R.id.btnRegister);
+
+        // Bind bienvenida
+        cardWelcome = findViewById(R.id.card_welcome);
+        tvWelcome   = findViewById(R.id.tvWelcome);
+        btnLogout   = findViewById(R.id.btnLogout);
+
+        // Presenters
+        loginPresenter    = new LoginPresenter(this);
+        loginPresenter.attachView(this);
+        registerPresenter = new RegisterPresenter(new RegisterModel(this));
+        registerPresenter.attachView(this);
+
+        // Login
         btnLogin.setOnClickListener(v -> {
             String email = etEmail.getText().toString().trim();
-            String pass = etPassword.getText().toString().trim();
-
+            String pass  = etPassword.getText().toString().trim();
             if (email.isEmpty() || pass.isEmpty()) {
                 Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show();
                 return;
             }
-            presenter.performLogin(email, pass);
+            loginPresenter.performLogin(email, pass);
         });
 
-        // Navigation between login and register forms
+        // Cambiar a registro/login
         tvGoRegister.setOnClickListener(v -> {
-            loginForm.setVisibility(View.GONE);
-            registerForm.setVisibility(View.VISIBLE);
+            loginForm.setVisibility(LinearLayout.GONE);
+            registerForm.setVisibility(LinearLayout.VISIBLE);
         });
-
         txtLogin.setOnClickListener(v -> {
-            registerForm.setVisibility(View.GONE);
-            loginForm.setVisibility(View.VISIBLE);
+            registerForm.setVisibility(LinearLayout.GONE);
+            loginForm.setVisibility(LinearLayout.VISIBLE);
         });
 
-        // Register presenter setup
-        registerPresenter = new RegisterPresenter(new RegisterModel(this));
-        registerPresenter.attachView(this);
-
+        // Registro
         btnRegister.setOnClickListener(v -> {
-            String fullName = rspFullName.getText().toString().trim();
+            String name  = rspFullName.getText().toString().trim();
             String email = rspEmailRegister.getText().toString().trim();
-            String password = rspPasswordRegister.getText().toString().trim();
-
-            if (fullName.isEmpty() || email.isEmpty() || password.isEmpty()) {
+            String pass  = rspPasswordRegister.getText().toString().trim();
+            if (name.isEmpty() || email.isEmpty() || pass.isEmpty()) {
                 Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show();
                 return;
             }
-
-            registerPresenter.register(fullName, email, password);
+            registerPresenter.register(name, email, pass);
         });
+
+        // Cerrar sesión
+        btnLogout.setOnClickListener(v -> {
+            prefs.edit().remove(KEY_USER).apply();
+            showForms();
+        });
+
+        // Al arrancar, si hay usuario guardado, mostrar bienvenida
+        String savedUser = prefs.getString(KEY_USER, null);
+        if (savedUser != null) {
+            showWelcome(savedUser);
+        } else {
+            showForms();
+        }
     }
 
-    // Métodos comunes para LoginContract.View y RegisterContract.View
-
-    @Override
-    public void showLoading() {
-        // Mostrar ProgressBar o alguna animación común
+    /** Muestra la tarjeta de bienvenida */
+    private void showWelcome(String userName) {
+        loginForm.setVisibility(LinearLayout.GONE);
+        registerForm.setVisibility(LinearLayout.GONE);
+        cardWelcome.setVisibility(CardView.VISIBLE);
+        tvWelcome.setText("¡Bienvenida, " + userName + "!");
     }
 
-    @Override
-    public void hideLoading() {
-        // Ocultar ProgressBar o animación
+    /** Muestra los formularios de login/registro */
+    private void showForms() {
+        loginForm.setVisibility(LinearLayout.VISIBLE);
+        registerForm.setVisibility(LinearLayout.GONE);
+        cardWelcome.setVisibility(CardView.GONE);
     }
 
-    @Override
-    public void showError(String message) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+    // --- LoginContract.View ---
+    @Override public void showLoading() { }
+    @Override public void hideLoading() { }
+    @Override public void showError(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+    @Override public void navigateToMain() {
+        // Si prefieres ir al MainActivity, descomenta:
+        // startActivity(new Intent(this, MainActivity.class));
+    }
+    @Override public void showLoginSuccess(String userName) {
+        // Guarda el nombre y muestra bienvenida
+        prefs.edit().putString(KEY_USER, userName).apply();
+        showWelcome(userName);
+
     }
 
-    @Override
-    public void navigateToMain() {
-        startActivity(new Intent(LoginActivity.this, MainActivity.class));
-        finish();
-    }
-
+    // --- RegisterContract.View ---
     @Override
     public void showSuccess() {
-        Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show();
-        // Navegar a MainActivity tras registro exitoso
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-        startActivity(intent);
-        finish();
+        // Tras un registro exitoso, reutiliza showLoginSuccess
+        String name = rspFullName.getText().toString().trim();
+        showLoginSuccess(name);
+    }
+
+    public void showErrorRegister(String msg) {
+        showError(msg);
     }
 
     @Override
     protected void onDestroy() {
-        presenter.detachView();
+        loginPresenter.detachView();
         registerPresenter.detachView();
         super.onDestroy();
     }

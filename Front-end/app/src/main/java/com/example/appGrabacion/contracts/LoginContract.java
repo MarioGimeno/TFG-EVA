@@ -7,6 +7,7 @@ public interface LoginContract {
         void hideLoading();
         void showError(String message);
         void navigateToMain();
+        void showLoginSuccess(String userName);
     }
 
     interface Presenter {
