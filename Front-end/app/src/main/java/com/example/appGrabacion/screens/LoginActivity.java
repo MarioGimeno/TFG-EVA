@@ -175,9 +175,11 @@ public class LoginActivity extends AppCompatActivity
     }
 
     // --- RegisterContract.View ---
-    @Override public void showSuccess() {
+    @Override
+    public void showSuccess() {
         // Tras un registro exitoso, reutiliza showLoginSuccess
-        showLoginSuccess(rspFullName.getText().toString().trim());
+        String name = rspFullName.getText().toString().trim();
+        showLoginSuccess(name);
     }
 
     public void showErrorRegister(String msg) {
