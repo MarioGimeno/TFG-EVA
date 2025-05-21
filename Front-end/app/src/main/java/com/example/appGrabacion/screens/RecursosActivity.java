@@ -13,9 +13,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.RecursosAdapter;
 import com.example.appGrabacion.contracts.ResourceContract;
-import com.example.appGrabacion.models.Recurso;
+import com.example.appGrabacion.entities.Recurso;
 import com.example.appGrabacion.presenters.ResourcePresenter;
-import com.example.appGrabacion.services.ResourceModel;
+import com.example.appGrabacion.models.ResourceModel;
 
 import java.util.List;
 

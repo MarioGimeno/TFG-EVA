@@ -1,9 +1,9 @@
 package com.example.appGrabacion.utils;
 
-import com.example.appGrabacion.models.LoginRequest;
-import com.example.appGrabacion.models.LoginResponse;
-import com.example.appGrabacion.models.RegisterRequest;
-import com.example.appGrabacion.models.RegisterResponse;
+import com.example.appGrabacion.entities.LoginRequest;
+import com.example.appGrabacion.entities.LoginResponse;
+import com.example.appGrabacion.entities.RegisterRequest;
+import com.example.appGrabacion.entities.RegisterResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;

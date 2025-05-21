@@ -1,6 +1,6 @@
 package com.example.appGrabacion.contracts;
 
-import com.example.appGrabacion.models.Recurso;
+import com.example.appGrabacion.entities.Recurso;
 
 import java.util.List;
 

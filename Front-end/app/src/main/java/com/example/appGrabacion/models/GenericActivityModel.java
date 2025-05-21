@@ -1,10 +1,10 @@
-package com.example.appGrabacion.services;
+package com.example.appGrabacion.models;
 
 import android.content.Context;
 
 import com.example.appGrabacion.contracts.GenericListContract;
-import com.example.appGrabacion.models.Entidad;
-import com.example.appGrabacion.models.Recurso;
+import com.example.appGrabacion.entities.Entidad;
+import com.example.appGrabacion.entities.Recurso;
 
 import java.util.List;
 

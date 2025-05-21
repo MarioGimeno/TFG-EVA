@@ -20,9 +20,9 @@ import com.example.appGrabacion.MainActivity;
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.FileAdapter;
 import com.example.appGrabacion.contracts.FolderContract;
-import com.example.appGrabacion.models.FileEntry;
+import com.example.appGrabacion.entities.FileEntry;
 import com.example.appGrabacion.presenters.FolderPresenter;
-import com.example.appGrabacion.services.FolderModel;
+import com.example.appGrabacion.models.FolderModel;
 
 import java.util.ArrayList;
 import java.util.Collections;

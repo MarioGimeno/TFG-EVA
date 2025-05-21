@@ -1,7 +1,7 @@
 // com/example/appGrabacion/utils/FolderApi.java
 package com.example.appGrabacion.utils;
 
-import com.example.appGrabacion.models.FilesResponse;
+import com.example.appGrabacion.entities.FilesResponse;
 import okhttp3.MultipartBody;
 import retrofit2.Call;
 import retrofit2.http.*;

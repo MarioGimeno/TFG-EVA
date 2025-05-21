@@ -1,5 +1,5 @@
 // com/example/appGrabacion/models/FilesResponse.java
-package com.example.appGrabacion.models;
+package com.example.appGrabacion.entities;
 
 import java.util.List;
 

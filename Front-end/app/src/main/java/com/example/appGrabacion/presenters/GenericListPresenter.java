@@ -1,9 +1,9 @@
 package com.example.appGrabacion.presenters;
 
 import com.example.appGrabacion.contracts.GenericListContract;
-import com.example.appGrabacion.models.Entidad;
-import com.example.appGrabacion.models.Recurso;
-import com.example.appGrabacion.services.GenericActivityModel;
+import com.example.appGrabacion.entities.Entidad;
+import com.example.appGrabacion.entities.Recurso;
+import com.example.appGrabacion.models.GenericActivityModel;
 
 import java.util.List;
 

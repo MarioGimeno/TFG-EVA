@@ -1,8 +1,8 @@
 // src/main/java/com/example/appGrabacion/contracts/EntidadDetailContract.java
 package com.example.appGrabacion.contracts;
 
-import com.example.appGrabacion.models.Entidad;
-import com.example.appGrabacion.models.Recurso;
+import com.example.appGrabacion.entities.Entidad;
+import com.example.appGrabacion.entities.Recurso;
 import java.util.List;
 
 public interface EntidadDetailContract {

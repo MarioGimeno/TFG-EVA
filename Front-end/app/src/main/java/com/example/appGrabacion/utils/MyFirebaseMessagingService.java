@@ -15,7 +15,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.example.appGrabacion.R;
-import com.example.appGrabacion.models.TokenRequest;
+import com.example.appGrabacion.entities.TokenRequest;
 import com.example.appGrabacion.screens.MapsActivity;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;

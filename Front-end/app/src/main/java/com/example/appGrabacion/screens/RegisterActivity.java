@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.contracts.RegisterContract;
 import com.example.appGrabacion.presenters.RegisterPresenter;
-import com.example.appGrabacion.services.RegisterModel;
+import com.example.appGrabacion.models.RegisterModel;
 
 public class RegisterActivity extends AppCompatActivity implements RegisterContract.View {
 

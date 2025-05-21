@@ -1,7 +1,7 @@
 package com.example.appGrabacion.presenters;
 
 import com.example.appGrabacion.contracts.ResourceContract;
-import com.example.appGrabacion.models.Recurso;
+import com.example.appGrabacion.entities.Recurso;
 
 import java.util.List;
 

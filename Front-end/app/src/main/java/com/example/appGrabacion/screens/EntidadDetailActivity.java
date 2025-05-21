@@ -20,11 +20,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.appGrabacion.R;
 import com.example.appGrabacion.adapters.RecursosDetailAdapter;
 import com.example.appGrabacion.contracts.EntidadDetailContract;
-import com.example.appGrabacion.models.Entidad;
-import com.example.appGrabacion.models.Recurso;
+import com.example.appGrabacion.entities.Entidad;
+import com.example.appGrabacion.entities.Recurso;
 import com.example.appGrabacion.presenters.EntidadDetailPresenter;
-import com.example.appGrabacion.services.EntityModel;
-import com.example.appGrabacion.services.ResourceModel;
+import com.example.appGrabacion.models.EntityModel;
+import com.example.appGrabacion.models.ResourceModel;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 

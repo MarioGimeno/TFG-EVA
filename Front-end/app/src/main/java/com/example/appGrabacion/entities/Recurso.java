@@ -1,4 +1,4 @@
-package com.example.appGrabacion.models;
+package com.example.appGrabacion.entities;
 
 import com.google.gson.annotations.SerializedName;
 import java.util.Objects;
