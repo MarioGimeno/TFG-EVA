@@ -1,7 +1,7 @@
 // src/services/UploadService.js
-const uploadRepo             = require('../repositories/UploadRepository');
+const uploadRepo             = require('../repositories/uploadRepository');
 const { decryptFile }        = require('../utils/DecryptionUtils');
-const { uploadVideoAndLocation } = require('./GcsService');
+const { uploadVideoAndLocation } = require('./gcsService');
 const { assembleAndUpload }  = require('../utils/FileAssemblerUtils');
 
 class UploadService {
