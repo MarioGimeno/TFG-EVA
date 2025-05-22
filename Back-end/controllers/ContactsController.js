@@ -1,5 +1,5 @@
 // src/controllers/contactsController.js
-const service = require('../services/ContactsService');
+const service = require('../services/contactsService');
 
 exports.list = async (req, res, next) => {
   try {

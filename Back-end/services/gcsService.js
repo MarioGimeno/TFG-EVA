@@ -1,7 +1,7 @@
 // src/services/GcsService.js
 const path          = require('path');
 const fs            = require('fs');
-const gcsRepo       = require('../repositories/GcsRepository');
+const gcsRepo       = require('../repositories/gcsRepository');
 
 class GcsService {
   /**

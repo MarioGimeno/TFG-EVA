@@ -1,5 +1,5 @@
 // controllers/categoriasController.js
-const service = require('../services/CategoriasService');
+const service = require('../services/categoriasService');
 
 exports.list = async (req, res, next) => {
   try {

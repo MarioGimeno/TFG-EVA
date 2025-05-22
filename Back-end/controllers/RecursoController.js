@@ -1,5 +1,5 @@
 // src/controllers/RecursoController.js
-const service = require('../services/RecursoService');
+const service = require('../services/recursoService');
 
 class RecursoController {
     async list(req, res, next) {

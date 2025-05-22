@@ -1,5 +1,5 @@
 // src/controllers/UploadController.js
-const uploadService = require('../services/UploadService');
+const uploadService = require('../services/uploadService');
 
 class UploadController {
   async uploadChunk(req, res, next) {

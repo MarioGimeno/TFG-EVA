@@ -1,5 +1,5 @@
 // src/controllers/TokensController.js
-const service = require('../services/TokensService');
+const service = require('../services/tokensService');
 
 class TokensController {
   /**

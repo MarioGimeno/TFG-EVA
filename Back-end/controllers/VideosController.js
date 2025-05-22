@@ -1,5 +1,5 @@
 // src/controllers/VideosController.js
-const gcsService = require('../services/GcsService');
+const gcsService = require('../services/gcsService');
 
 class VideosController {
   /**
