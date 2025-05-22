@@ -1,5 +1,5 @@
 // src/services/TokensService.js
-const repo = require('../repositories/TokensRepository');
+const repo = require('../repositories/tokensrepository');
 
 class TokensService {
   /**

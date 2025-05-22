@@ -1,10 +1,10 @@
 // src/services/UploadService.js
-const uploadRepo             = require('../repositories/uploadRepository');
+const uploadRepo             = require('../repositories/uploadrepository');
 const { decryptFile }        = require('../utils/DecryptionUtils');
-const { uploadVideoAndLocation } = require('./gcsService');
+const { uploadVideoAndLocation } = require('../services/gcsservice');
 const { assembleAndUpload }  = require('../utils/FileAssemblerUtils');
 
-class uploadSerice {
+class UploadService {
   /**
    * Procesa un chunk (o la ubicación) y, si es el último,
    * ensambla y sube el vídeo completo.

@@ -1,5 +1,5 @@
 // src/controllers/EntidadesController.js
-const service = require('../services/entidadesService');
+const service = require('../services/entidadesservice');
 
 class EntidadesController {
   async list(req, res, next) {

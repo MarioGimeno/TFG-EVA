@@ -27,6 +27,6 @@ class ContactsService {
   }
   
   // Luego exportas pasando la instancia del repositorio
-  const contactsRepo = require('../repositories/ContactsRepository');
+  const contactsRepo = require('../repositories/contactsrepository');
   module.exports = new ContactsService(contactsRepo);
   

@@ -1,5 +1,5 @@
 // src/services/RecursoService.js
-const repo = require('../repositories/RecursoRepository');
+const repo = require('../repositories/recursorepository');
 
 class RecursoService {
   async getAll() {

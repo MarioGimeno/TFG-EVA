@@ -1,7 +1,7 @@
 // src/services/AuthService.js
 const bcrypt    = require('bcrypt');
 const jwt       = require('jsonwebtoken');
-const userRepo  = require('../repositories/UserRepository');
+const userRepo  = require('../repositories/userrepository');
 const {
   JWT_SECRET,
   JWT_EXPIRES,

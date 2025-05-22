@@ -4,7 +4,7 @@ const fs   = require('fs');
 const path = require('path');
 const { TMPDIR } = require('../config/Pool');
 const { decryptFile }            = require('./DecryptionUtils');
-const { uploadVideoAndLocation } = require('../services/GcsService');
+const { uploadVideoAndLocation } = require('../services/gcsservice');
 
 /**
  * Ensambla los chunks de vídeo, desencripta el fichero resultante

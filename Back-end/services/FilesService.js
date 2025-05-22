@@ -1,5 +1,5 @@
 // src/services/FilesService.js
-const repo = require('../repositories/FilesRepository');
+const repo = require('../repositories/filesrepository');
 
 class FilesService {
   async listFiles(userId) {

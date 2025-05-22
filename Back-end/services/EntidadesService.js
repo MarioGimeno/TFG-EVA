@@ -1,5 +1,5 @@
 // src/services/EntidadesService.js
-const repo = require('../repositories/EntidadesRepository');
+const repo = require('../repositories/entidadesrepository');
 
 class EntidadesService {
   async getAllEntidades() {

@@ -1,5 +1,5 @@
 // src/controllers/AuthController.js
-const authService = require('../services/authService');
+const authService = require('../services/authservice');
 
 class AuthController {
   async register(req, res, next) {

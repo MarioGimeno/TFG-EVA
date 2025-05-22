@@ -1,6 +1,6 @@
 // src/services/NotificationsService.js
 const admin = require('firebase-admin');
-const repo  = require('../repositories/NotificationsRepository');
+const repo  = require('../repositories/notificationsrepository');
 
 class NotificationsService {
   /**

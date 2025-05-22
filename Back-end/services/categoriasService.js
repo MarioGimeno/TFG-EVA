@@ -1,5 +1,5 @@
 // services/categoriasService.js
-const repo = require('../repositories/CategoriasRepository');
+const repo = require('../repositories/categoriasrepository');
 
 class CategoriasService {
   async getAllCategorias() {
