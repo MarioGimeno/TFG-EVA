@@ -2,7 +2,7 @@
 const express                 = require('express');
 const router                  = express.Router();
 const authenticate            = require('../middleware/authMiddleware');
-const NotificationsController = require('../controllers/NotificationsController');
+const NotificationsController = require('../controllers/notificationscontroller');
 
 // Log de depuración
 router.use((req, res, next) => {

@@ -2,7 +2,7 @@
 const express            = require('express');
 const multer             = require('multer');
 const authenticate       = require('../middleware/authMiddleware');
-const FilesController    = require('../controllers/FilesController');
+const FilesController    = require('../controllers/filescontroller');
 
 const router = express.Router();
 const upload = multer({

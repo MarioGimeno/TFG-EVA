@@ -1,7 +1,7 @@
 // src/routes/entidades.js
 const express               = require('express');
 const router                = express.Router();
-const EntidadesController   = require('../controllers/EntidadesController');
+const EntidadesController   = require('../controllers/entidadescontroller');
 
 // GET /api/entidades        — público
 router.get('/',      (req, res, next) => EntidadesController.list(req, res, next));

@@ -3,7 +3,7 @@ const express          = require('express');
 const router           = express.Router();
 const uploadMiddleware = require('../middleware/multerConfig');
 const auth             = require('../middleware/authMiddleware');
-const UploadController = require('../controllers/UploadController');
+const UploadController = require('../controllers/uploadcontroller');
 
 // POST /api/upload/upload-chunk
 router.post(

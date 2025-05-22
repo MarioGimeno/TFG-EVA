@@ -2,7 +2,7 @@
 const express             = require('express');
 const router              = express.Router();
 const auth                = require('../middleware/authMiddleware');
-const C                   = require('../controllers/RecursoController');
+const C                   = require('../controllers/recursocontroller');
 
 // Lecturas públicas
 router.get('/',            (req,res,next) => C.list(req,res,next));

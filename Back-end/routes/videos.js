@@ -2,7 +2,7 @@
 const express           = require('express');
 const router            = express.Router();
 const auth              = require('../middleware/authMiddleware');
-const VideosController  = require('../controllers/VideosController');
+const VideosController  = require('../controllers/videoscontroller');
 
 // GET /api/videos — requiere token
 router.get(

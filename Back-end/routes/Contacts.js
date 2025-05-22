@@ -2,7 +2,7 @@
 const express   = require('express');
 const router    = express.Router();
 const auth      = require('../middleware/authMiddleware');
-const ctrl      = require('../controllers/ContactsController');
+const ctrl      = require('../controllers/contactscontroller');
 
 // Debug middleware (opcional)
 router.use((req, res, next) => {

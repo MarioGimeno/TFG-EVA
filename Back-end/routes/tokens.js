@@ -2,7 +2,7 @@
 const express            = require('express');
 const router             = express.Router();
 const authenticate       = require('../middleware/authMiddleware');
-const TokensController   = require('../controllers/TokensController');
+const TokensController   = require('../controllers/tokenscontroller');
 
 // Debug
 router.use((req, res, next) => {
