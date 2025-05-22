@@ -8,7 +8,7 @@ class UserRepository {
    */
   async findByEmail(email) {
     const { rows } = await pool.query(
-      `SELECT id, email, password
+      `SELECT id, email, password, nombre
          FROM users
         WHERE email = $1`,
       [email]
@@ -18,7 +18,8 @@ class UserRepository {
     return {
       id: rows[0].id,
       email: rows[0].email,
-      passwordHash: rows[0].password
+      passwordHash: rows[0].password,
+      fullname: rows[0].nombre
     };
   }
 
@@ -26,14 +27,14 @@ class UserRepository {
    * Inserta un nuevo usuario usando la columna `password`.
    * Devuelve el nuevo id y email.
    */
-  async createUser({ email, passwordHash }) {
+  async createUser({ fullName, email, passwordHash }) {
     const { rows } = await pool.query(
-      `INSERT INTO users (email, password)
-       VALUES ($1, $2)
-       RETURNING id, email`,
-      [email, passwordHash]
-    );
-    return { id: rows[0].id, email: rows[0].email };
+        `INSERT INTO users ( email, password, nombre)
+         VALUES ($1, $2, $3)
+         RETURNING id, nombre, email`,
+        [email, passwordHash, fullName]
+      );
+      return { id: rows[0].id, fullName: rows[0].fullName, email: rows[0].email };
   }
 }
 

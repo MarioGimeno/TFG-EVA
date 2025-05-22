@@ -12,46 +12,49 @@ class AuthService {
   /**
    * Registra un usuario nuevo y devuelve { token, refreshToken }.
    */
-  async register({ email, password }) {
-    console.log('[AuthService] register called with:', { email, password });
+  async register({ fullName, email, password }) {
+    console.log('[AuthService] register called with:', { fullName, email, password });
     if (await userRepo.findByEmail(email)) {
       const err = new Error('Usuario ya existe');
       err.status = 400;
       throw err;
     }
     const hash = await bcrypt.hash(password, 10);
-    console.log('[AuthService] password hashed:', hash);
-    const user = await userRepo.createUser({ email, passwordHash: hash });
-    console.log('[AuthService] new user created:', { id: user.id, email: user.email });
+    const user = await userRepo.createUser({ fullName, email, passwordHash: hash });
     const tokens = this._generateTokens(user.id);
-    console.log('[AuthService] tokens generated on register:', tokens);
-    return tokens;
+    
+    return { 
+      fullName: user.fullName,
+      email: user.email,
+      ...tokens
+    };
   }
-
+  
   /**
    * Valida credenciales y devuelve { token, refreshToken }.
    */
   async login({ email, password }) {
-    console.log('[AuthService] login called with:', { email, password });
     const user = await userRepo.findByEmail(email);
-    console.log('[AuthService] fetched user:', user);
     if (!user) {
-      console.log('[AuthService] no user found for email');
       const err = new Error('Credenciales inválidas');
       err.status = 400;
       throw err;
     }
     const match = await bcrypt.compare(password, user.passwordHash);
-    console.log('[AuthService] password match result:', match);
     if (!match) {
       const err = new Error('Credenciales inválidas');
       err.status = 400;
       throw err;
     }
     const tokens = this._generateTokens(user.id);
-    console.log('[AuthService] tokens generated on login:', tokens);
-    return tokens;
+    
+    return {
+      fullName: user.fullname,
+      email: user.email,
+      ...tokens
+    };
   }
+  
 
   /**
    * Renueva tokens a partir de un refreshToken válido.

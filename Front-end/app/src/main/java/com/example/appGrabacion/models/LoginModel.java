@@ -1,5 +1,7 @@
 package com.example.appGrabacion.models;
 
+import static com.example.appGrabacion.screens.LoginActivity.KEY_USER;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
@@ -37,18 +39,20 @@ public class LoginModel implements LoginContract.Service {
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String token = response.body().token;
-                    Log.d("LoginService", "Token recibido del servidor: " + token);
+                    String fullName = response.body().fullName;
 
-                    // Guardar token localmente
                     SharedPreferences prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE);
                     prefs.edit().putString("auth_token", token).apply();
+                    prefs.edit().putString(KEY_USER, fullName).apply();
+
                     new SessionManager(context).saveToken(token);
 
-                    callback.onSuccess(token);
+                    callback.onSuccess(token, fullName);
                 } else {
                     callback.onError(new Exception("Credenciales inválidas"));
                 }
             }
+
 
             @Override
             public void onFailure(Call<LoginResponse> call, Throwable t) {

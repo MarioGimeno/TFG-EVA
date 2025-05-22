@@ -17,10 +17,11 @@ public interface LoginContract {
     }
 
     interface Service {
-        interface LoginCallback {
-            void onSuccess(String token);
+        public interface LoginCallback {
+            void onSuccess(String token, String fullName);
             void onError(Throwable t);
         }
+
         void login(String email, String password, LoginCallback callback);
     }
 }

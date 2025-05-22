@@ -258,12 +258,17 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupFooterButtons() {
         View footer = findViewById(R.id.footerNav);
-        SessionManager session = new SessionManager(this);
-        boolean loggedIn = session.getToken(this) != null && !session.getToken(this).isEmpty();
+        SessionManager session = new SessionManager(getApplicationContext());
+        boolean loggedIn = session.isLoggedIn();
+        Log.e("logueado?", "Token leído: " + session.fetchToken() + " -> " + loggedIn);
+
+        Log.e("logueado? ", String.valueOf(loggedIn));
+
         View.OnClickListener requireLogin = v -> {
             Toast.makeText(this, "Debes iniciar sesión primero", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, LoginActivity.class));
         };
+
         footer.findViewById(R.id.btnGoFolder)
                 .setOnClickListener(v -> {
                     if (loggedIn) showAuthenticationPrompt();
@@ -285,6 +290,7 @@ public class MainActivity extends AppCompatActivity {
                 });
         footer.bringToFront();
     }
+
 
     private void requestAllPermissions() {
         List<String> toReq = new ArrayList<>();
@@ -356,6 +362,12 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         sliderHandler.removeCallbacksAndMessages(null);
     }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        setupFooterButtons();  // refresca la visibilidad/estado de los botones
+    }
+
     private void downloadFile(String url, String fileName) {
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
         request.setTitle(fileName);
