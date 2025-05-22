@@ -1,11 +1,14 @@
 package com.example.appGrabacion;
 
 import android.Manifest;
+import android.app.DownloadManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.text.Html;
@@ -124,6 +127,15 @@ public class MainActivity extends AppCompatActivity {
         requestAllPermissions();
         syncContacts();
         registerFcmToken();
+
+
+        ImageView ivManual = findViewById(R.id.ivSectionImage);
+        ivManual.setOnClickListener(v -> {
+            String fileIdResumen = "1hpYwHZcODV3tUBeArWO5Kn3FuRzRG-GX";
+            String urlResumen = "https://drive.google.com/uc?export=download&id=" + fileIdResumen;
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(urlResumen)));
+
+        });
         MaterialButton btnDownload = findViewById(R.id.btnDownloadManual);
         btnDownload.setOnClickListener(v -> {
             String fileId = "1Xq8GgtBpe_kmpsBMbq-Cx_s7wquZHSwD";
@@ -344,4 +356,19 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         sliderHandler.removeCallbacksAndMessages(null);
     }
+    private void downloadFile(String url, String fileName) {
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url));
+        request.setTitle(fileName);
+        request.setDescription("Descargando…");
+        request.setNotificationVisibility(
+                DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+        );
+        // guardarlo en la carpeta “Downloads”
+        request.setDestinationInExternalPublicDir(
+                Environment.DIRECTORY_DOWNLOADS, fileName
+        );
+        DownloadManager dm = (DownloadManager) getSystemService(Context.DOWNLOAD_SERVICE);
+        dm.enqueue(request);
+    }
+
 }
