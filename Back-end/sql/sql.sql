@@ -318,3 +318,162 @@ Acompañamiento a las mujeres en momentos críticos dentro de su proceso de sali
 INSERT INTO recurso (id_entidad, id_categoria, imagen, email, telefono, direccion, horario, servicio, descripcion, requisitos, gratuito, web, accesible) VALUES (14, 3, 'https://evaespacioseguro.s3.us-east-1.amazonaws.com/AyudaEcoComplementaria.png', 'iam@aragon.es', '976 716 720', 'Paseo María Agustín, 16, 5ª planta,  50004 Zaragoza', 'Lunes a Viernes de 08:00-20:30', 'Ayudas económicas complementarias para víctimas de violencia', 'Pueden demandarlas las hijas y los hijos menores de edad de mujeres víctimas mortales por violencia de género. También pueden solicitarlas mujeres víctimas de otras formas de violencia y mujeres víctimas de violencia de género mayores de 65 años. La presentación de la solicitud se puede realizar vía telemática o presencial.', 'Mujeres mayores de 65 años víctimas de violencia de género, acreditada. 
 Estar empadronadas en un municipio aragonés y carezcan de rentas que, en cómputo mensual, superen el 75 por ciento del salario mínimo interprofesional vigente, excluida la parte proporcional de dos pagas extraordinarias.', TRUE, 'https://www.aragon.es/tramitador/-/tramite/ayudas-economicas-complementarias-victimas-violencia', FALSE);
 INSERT INTO recurso (id_entidad, id_categoria, imagen, email, telefono, direccion, horario, servicio, descripcion, requisitos, gratuito, web, accesible) VALUES (14, 3, 'https://evaespacioseguro.s3.us-east-1.amazonaws.com/AyudaEconomica.png', 'iam@aragon.es', '976 716 720', 'Paseo María Agustín, 16, 5ª planta,  50004 Zaragoza', 'Lunes a Viernes de 08:00-20:30', 'Ayuda económica a mujeres víctimas de violencia de género', 'Subvención para mujeres que han sufrido violencia de género y tienen dificultades económicas y laborales.', 'Residir en Aragón, acreditar ser víctima de violencia de género sin rentas superiores al 75% del SMI, sin haber recibido esta ayuda anteriormente y con especiales dificultades para obtener un empleo.', TRUE, 'https://www.aragon.es/tramitador/-/tramite/ayudas-economicas-mujeres-victimas-violencia-genero', FALSE);
+CREATE TABLE subida (
+    id_subida SERIAL PRIMARY KEY,
+    fecha_subida TIMESTAMPTZ DEFAULT NOW(),
+    id_usuario INTEGER NOT NULL,
+    CONSTRAINT fk_usuario_subida FOREIGN KEY (id_usuario) REFERENCES users(id) ON DELETE CASCADE
+);
+
+
+Triggers
+
+-- 1. Validar categoría al insertar en recurso
+CREATE OR REPLACE FUNCTION validar_categoria_recurso()
+RETURNS trigger AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM categoria WHERE id_categoria = NEW.id_categoria) THEN
+    RAISE EXCEPTION 'La categoría asignada no existe.';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER validar_categoria_recurso
+BEFORE INSERT ON recurso
+FOR EACH ROW
+EXECUTE FUNCTION validar_categoria_recurso();
+
+-- 2. Validar entidad al insertar en recurso
+CREATE OR REPLACE FUNCTION validar_entidad_recurso()
+RETURNS trigger AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM entidad WHERE id_entidad = NEW.id_entidad) THEN
+    RAISE EXCEPTION 'La entidad asignada al recurso no existe.';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER validar_entidad_recurso
+BEFORE INSERT ON recurso
+FOR EACH ROW
+EXECUTE FUNCTION validar_entidad_recurso();
+
+-- 3. Validar users al insertar en subida
+CREATE OR REPLACE FUNCTION validar_users_subida()
+RETURNS trigger AS $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM users WHERE id = NEW.id_users) THEN
+    RAISE EXCEPTION 'El users asociado a la subida no existe.';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER validar_users_subida
+BEFORE INSERT ON subida
+FOR EACH ROW
+EXECUTE FUNCTION validar_users_subida();
+
+-- 4. Evitar duplicado de contacts
+CREATE OR REPLACE FUNCTION evitar_contacts_duplicados()
+RETURNS trigger AS $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM contacts 
+    WHERE users_id = NEW.users_id AND email = NEW.email
+  ) THEN
+    RAISE EXCEPTION 'Este contacts ya está registrado.';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER evitar_contacts_duplicados
+BEFORE INSERT ON contacts
+FOR EACH ROW
+EXECUTE FUNCTION evitar_contacts_duplicados();
+
+-- 7. Borrar tokens asociados al eliminar users
+CREATE OR REPLACE FUNCTION borrar_tokens_users()
+RETURNS trigger AS $$
+BEGIN
+  DELETE FROM fcm_token WHERE users_id = OLD.id;
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER borrar_tokens_users
+AFTER DELETE ON users
+FOR EACH ROW
+EXECUTE FUNCTION borrar_tokens_users();
+
+-- 9. Poner fecha de subida automática
+CREATE OR REPLACE FUNCTION poner_fecha_subida()
+RETURNS trigger AS $$
+BEGIN
+  IF NEW.fecha_subida IS NULL THEN
+    NEW.fecha_subida := NOW();
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER poner_fecha_subida
+BEFORE INSERT ON subida
+FOR EACH ROW
+EXECUTE FUNCTION poner_fecha_subida();
+
+-- 10. Notificar contacts al iniciar subida
+CREATE OR REPLACE FUNCTION notificar_contacts_subida()
+RETURNS trigger AS $$
+BEGIN
+  UPDATE fcm_token
+  SET updated_at = NOW()
+  WHERE users_id IN (
+    SELECT id FROM contacts WHERE users_id = NEW.id_users
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER notificar_contacts_subida
+AFTER INSERT ON subida
+FOR EACH ROW
+EXECUTE FUNCTION notificar_contacts_subida();
+
+-- 11. Evitar que un users se agregue a sí mismo como contacts
+CREATE OR REPLACE FUNCTION evitar_autocontacts()
+RETURNS trigger AS $$
+DECLARE
+  user_email TEXT;
+BEGIN
+  SELECT email INTO user_email FROM users WHERE id = NEW.users_id;
+  IF NEW.email = user_email THEN
+    RAISE EXCEPTION 'No puedes agregarte a ti misma como contacts.';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER evitar_autocontacts
+BEFORE INSERT ON contacts
+FOR EACH ROW
+EXECUTE FUNCTION evitar_autocontacts();
+
+-- 12. Evitar eliminar entidad con recursos asociados
+CREATE OR REPLACE FUNCTION evitar_eliminacion_entidad_con_recursos()
+RETURNS trigger AS $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM recurso WHERE id_entidad = OLD.id_entidad) THEN
+    RAISE EXCEPTION 'No se puede eliminar una entidad que tiene recursos asociados.';
+  END IF;
+  RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER evitar_eliminacion_entidad_con_recursos
+BEFORE DELETE ON entidad
+FOR EACH ROW
+EXECUTE FUNCTION evitar_eliminacion_entidad_con_recursos();
