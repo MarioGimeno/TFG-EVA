@@ -17,12 +17,15 @@ class AuthController {
   async login(req, res, next) {
     try {
       const tokens = await authService.login(req.body);
+      console.log('[AuthController] login response:', tokens);
+      // tokens debería ser un objeto con fullName, email, token, refreshToken, etc.
       res.json(tokens);
     } catch (err) {
+      console.error('[AuthController] login error:', err);
       res.status(err.status || 400).json({ error: err.message });
     }
   }
-
+  
   async refresh(req, res, next) {
     try {
       const { refreshToken } = req.body;

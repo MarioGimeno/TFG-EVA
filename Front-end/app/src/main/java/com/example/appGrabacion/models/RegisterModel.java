@@ -1,5 +1,7 @@
 package com.example.appGrabacion.models;
 
+import static com.example.appGrabacion.screens.LoginActivity.KEY_USER;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Patterns;
@@ -43,6 +45,7 @@ public class RegisterModel implements RegisterContract.Service {
                     SharedPreferences prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE);
                     prefs.edit().putString("auth_token", token).apply();
                     new SessionManager(context).saveToken(token);
+                    prefs.edit().putString(KEY_USER, fullName).apply();
 
                     callback.onSuccess(token);
                 } else {

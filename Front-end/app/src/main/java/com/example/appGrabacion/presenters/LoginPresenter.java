@@ -22,18 +22,17 @@ public class LoginPresenter implements LoginContract.Presenter {
     public void detachView() {
         this.view = null;
     }
-
     @Override
     public void performLogin(String email, String password) {
         if (view != null) view.showLoading();
 
         service.login(email, password, new LoginModel.LoginCallback() {
             @Override
-            public void onSuccess(String token) {
+            public void onSuccess(String token, String fullName) {
                 if (view != null) {
                     view.hideLoading();
-                    // Mostramos bienvenida con el email como nombre
-                    view.showLoginSuccess(email);
+                    // Mostramos bienvenida con el nombre completo recibido
+                    view.showLoginSuccess(fullName);
                 }
             }
 
@@ -46,4 +45,5 @@ public class LoginPresenter implements LoginContract.Presenter {
             }
         });
     }
+
 }

@@ -1,9 +1,11 @@
 package com.example.appGrabacion.screens;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -24,13 +26,14 @@ import com.example.appGrabacion.contracts.RegisterContract;
 import com.example.appGrabacion.presenters.LoginPresenter;
 import com.example.appGrabacion.presenters.RegisterPresenter;
 import com.example.appGrabacion.models.RegisterModel;
+import com.example.appGrabacion.utils.SessionManager;
 import com.google.android.material.button.MaterialButton;
 
 public class LoginActivity extends AppCompatActivity
         implements LoginContract.View, RegisterContract.View {
 
     private static final String PREFS      = "app_prefs";
-    private static final String KEY_USER   = "logged_in_user";
+    public static final String KEY_USER = "key_user";
 
     private SharedPreferences prefs;
 
@@ -127,19 +130,25 @@ public class LoginActivity extends AppCompatActivity
             registerPresenter.register(name, email, pass);
         });
 
-        // Cerrar sesión
-        btnLogout.setOnClickListener(v -> {
-            prefs.edit().remove(KEY_USER).apply();
-            showForms();
-        });
+            // Cerrar sesión
+            btnLogout.setOnClickListener(v -> {
+                SessionManager session = new SessionManager(this);
+                session.clear();  // Borra todo el SharedPreferences 'prefs_session'
+                Log.d("SessionCheck", "Token tras logout: " + session.getToken(this)); // Debe ser null o vacío
+                showForms();
+            });
 
-        // Al arrancar, si hay usuario guardado, mostrar bienvenida
+// Al arrancar, si hay usuario guardado, mostrar bienvenida
+        SharedPreferences prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE);
         String savedUser = prefs.getString(KEY_USER, null);
-        if (savedUser != null) {
+        Log.d("SessionCheck", "Leído savedUser al cargar login: '" + savedUser + "'");
+
+        if (savedUser != null && !savedUser.trim().isEmpty()) {
             showWelcome(savedUser);
         } else {
             showForms();
         }
+
     }
 
     /** Muestra la tarjeta de bienvenida */
@@ -167,10 +176,9 @@ public class LoginActivity extends AppCompatActivity
         // Si prefieres ir al MainActivity, descomenta:
         // startActivity(new Intent(this, MainActivity.class));
     }
-    @Override public void showLoginSuccess(String userName) {
+    @Override public void showLoginSuccess(String fullName) {
         // Guarda el nombre y muestra bienvenida
-        prefs.edit().putString(KEY_USER, userName).apply();
-        showWelcome(userName);
+        showWelcome(fullName);
 
     }
 
