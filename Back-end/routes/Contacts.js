@@ -11,7 +11,10 @@ router.use((req, res, next) => {
 });
 
 router.get(    '/',    auth, ctrl.list);
-router.post(   '/',    auth, ctrl.create);
+router.post('/', auth, (req, res, next) => {
+  console.log('Middleware justo antes del controlador en POST /api/contacts');
+  next();
+}, ctrl.create);
 router.delete('/:id',  auth, ctrl.delete);
 
 module.exports = router;
