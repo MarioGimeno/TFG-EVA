@@ -4,7 +4,7 @@ const { decryptFile }        = require('../utils/DecryptionUtils');
 const { uploadVideoAndLocation } = require('./gcsService');
 const { assembleAndUpload }  = require('../utils/FileAssemblerUtils');
 
-class UploadService {
+class uploadSerice {
   /**
    * Procesa un chunk (o la ubicación) y, si es el último,
    * ensambla y sube el vídeo completo.
