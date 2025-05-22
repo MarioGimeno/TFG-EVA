@@ -1,4 +1,4 @@
-const { verifyToken } = require('../services/AuthService');
+const { verifyToken } = require('../services/authService');
 
 function authMiddleware(req, res, next) {
   const auth = req.headers.authorization;
