@@ -10,9 +10,8 @@ class ContactsService {
     }
   
     async addContact(contactData) {
+      console.log('Buscando email:', contactData.email);
       try {
-            console.log('Buscando email:', contactData.email);
-
         const userId = await this.contactsRepository.findUserIdByEmail(contactData.email);
         // lógica para añadir contacto usando userId
       } catch (error) {

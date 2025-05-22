@@ -12,6 +12,7 @@ exports.list = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
+        console.log('Llamando a addContact con:', req.body);
     const newContact = await service.addContact(req.userId, req.body);
     res.status(201).json(newContact);
   } catch (error) {
