@@ -21,7 +21,6 @@ public class ImageViewerActivity extends AppCompatActivity {
 
         Glide.with(this)
                 .load(url)
-                .placeholder(R.drawable.ic_placeholder)
                 .error(R.drawable.ic_error)
                 .into(iv);
     }
