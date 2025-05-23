@@ -5,6 +5,8 @@ import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,6 +18,7 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -288,6 +291,12 @@ public class MainActivity extends AppCompatActivity {
                     if (loggedIn) startActivity(new Intent(this, ContactsActivity.class));
                     else requireLogin.onClick(v);
                 });
+        if (loggedIn) {
+            View btnGoLogin = footer.findViewById(R.id.btnGoLogin);
+            GradientDrawable background = (GradientDrawable) btnGoLogin.getBackground();
+            background.setColor(Color.parseColor("#A11991")); // Relleno morado
+        }
+
         footer.bringToFront();
     }
 

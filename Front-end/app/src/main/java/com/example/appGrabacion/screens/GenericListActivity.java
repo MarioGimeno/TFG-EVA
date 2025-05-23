@@ -3,7 +3,9 @@ package com.example.appGrabacion.screens;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -37,6 +39,8 @@ public class GenericListActivity extends AppCompatActivity {
     public static final String EXTRA_LIST_TYPE    = "list_type";      // "entidades","servicios","gratuitos","accesibles"
     public static final String EXTRA_CATEGORY_ID  = "category_id";    // int para categoría
     public static final String EXTRA_TYPE         = "type";           // lo mantenemos
+    private ProgressBar progressImage;
+    private ImageView bg;
 
     private RecyclerView rv;
     private GenericActivityModel service;
@@ -59,6 +63,8 @@ public class GenericListActivity extends AppCompatActivity {
             startActivity(new Intent(this, MainActivity.class));
             finish();
         });
+        bg = findViewById(R.id.videoBackground);
+        progressImage = findViewById(R.id.progressImage);
 
         service = new GenericActivityModel(this);
 
@@ -105,10 +111,25 @@ public class GenericListActivity extends AppCompatActivity {
                 );
                 String url = cat.getImgCategoria();
                 if (url != null && !url.isEmpty()) {
+
+// Ejemplo de carga con Picasso
+                    progressImage.setVisibility(View.VISIBLE);
                     Picasso.get()
                             .load(url)
-                            .error(R.drawable.eva)
-                            .into(bg);
+                            .into(bg, new Callback() {
+                                @Override
+                                public void onSuccess() {
+                                    progressImage.animate()
+                                            .alpha(0f).setDuration(300)
+                                            .withEndAction(() -> progressImage.setVisibility(View.GONE))
+                                            .start();
+                                }
+
+                                @Override
+                                public void onError(Exception e) {
+                                    progressImage.setVisibility(View.GONE);
+                                }
+                            });
                 }
                 setupServiciosPorCategoriaGrid(categoryId);
             }

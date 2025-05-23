@@ -30,7 +30,7 @@ public class ContactsActivity extends AppCompatActivity
 
     private RecyclerView rv;
     private ContactsAdapter adapter;
-    private ProgressBar progress;
+    private ProgressBar progressHeader;
     private EditText etName, etPhone;
     private Button btnAdd;
     private ContactsPresenter presenter;
@@ -43,10 +43,10 @@ public class ContactsActivity extends AppCompatActivity
 
         // UI refs
         rv       = findViewById(R.id.rvContacts);
-        progress = findViewById(R.id.progressContacts);
         etName   = findViewById(R.id.etContactName);
         etPhone  = findViewById(R.id.etEmail);
         btnAdd   = findViewById(R.id.btnAddContact);
+        progressHeader = findViewById(R.id.progressHeader);
 
         // RecyclerView setup
         rv.setLayoutManager(new LinearLayoutManager(this));
@@ -101,13 +101,19 @@ public class ContactsActivity extends AppCompatActivity
 
     @Override
     public void showLoading() {
-        progress.setVisibility(View.VISIBLE);
+        progressHeader.setVisibility(View.VISIBLE);
+        progressHeader.setAlpha(0f);
+        progressHeader.animate().alpha(1f).setDuration(300).start();
     }
 
     @Override
     public void hideLoading() {
-        progress.setVisibility(View.GONE);
+        progressHeader.animate()
+                .alpha(0f).setDuration(300)
+                .withEndAction(() -> progressHeader.setVisibility(View.GONE))
+                .start();
     }
+
 
     @Override
     public void showContacts(List<ContactEntry> contacts) {
