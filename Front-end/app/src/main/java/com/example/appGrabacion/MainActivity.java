@@ -291,11 +291,22 @@ public class MainActivity extends AppCompatActivity {
                     if (loggedIn) startActivity(new Intent(this, ContactsActivity.class));
                     else requireLogin.onClick(v);
                 });
+        ImageView ivFabIcon = findViewById(R.id.ivFabIcon);
+        View btnGoLogin = footer.findViewById(R.id.btnGoLogin);
+
         if (loggedIn) {
-            View btnGoLogin = footer.findViewById(R.id.btnGoLogin);
+            // Cambiar color de fondo y logo al estado "logueado"
             GradientDrawable background = (GradientDrawable) btnGoLogin.getBackground();
-            background.setColor(Color.parseColor("#A11991")); // Relleno morado
+            background.setColor(Color.parseColor("#A11991")); // Morado
+            ivFabIcon.setImageResource(R.drawable.ic_eva_blanco); // Icono blanco
+        } else {
+            // Restaurar fondo e icono original (no logueado)
+            GradientDrawable background = (GradientDrawable) btnGoLogin.getBackground();
+            background.setColor(Color.parseColor("#FFFFFF")); // Fondo blanco original
+            ivFabIcon.setImageResource(R.drawable.ic_logo_eva); // Icono original
         }
+
+
 
         footer.bringToFront();
     }
