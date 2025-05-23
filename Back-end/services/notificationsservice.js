@@ -40,12 +40,9 @@ class NotificationsService {
         type:      'LIVE_LOCATION',
         latitude:  latitude.toString(),
         longitude: longitude.toString()
-      },
-      notification: {
-        title: 'Ubicación en vivo',
-        body:  `Lat: ${latitude.toFixed(5)}, Lon: ${longitude.toFixed(5)}`
       }
     }));
+
 
     const results = await Promise.all(
       messages.map(msg =>

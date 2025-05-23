@@ -8,7 +8,10 @@ class NotificationsController {
   async sendLocation(req, res, next) {
     try {
       const userId       = req.user?.id ?? req.userId;
-      const { latitude, longitude, recipientIds } = req.body;
+      const latitude = Number(req.body.latitude);
+      const longitude = Number(req.body.longitude);
+      const recipientIds = req.body.recipientIds;
+
 
       // Validaciones básicas
       if (typeof latitude !== 'number' || typeof longitude !== 'number') {
