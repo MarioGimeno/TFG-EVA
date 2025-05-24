@@ -35,7 +35,7 @@
         android:largeHeap="true"
         android:networkSecurityConfig="@xml/network_security_config"
         android:allowBackup="true"
-        android:label="EVA"
+        android:label=""
         android:supportsRtl="true"
         >
         <!-- Aquí pones tu Google Maps API Key -->
@@ -60,7 +60,8 @@
 
         <service
             android:name=".widget.RecordingService"
-            android:exported="false" />
+            android:exported="false"
+            android:label="@string/empty_label"/>
         <activity
             android:name=".screens.SplashActivity"
             android:exported="true"
@@ -130,7 +131,8 @@
         <service
             android:name="com.example.appGrabacion.MicrophoneService"
             android:exported="true"
-            android:foregroundServiceType="microphone" />
+            android:foregroundServiceType="microphone"
+            android:label="@string/empty_label"/>
         <service
             android:name=".utils.MyFirebaseMessagingService"
             android:exported="false">

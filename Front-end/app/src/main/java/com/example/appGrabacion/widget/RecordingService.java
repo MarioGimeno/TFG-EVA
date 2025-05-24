@@ -141,8 +141,10 @@ public class RecordingService extends Service {
         // Crea el canal de notificaciones si es necesario (para API 26+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID,
-                    "Grabación", NotificationManager.IMPORTANCE_LOW);
-            channel.setDescription("Notificación para grabación en segundo plano");
+                    "Grabación", NotificationManager.IMPORTANCE_MIN);
+            channel.setSound(null, null);                // sin sonido
+            channel.enableVibration(false);              // sin vibración
+            channel.setShowBadge(false);                 // sin badge
             NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null) {
                 manager.createNotificationChannel(channel);
@@ -151,10 +153,15 @@ public class RecordingService extends Service {
 
         // Crea una notificación mínima para iniciar el servicio en primer plano
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Grabando video")
-                .setContentText("La grabación se está ejecutando en segundo plano")
-                .setSmallIcon(R.drawable.button_circle) // Usa un ícono válido en tu proyecto
+                .setSmallIcon(R.drawable.ic_trasparente) // Usa un ícono válido en tu proyecto
+                .setContentTitle("")                    // sin texto
+                .setContentText("")                     // sin texto
+                .setSilent(true)                        // API 26+ silencia completamente
+                .setOngoing(true)                       // persistente
+                .setShowWhen(false)                     // no muestra hora
                 .build();
+
+        startForeground(1, notification);
 
         // Llama a startForeground con la notificación
         startForeground(1, notification);
