@@ -64,6 +64,7 @@
         <activity
             android:name=".screens.SplashActivity"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.App.Splash"
             android:launchMode="singleTask">
             <intent-filter>
@@ -86,29 +87,45 @@
 
         <activity
             android:name=".screens.LoginActivity"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden|adjustNothing">
         </activity>
 
         <activity
             android:name=".screens.RegisterActivity"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden|adjustNothing">
         </activity>
 
 
-        <activity android:name=".screens.FolderActivity" />
-        <activity android:name=".screens.VideoPlayerActivity" />
-        <activity android:name=".screens.TextViewerActivity" />
-        <activity android:name=".screens.ImageViewerActivity" />
-        <activity android:name=".screens.PdfViewerActivity" />
-        <activity android:name=".screens.ContactsActivity" />
-        <activity android:name=".screens.MapsActivity" />
-        <activity android:name=".screens.EntidadesActivity" />
-        <activity android:name=".screens.RecursosActivity" />
-        <activity android:name=".screens.EntidadDetailActivity"/>
-        <activity android:name=".screens.RecursoDetailActivity"/>
-        <activity android:name=".screens.CategoriasActivity" />
-        <activity android:name=".screens.CategoriaDetailActivity" />
-        <activity android:name=".screens.GenericListActivity"/>
+        <activity android:name=".screens.FolderActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".screens.VideoPlayerActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".screens.TextViewerActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".screens.ImageViewerActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".screens.PdfViewerActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".screens.ContactsActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".screens.MapsActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".screens.EntidadesActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".screens.RecursosActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".screens.EntidadDetailActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".screens.RecursoDetailActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".screens.CategoriasActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".screens.CategoriaDetailActivity"
+            android:screenOrientation="portrait"/>
+        <activity android:name=".screens.GenericListActivity"
+            android:screenOrientation="portrait"/>
 
         <service
             android:name="com.example.appGrabacion.MicrophoneService"

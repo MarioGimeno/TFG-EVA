@@ -6,7 +6,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.appGrabacion.R;
 
 public class PdfViewerActivity extends AppCompatActivity {
@@ -17,14 +16,16 @@ public class PdfViewerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pdf_viewer);
 
-        String url = getIntent().getStringExtra(EXTRA_URL);
-        WebView web = findViewById(R.id.webView);
+        WebView webView = findViewById(R.id.webView);
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        webView.setWebViewClient(new WebViewClient());
 
-        // Cargamos a través de Google Docs Viewer
-        web.setWebViewClient(new WebViewClient());
-        WebSettings s = web.getSettings();
-        s.setJavaScriptEnabled(true);
-
-        web.loadUrl("https://docs.google.com/gview?embedded=true&url=" + url);
+        String pdfUrl = getIntent().getStringExtra(EXTRA_URL);
+        if (pdfUrl != null && !pdfUrl.isEmpty()) {
+            // Google Docs Viewer requiere URL codificada
+            String finalUrl = "https://docs.google.com/gview?embedded=true&url=" + pdfUrl;
+            webView.loadUrl(finalUrl);
+        }
     }
 }

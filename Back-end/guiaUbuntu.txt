@@ -60,3 +60,14 @@ cd ~/TFG-Somos-M-s/Back-end
 node server.js
 nohup node server.js > server.log 2>&1 &
 exit
+
+iniciar
+pm2 start server.js --name tfg-backend
+
+
+restaurar
+pm2 restart tfg-backend
+
+
+logs 
+tail -f server.log

@@ -7,6 +7,10 @@
         <item name="colorPrimary">#000000</item>
         <item name="colorPrimaryDark">#000000</item>
         <item name="colorAccent">#FFFFFF</item>
+        <!-- Tu tema -->
+        <item name="android:fontFamily">@font/poppins_regular</item>
+        <item name="fontFamily">@font/poppins_regular</item>
+        
     </style>
 
 
@@ -16,6 +20,9 @@
         <item name="colorPrimary">#3F51B5</item>
         <item name="colorPrimaryDark">#303F9F</item>
         <item name="colorAccent">#FF4081</item>
+        <!-- Tu tema -->
+        <item name="android:fontFamily">@font/poppins_regular</item>
+        <item name="fontFamily">@font/poppins_regular</item>
     </style>
 
 
@@ -66,6 +73,11 @@
         <item name="android:windowDisablePreview">true</item>
 
 
+    </style>
+    <style name="Theme.AppGrabacion" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Tu tema -->
+        <item name="android:fontFamily">@font/poppins_regular</item>
+        <item name="fontFamily">@font/poppins_regular</item>
     </style>
 
 </resources>

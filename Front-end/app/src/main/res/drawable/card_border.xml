@@ -8,7 +8,7 @@
     <!-- Borde grueso de color #A11991 -->
     <stroke
         android:width="3dp"
-        android:color="#A11991" />
+            android:color="#A11991" />
 
     <!-- Radio igual al del CardView -->
     <corners android:radius="20dp" />

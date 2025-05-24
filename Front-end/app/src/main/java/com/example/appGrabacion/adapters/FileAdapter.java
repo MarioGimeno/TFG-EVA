@@ -83,10 +83,6 @@ public class FileAdapter extends RecyclerView.Adapter<FileAdapter.VH> {
             Intent i;
             if (lower.endsWith(".mp4") || lower.endsWith(".mkv")) {
                 i = new Intent(ctx, VideoPlayerActivity.class);
-            } else if (lower.matches(".*\\.(jpg|jpeg|png|gif)$")) {
-                i = new Intent(ctx, ImageViewerActivity.class);
-            } else if (lower.endsWith(".pdf")) {
-                i = new Intent(ctx, PdfViewerActivity.class);
             } else if (lower.endsWith(".txt") || lower.endsWith(".md")) {
                 i = new Intent(ctx, TextViewerActivity.class);
             } else {
