@@ -75,6 +75,11 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     /** Se llama al llegar un mensaje data-only */
     @Override
     public void onMessageReceived(RemoteMessage message) {
+        SessionManager sm = new SessionManager(this);
+        if (!sm.isLoggedIn()) {
+            Log.d(TAG, "Usuario desconectado: ignoro notificación");
+            return;
+        }
         Map<String, String> data = message.getData();
         Log.d(TAG, "Mensaje FCM recibido: " + data);
 
