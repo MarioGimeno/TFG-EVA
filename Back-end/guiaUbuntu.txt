@@ -71,3 +71,6 @@ pm2 restart tfg-backend
 
 logs 
 tail -f server.log
+
+Ver estado
+pm2 status
