@@ -28,6 +28,7 @@ import com.example.appGrabacion.presenters.RegisterPresenter;
 import com.example.appGrabacion.models.RegisterModel;
 import com.example.appGrabacion.utils.SessionManager;
 import com.google.android.material.button.MaterialButton;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class LoginActivity extends AppCompatActivity
         implements LoginContract.View, RegisterContract.View {
@@ -130,13 +131,22 @@ public class LoginActivity extends AppCompatActivity
             registerPresenter.register(name, email, pass);
         });
 
-            // Cerrar sesión
-            btnLogout.setOnClickListener(v -> {
-                SessionManager session = new SessionManager(this);
-                session.clear();  // Borra todo el SharedPreferences 'prefs_session'
-                Log.d("SessionCheck", "Token tras logout: " + session.getToken(this)); // Debe ser null o vacío
-                showForms();
-            });
+        btnLogout.setOnClickListener(v -> {
+            // 1) Borra el token de FCM
+            FirebaseMessaging.getInstance().deleteToken()
+                    .addOnCompleteListener(task -> {
+                        // 2) Limpia tus SharedPreferences de sesión
+                        SessionManager session = new SessionManager(this);
+                        session.clear();
+
+                        // 3) Verifica que ya no tienes token local
+                        Log.d("SessionCheck", "Token tras logout: " + session.fetchToken()); // null
+
+                        // 4) Vuelve a mostrar el formulario (o navega al LoginActivity)
+                        showForms();
+                    });
+        });
+
 
 // Al arrancar, si hay usuario guardado, mostrar bienvenida
         SharedPreferences prefs = getSharedPreferences("app_prefs", Context.MODE_PRIVATE);
