@@ -197,33 +197,37 @@ public class BackgroundRecordingManager implements TextureView.SurfaceTextureLis
         }
     }
 
+    /**
+     * 1) Método para enviar la localización añadiendo un parámetro único (timestamp)
+     */
     private void sendLiveLocationPush(double lat, double lon) {
-        List<Integer> contacts = contactManager.getContactIds(); // IDs o tokens que guardes
+        long ts = System.currentTimeMillis();
+        // URL con parámetro anti-caché
+        String mapsLink = "https://maps.google.com/?q=" + lat + "," + lon + "&_=" + ts;
+        // Construcción de la petición igual que antes
+        List<Integer> contacts = contactManager.getContactIds();
         LocationUpdateRequest req = new LocationUpdateRequest(contacts, lat, lon);
-        Log.d(TAG, "Contactos recuperados en cliente: " + contacts);
-        Log.d(TAG, "Payload JSON enviado: " + new Gson().toJson(req));
         NotificationsApi api = RetrofitClient
                 .getRetrofitInstance(context)
                 .create(NotificationsApi.class);
         String bearer = "Bearer " + SessionManager.getToken(context);
-// Suponiendo que sendLocationUpdate devuelve Call<Void> o Call<LocationResponse>
         api.sendLocationUpdate(bearer, req)
                 .enqueue(new Callback<Void>() {
                     @Override
                     public void onResponse(Call<Void> call, Response<Void> response) {
                         if (response.isSuccessful()) {
-                            Log.d(TAG, "Live location sent successfully");
+                            Log.d(TAG, "Live location sent successfully: " + mapsLink);
                         } else {
                             Log.e(TAG, "Error sending live location: code=" + response.code());
                         }
                     }
-
                     @Override
                     public void onFailure(Call<Void> call, Throwable t) {
                         Log.e(TAG, "Failed to send live location", t);
                     }
                 });
     }
+
 
     /**
      * Inicia la grabación; se obtiene la ubicación de inicio, se arranca el servicio del micrófono y se inicia la grabación de video.
