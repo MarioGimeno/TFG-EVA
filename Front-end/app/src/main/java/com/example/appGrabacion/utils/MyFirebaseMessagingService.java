@@ -98,22 +98,30 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
         }
     }
 
-    /** Construye y dispara la notificación */
+    /**
+     * Construye y dispara la notificación,
+     * usando FLAG_UPDATE_CURRENT para siempre actualizar los extras lat/lon.
+     */
     private void showNotification(double lat, double lon) {
-        // 1) Define el pending intent como tenías
+        // 1) Intent que abrirá MapsActivity con los extras nuevos
         Intent intent = new Intent(this, MapsActivity.class);
         intent.putExtra("lat", lat);
         intent.putExtra("lon", lon);
+        // Lanzamos en nueva tarea y borramos la anterior para que solo haya una instancia
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+
+        // 2) PendingIntent con FLAG_UPDATE_CURRENT para actualizar lat/lon en cada notificación
         PendingIntent pi = PendingIntent.getActivity(
-                this, 0, intent, PendingIntent.FLAG_IMMUTABLE
+                this,
+                0,
+                intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
         );
 
-        // 2) Vuelve a crear aquí el soundUri
+        // 3) Construye la notificación como antes
         Uri soundUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://"
                 + getPackageName() + "/raw/alerta");
 
-        // 3) Construye el builder y encadena TODO antes de poner el ;
         NotificationCompat.Builder builder =
                 new NotificationCompat.Builder(this, CHANNEL_ID)
                         .setSmallIcon(R.drawable.ic_download)
@@ -122,11 +130,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                         .setContentIntent(pi)
                         .setAutoCancel(true)
                         .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        // APLICA EL SONIDO Y VIBRACIÓN AQUÍ, como parte del mismo builder
                         .setSound(soundUri)
-                        .setVibrate(new long[]{0, 500, 200, 500});  // <-- aquí termina la cadena
+                        .setVibrate(new long[]{0, 500, 200, 500});
 
-        // 4) Comprueba permisos y notifica
+        // 4) Comprueba permisos y lanza
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {

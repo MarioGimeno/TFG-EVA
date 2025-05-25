@@ -112,7 +112,9 @@
         <activity android:name=".screens.ContactsActivity"
             android:screenOrientation="portrait"/>
         <activity android:name=".screens.MapsActivity"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:launchMode="singleTop"
+        />
         <activity android:name=".screens.EntidadesActivity"
             android:screenOrientation="portrait"/>
         <activity android:name=".screens.RecursosActivity"

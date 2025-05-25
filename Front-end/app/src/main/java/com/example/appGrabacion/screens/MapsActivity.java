@@ -1,51 +1,92 @@
 package com.example.appGrabacion.screens;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import androidx.fragment.app.FragmentActivity;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.widget.Toast;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.appGrabacion.R;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+import java.util.Locale;
 
-    private double lat = 0, lon = 0;
+public class MapsActivity extends AppCompatActivity {
+
+    private WebView webView;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        webView = findViewById(R.id.webview);
 
-        // 1) Extrae lat/lon del Intent
-        if (getIntent() != null) {
-            lat = getIntent().getDoubleExtra("lat", 0);
-            lon = getIntent().getDoubleExtra("lon", 0);
-        }
+        // Configuración inicial del WebView
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setCacheMode(WebSettings.LOAD_NO_CACHE);
+        webView.clearCache(true);
 
-        // 2) Obtén el fragmento y pide el mapa asincrónicamente
-        SupportMapFragment mapFragment = (SupportMapFragment)
-                getSupportFragmentManager()
-                        .findFragmentById(R.id.map);
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-        }
+        // Manejar la intención que arrancó esta Activity
+        handleIntent(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleIntent(intent);
     }
 
     /**
-     * Se invoca cuando el mapa ya está listo.
+     * Extrae lat/lon del Intent y carga la URL en el WebView.
      */
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        // 3) Crea un LatLng, añade marcador y centra la cámara
-        LatLng posicion = new LatLng(lat, lon);
-        googleMap.addMarker(new MarkerOptions()
-                .position(posicion)
-                .title("Ubicación en vivo"));
-        // zoom entre 10–20 (más alto = más cerca)
-        googleMap.moveCamera(CameraUpdateFactory
-                .newLatLngZoom(posicion, 15f));
+    private void handleIntent(Intent intent) {
+        if (intent == null) return;
+
+        double lat = intent.getDoubleExtra("lat", Double.NaN);
+        double lon = intent.getDoubleExtra("lon", Double.NaN);
+
+        if (Double.isNaN(lat) || Double.isNaN(lon)) {
+            Toast.makeText(this, "Coordenadas inválidas", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        loadMapInWebView(lat, lon);
+    }
+
+    /**
+     * Carga en el WebView la URL de Google Maps deshabilitando caché
+     * y forzando un parámetro único con timestamp.
+     */
+    private void loadMapInWebView(double lat, double lon) {
+        long ts = System.currentTimeMillis();
+        String mapsLink = String.format(
+                Locale.ENGLISH,
+                "https://maps.google.com/?q=%f,%f&_=%d",
+                lat, lon, ts
+        );
+        webView.loadUrl(mapsLink);
+    }
+
+    /**
+     * (Opcional) Si prefieres abrir la app nativa de Google Maps:
+     */
+    private void openMapWithGeoIntent(double lat, double lon) {
+        String uri = String.format(
+                Locale.ENGLISH,
+                "geo:%f,%f?q=%f,%f",
+                lat, lon, lat, lon
+        );
+        Intent mapIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(uri));
+        mapIntent.setPackage("com.google.android.apps.maps");
+        if (mapIntent.resolveActivity(getPackageManager()) != null) {
+            startActivity(mapIntent);
+        } else {
+            Toast.makeText(this, "Google Maps no está instalada", Toast.LENGTH_SHORT).show();
+        }
     }
 }
