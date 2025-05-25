@@ -3,8 +3,10 @@ package com.example.appGrabacion.screens;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
@@ -18,6 +20,11 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
+
+import android.text.method.LinkMovementMethod;
+import android.text.style.ClickableSpan;
+import android.text.TextPaint;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
@@ -96,14 +103,34 @@ public class LoginActivity extends AppCompatActivity
         // Alinea el checkbox arriba y aplica el texto con span de color
         String full = getString(R.string.accept_privacy_plain);
         SpannableString ss = new SpannableString(full);
-        int start = full.indexOf("política de privacidad");
-        if (start >= 0) {
-            int purple = ContextCompat.getColor(this, R.color.checkbox_tint);
-            ss.setSpan(new ForegroundColorSpan(purple),
-                    start, start + "política de privacidad".length(),
-                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
+        String target = "política de privacidad";
+        int start = full.indexOf(target);
+        int end   = start + target.length();
+        int purple = ContextCompat.getColor(this, R.color.checkbox_tint);
+
+// 1) color
+        ss.setSpan(new ForegroundColorSpan(purple),
+                start, end,
+                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+// 2) clickable
+        ss.setSpan(new ClickableSpan() {
+            @Override public void onClick(@NonNull View widget) {
+                String fileId = "1ZY5vzdmxYGG6j57DhoFki-o1V7oNDCj7";
+                String url = "https://drive.google.com/uc?export=download&id=" + fileId;
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+            }
+            @Override public void updateDrawState(TextPaint ds) {
+                super.updateDrawState(ds);
+                ds.setColor(purple);
+                ds.setUnderlineText(false);
+            }
+        }, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+// 3) aplica al CheckBox
         cbPrivacy.setText(ss);
+        cbPrivacy.setMovementMethod(LinkMovementMethod.getInstance());
+        cbPrivacy.setHighlightColor(Color.TRANSPARENT);
 
         // Bind bienvenida
         cardWelcome = findViewById(R.id.card_welcome);
@@ -144,6 +171,12 @@ public class LoginActivity extends AppCompatActivity
             String pass  = rspPasswordRegister.getText().toString().trim();
             if (name.isEmpty() || email.isEmpty() || pass.isEmpty()) {
                 Toast.makeText(this, "Rellena todos los campos", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (!cbPrivacy.isChecked()) {
+                Toast.makeText(this,
+                        "Debes aceptar la política de privacidad",
+                        Toast.LENGTH_SHORT).show();
                 return;
             }
             registerPresenter.register(name, email, pass);
