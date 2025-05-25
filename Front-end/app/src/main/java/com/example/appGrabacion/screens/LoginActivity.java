@@ -5,6 +5,9 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -18,6 +21,7 @@ import android.widget.VideoView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.content.ContextCompat;
 
 import com.example.appGrabacion.MainActivity;
 import com.example.appGrabacion.R;
@@ -51,6 +55,8 @@ public class LoginActivity extends AppCompatActivity
 
     private LoginPresenter    loginPresenter;
     private RegisterPresenter registerPresenter;
+    private CheckBox         cbPrivacy;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,6 +91,19 @@ public class LoginActivity extends AppCompatActivity
         rspPasswordRegister = findViewById(R.id.rspPasswordRegister);
         btnLogin         = findViewById(R.id.btnLogin);
         btnRegister      = findViewById(R.id.btnRegister);
+        cbPrivacy           = findViewById(R.id.cbPrivacy);
+
+        // Alinea el checkbox arriba y aplica el texto con span de color
+        String full = getString(R.string.accept_privacy_plain);
+        SpannableString ss = new SpannableString(full);
+        int start = full.indexOf("política de privacidad");
+        if (start >= 0) {
+            int purple = ContextCompat.getColor(this, R.color.checkbox_tint);
+            ss.setSpan(new ForegroundColorSpan(purple),
+                    start, start + "política de privacidad".length(),
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        }
+        cbPrivacy.setText(ss);
 
         // Bind bienvenida
         cardWelcome = findViewById(R.id.card_welcome);
