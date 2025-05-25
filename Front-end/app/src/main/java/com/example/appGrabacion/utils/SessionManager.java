@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.google.firebase.messaging.FirebaseMessaging;
+
 public class SessionManager {
     private static final String PREFS_NAME = "app_prefs";
     private static final String KEY_TOKEN = "key_token";

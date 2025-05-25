@@ -386,6 +386,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         setupFooterButtons();  // refresca la visibilidad/estado de los botones
+        syncContacts();
     }
 
     private void downloadFile(String url, String fileName) {
