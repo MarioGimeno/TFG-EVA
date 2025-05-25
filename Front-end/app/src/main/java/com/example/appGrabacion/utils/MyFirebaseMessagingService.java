@@ -25,6 +25,10 @@ import java.util.Map;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
+import android.content.ContentResolver;
+import android.media.AudioAttributes;
+import android.net.Uri;
+
 
 public class MyFirebaseMessagingService extends FirebaseMessagingService {
     private static final String TAG = "FCMService";
@@ -44,6 +48,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
             int importance = NotificationManager.IMPORTANCE_HIGH;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
+
+            Uri soundUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://"
+                    + getPackageName() + "/raw/alerta");
+            AudioAttributes audioAttrs = new AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build();
+            channel.setSound(soundUri, audioAttrs);
+            channel.enableVibration(true);
+            channel.setVibrationPattern(new long[]{0, 500, 200, 500});
+
             NotificationManager nm = getSystemService(NotificationManager.class);
             if (nm != null) nm.createNotificationChannel(channel);
         }
@@ -80,27 +95,33 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 
     /** Construye y dispara la notificación */
     private void showNotification(double lat, double lon) {
+        // 1) Define el pending intent como tenías
         Intent intent = new Intent(this, MapsActivity.class);
         intent.putExtra("lat", lat);
         intent.putExtra("lon", lon);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-
         PendingIntent pi = PendingIntent.getActivity(
-                this,
-                0,
-                intent,
-                PendingIntent.FLAG_IMMUTABLE
+                this, 0, intent, PendingIntent.FLAG_IMMUTABLE
         );
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_download)
-                .setContentTitle("Ubicación en vivo")
-                .setContentText("Pulsa para ver en el mapa")
-                .setContentIntent(pi)
-                .setAutoCancel(true)
-                .setPriority(NotificationCompat.PRIORITY_HIGH);
+        // 2) Vuelve a crear aquí el soundUri
+        Uri soundUri = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE + "://"
+                + getPackageName() + "/raw/alerta");
 
-        // Android 13+ requiere permiso POST_NOTIFICATIONS
+        // 3) Construye el builder y encadena TODO antes de poner el ;
+        NotificationCompat.Builder builder =
+                new NotificationCompat.Builder(this, CHANNEL_ID)
+                        .setSmallIcon(R.drawable.ic_download)
+                        .setContentTitle("Ubicación en vivo")
+                        .setContentText("Pulsa para ver en el mapa")
+                        .setContentIntent(pi)
+                        .setAutoCancel(true)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        // APLICA EL SONIDO Y VIBRACIÓN AQUÍ, como parte del mismo builder
+                        .setSound(soundUri)
+                        .setVibrate(new long[]{0, 500, 200, 500});  // <-- aquí termina la cadena
+
+        // 4) Comprueba permisos y notifica
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -108,9 +129,9 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
                 return;
             }
         }
-
         NotificationManagerCompat.from(this).notify(1001, builder.build());
     }
+
 
     /** Envía el token al backend */
     public static void registerTokenWithServer(Context ctx, String fcmToken) {
