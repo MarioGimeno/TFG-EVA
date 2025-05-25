@@ -10,6 +10,11 @@
         <item>Gratuitos</item>
         <item>Prestaciones</item>
     </string-array>
+    <!-- res/values/strings.xml -->
+    <string name="accept_privacy_plain">
+  Acepto el tratamiento de mis datos personales según la política de privacidad.
+</string>
+
     <!-- Descripción accesible para el ImageView de la entidad -->
     <string name="imagen_entidad">Imagen representativa de la entidad</string>
     <string name="imagen_recurso">Imagen representativa del recurso</string>

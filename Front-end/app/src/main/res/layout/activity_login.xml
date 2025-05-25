@@ -210,6 +210,20 @@
                         android:backgroundTint="#A11991"
                         android:textColor="#20032e"/>
 
+                    <!-- activity_register.xml -->
+                    <CheckBox
+                        android:id="@+id/cbPrivacy"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:alpha="0.7"
+                        android:buttonTint="#A11991"
+                        android:textColor="#20032e"
+                        android:gravity="top"
+                        android:text="@string/accept_privacy_plain" />
+
+
+
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnRegister"
                         android:layout_width="match_parent"
