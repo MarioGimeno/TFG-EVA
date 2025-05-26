@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
         });
         MaterialButton btnDownload = findViewById(R.id.btnDownloadManual);
         btnDownload.setOnClickListener(v -> {
-            String fileId = "1Xq8GgtBpe_kmpsBMbq-Cx_s7wquZHSwD";
+            String fileId = "1d_Aei03WPpoEtRKpQW0P17v_rUTheryk";
             String url = "https://drive.google.com/uc?export=download&id=" + fileId;
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
         });
