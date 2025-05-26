@@ -81,6 +81,12 @@ public class LoginActivity extends AppCompatActivity
             mp.setLooping(true);
             mp.setVolume(0f, 0f);
         });
+
+        videoBg.setOnCompletionListener(mp -> {
+            mp.seekTo(0);
+            videoBg.start();
+        });
+
         videoBg.start();
 
         // Botón Atrás
