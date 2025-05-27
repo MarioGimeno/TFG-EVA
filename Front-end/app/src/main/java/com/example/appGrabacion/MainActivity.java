@@ -135,14 +135,14 @@ public class MainActivity extends AppCompatActivity {
         ImageView ivManual = findViewById(R.id.ivSectionImage);
         ivManual.setOnClickListener(v -> {
             String fileIdResumen = "1hpYwHZcODV3tUBeArWO5Kn3FuRzRG-GX";
-            String urlResumen = "https://drive.google.com/uc?export=download&id=" + fileIdResumen;
+            String urlResumen = "https://drive.google.com/uc?export=view&id=" + fileIdResumen;
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(urlResumen)));
 
         });
         MaterialButton btnDownload = findViewById(R.id.btnDownloadManual);
         btnDownload.setOnClickListener(v -> {
             String fileId = "1d_Aei03WPpoEtRKpQW0P17v_rUTheryk";
-            String url = "https://drive.google.com/uc?export=download&id=" + fileId;
+            String url = "https://drive.google.com/uc?export=view&id=" + fileId;
             startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
         });
 
