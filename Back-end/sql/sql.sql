@@ -57,6 +57,22 @@ INSERT INTO entidad (imagen, email, telefono, pagina_web, direccion, horario) VA
 Horario de verano (16 de junio a 15 de septiembre): Lunes a viernes: 9:00 a 15:00 h, sábados: 9:00 a 14:00 h.');
 INSERT INTO entidad (imagen, email, telefono, pagina_web, direccion, horario) VALUES ('https://evaespacioseguro.s3.us-east-1.amazonaws.com/112.png', '', '112 / 976 71 40 00', 'www.112aragon.aragon.es/', 'P.º de María Agustín, 36, Edificio Pignatelli, puerta 24,  50004 Zaragoza', '24h');
 INSERT INTO entidad (imagen, email, telefono, pagina_web, direccion, horario) VALUES ('https://evaespacioseguro.s3.us-east-1.amazonaws.com/IAM.png', 'iam@aragon.es', '976 716 720', 'www.aragon.es/-/iam', 'Paseo María Agustín, 16, 5ª planta,  50004 Zaragoza', 'Lunes a Viernes de 08:00-20:30');
+INSERT INTO entidad (
+  imagen,
+  email,
+  telefono,
+  pagina_web,
+  direccion,
+  horario
+) VALUES (
+  'https://evaespacioseguro.s3.us-east-1.amazonaws.com/orientacionLaboralINAEM.png',
+  '',
+  '901 501 000',
+  'https://inaem.aragon.es/',
+  'Según oficina.',
+  'Lunes a viernes de 9 a 14 horas, jueves de 16:30 a 18:30 horas. 
+    Del 1 de julio al 15 de septiembre de 09:00 a 14:00 horas.'
+);
 
 -- Tabla de recursos
 CREATE TABLE recurso (
@@ -318,6 +334,45 @@ Acompañamiento a las mujeres en momentos críticos dentro de su proceso de sali
 INSERT INTO recurso (id_entidad, id_categoria, imagen, email, telefono, direccion, horario, servicio, descripcion, requisitos, gratuito, web, accesible) VALUES (14, 3, 'https://evaespacioseguro.s3.us-east-1.amazonaws.com/AyudaEcoComplementaria.png', 'iam@aragon.es', '976 716 720', 'Paseo María Agustín, 16, 5ª planta,  50004 Zaragoza', 'Lunes a Viernes de 08:00-20:30', 'Ayudas económicas complementarias para víctimas de violencia', 'Pueden demandarlas las hijas y los hijos menores de edad de mujeres víctimas mortales por violencia de género. También pueden solicitarlas mujeres víctimas de otras formas de violencia y mujeres víctimas de violencia de género mayores de 65 años. La presentación de la solicitud se puede realizar vía telemática o presencial.', 'Mujeres mayores de 65 años víctimas de violencia de género, acreditada. 
 Estar empadronadas en un municipio aragonés y carezcan de rentas que, en cómputo mensual, superen el 75 por ciento del salario mínimo interprofesional vigente, excluida la parte proporcional de dos pagas extraordinarias.', TRUE, 'https://www.aragon.es/tramitador/-/tramite/ayudas-economicas-complementarias-victimas-violencia', FALSE);
 INSERT INTO recurso (id_entidad, id_categoria, imagen, email, telefono, direccion, horario, servicio, descripcion, requisitos, gratuito, web, accesible) VALUES (14, 3, 'https://evaespacioseguro.s3.us-east-1.amazonaws.com/AyudaEconomica.png', 'iam@aragon.es', '976 716 720', 'Paseo María Agustín, 16, 5ª planta,  50004 Zaragoza', 'Lunes a Viernes de 08:00-20:30', 'Ayuda económica a mujeres víctimas de violencia de género', 'Subvención para mujeres que han sufrido violencia de género y tienen dificultades económicas y laborales.', 'Residir en Aragón, acreditar ser víctima de violencia de género sin rentas superiores al 75% del SMI, sin haber recibido esta ayuda anteriormente y con especiales dificultades para obtener un empleo.', TRUE, 'https://www.aragon.es/tramitador/-/tramite/ayudas-economicas-mujeres-victimas-violencia-genero', FALSE);
+INSERT INTO recurso (
+  id_entidad,
+  id_categoria,
+  imagen,
+  email,
+  telefono,
+  direccion,
+  horario,
+  servicio,
+  descripcion,
+  requisitos,
+  gratuito,
+  web,
+  accesible
+) VALUES (
+  15, 
+  2, 
+  'https://evaespacioseguro.s3.us-east-1.amazonaws.com/orientacionLabEsp.png', 
+  '', 
+  '901 501 000', 
+  'Según oficina', 
+  'Lunes a viernes de 9 a 14 horas, jueves de 16:30 a 18:30 horas. 
+    Del 1 de julio al 15 de septiembre de 09:00 a 14:00 horas.', 
+  'Orientación laboral', 
+  'Servicio individualizado de orientación e intermediación laboral destinado a mujeres víctimas de violencia de género inscritas como demandantes de empleo. A través de este servicio ofrecemos asesoramiento y acompañamiento con el fin de facilitar los medios más adecuados para mejorar la empleabilidad y la búsqueda autónoma de empleo. El desarrollo de este servicio depende de las necesidades personales y profesionales que se detecten, pudiéndose trabajar los siguientes aspectos:
+  - Acompañamiento y seguimiento a lo largo de todo el proceso
+  - Herramientas y técnicas para la búsqueda de empleo: definición del currículum vitae, procesos de selección, entrevistas, dinámicas grupales
+  - Información del mercado de trabajo, cartera de servicios del INAEM y políticas activas de empleo
+  - Información oferta formativa y/o movilidad y derivación al sistema educativo
+  - Asesoramiento para el autoempleo
+Durante todo el proceso se ofrece atención especializada y confidencial por parte de personal cualificado con formación específica en igualdad y violencia de género. Disponible en todas las oficinas de empleo.',
+  'Ser mujer víctima de violencia de género.', 
+  TRUE, 
+  'https://inaem.aragon.es/mujer-victima-de-violencia-de-genero', 
+  TRUE
+);
+
+
+
 CREATE TABLE subida (
     id_subida SERIAL PRIMARY KEY,
     fecha_subida TIMESTAMPTZ DEFAULT NOW(),
