@@ -1,0 +1,39 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: SSH & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            logger -t GH-Deploy "=== Iniciando despliegue ==="
+            cd /home/${{ secrets.EC2_USER }}/TFG-Somos-M-s/Back-end
+            logger -t GH-Deploy "Deteniendo servicio PM2"
+            pm2 stop tfg-backend || true
+
+            logger -t GH-Deploy "Actualizando repositorio"
+            git pull origin main
+
+            logger -t GH-Deploy "Instalando dependencias"
+            npm install --production
+
+            logger -t GH-Deploy "Reiniciando servicio PM2"
+            pm2 restart tfg-backend
+
+            logger -t GH-Deploy "=== Despliegue completado ==="
