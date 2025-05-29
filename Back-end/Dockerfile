@@ -1,19 +1,21 @@
-FROM node:16
+# 1) Imagen base ligera de Node.js
+FROM node:18-alpine AS build
 
-# Crea el directorio de trabajo
+# 2) Crea carpeta de la app y ponla como working dir
 WORKDIR /usr/src/app
 
-# Copia los archivos package.json y package-lock.json
+# 3) Copia solo el package.json e instala deps
 COPY package*.json ./
+RUN npm ci --omit=dev
 
-# Instala dependencias de npm
-RUN npm install
+# 4) Instala PM2 global (usa pm2-runtime para producción)
+RUN npm install pm2@latest -g
 
-# Copia el resto de los archivos
+# 5) Copia el resto del código
 COPY . .
 
-# Expone el puerto
+# 6) Expón el puerto que usa tu app (ajusta según tu server.js)
 EXPOSE 3000
 
-# Comando para iniciar el servidor
-CMD ["node", "server.js"]
+# 7) Usa pm2-runtime para lanzar tu app y que respete señales SIGTERM/SIGINT
+CMD ["pm2-runtime", "server.js", "--name", "tfg-backend"]

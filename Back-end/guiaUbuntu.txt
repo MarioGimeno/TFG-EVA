@@ -74,3 +74,11 @@ tail -f server.log
 
 Ver estado
 pm2 status
+
+Para ver logs
+sudo tail -f /var/log/syslog | grep GH-Deploy
+
+instalr docker
+sudo apt update
+sudo apt install -y docker.io
+sudo usermod -aG docker ubuntu
