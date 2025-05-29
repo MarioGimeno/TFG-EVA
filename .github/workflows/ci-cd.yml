@@ -22,18 +22,23 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            logger -t GH-Deploy "=== Iniciando despliegue ==="
+            logger -t GH-Deploy "=== Iniciando despliegue Docker ==="
             cd /home/${{ secrets.EC2_USER }}/TFG-Somos-M-s/Back-end
-            logger -t GH-Deploy "Deteniendo servicio PM2"
-            pm2 stop tfg-backend || true
 
-            logger -t GH-Deploy "Actualizando repositorio"
-            git pull origin main
+            # Construye la imagen
+            logger -t GH-Deploy "Construyendo imagen Docker"
+            docker build -t tfg-backend:latest .
 
-            logger -t GH-Deploy "Instalando dependencias"
-            npm install --production
+            # Para y elimina el contenedor viejo
+            logger -t GH-Deploy "Deteniendo contenedor existente"
+            docker rm -f tfg-backend || true
 
-            logger -t GH-Deploy "Reiniciando servicio PM2"
-            pm2 restart tfg-backend
+            # Inicia el contenedor nuevo
+            logger -t GH-Deploy "Iniciando contenedor Docker"
+            docker run -d \
+              --name tfg-backend \
+              -p 80:3000 \
+              --restart unless-stopped \
+              tfg-backend:latest
 
-            logger -t GH-Deploy "=== Despliegue completado ==="
+            logger -t GH-Deploy "=== Despliegue Docker completado ==="
