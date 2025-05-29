@@ -454,7 +454,7 @@ EXECUTE FUNCTION evitar_contacts_duplicados();
 CREATE OR REPLACE FUNCTION borrar_tokens_users()
 RETURNS trigger AS $$
 BEGIN
-  DELETE FROM fcm_token WHERE users_id = OLD.id;
+  DELETE FROM fcm_tokens WHERE users_id = OLD.id;
   RETURN OLD;
 END;
 $$ LANGUAGE plpgsql;
@@ -480,23 +480,6 @@ BEFORE INSERT ON subida
 FOR EACH ROW
 EXECUTE FUNCTION poner_fecha_subida();
 
--- 10. Notificar contacts al iniciar subida
-CREATE OR REPLACE FUNCTION notificar_contacts_subida()
-RETURNS trigger AS $$
-BEGIN
-  UPDATE fcm_token
-  SET updated_at = NOW()
-  WHERE users_id IN (
-    SELECT id FROM contacts WHERE users_id = NEW.id_users
-  );
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER notificar_contacts_subida
-AFTER INSERT ON subida
-FOR EACH ROW
-EXECUTE FUNCTION notificar_contacts_subida();
 
 -- 11. Evitar que un users se agregue a sí mismo como contacts
 CREATE OR REPLACE FUNCTION evitar_autocontacts()
