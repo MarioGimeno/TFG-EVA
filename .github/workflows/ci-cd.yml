@@ -22,21 +22,18 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            #––– Loguear la conexión en syslog –––
-            logger -t GH-Deploy "Connected via GitHub Actions on $(date)"
-
-            #––– Directorio de la app –––
+            logger -t GH-Deploy "=== Iniciando despliegue ==="
             cd /home/${{ secrets.EC2_USER }}/TFG-Somos-M-s/Back-end
-
-            #––– Detener servicio existente (si lo hubiera) –––
+            logger -t GH-Deploy "Deteniendo servicio PM2"
             pm2 stop tfg-backend || true
 
-            #––– Actualizar código –––
+            logger -t GH-Deploy "Actualizando repositorio"
             git pull origin main
 
-            #––– Instalar dependencias –––
+            logger -t GH-Deploy "Instalando dependencias"
             npm install --production
 
-            #––– (Re)arrancar servicio PM2 –––
-            pm2 start server.js --name tfg-backend
+            logger -t GH-Deploy "Reiniciando servicio PM2"
             pm2 restart tfg-backend
+
+            logger -t GH-Deploy "=== Despliegue completado ==="
