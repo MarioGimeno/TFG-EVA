@@ -78,6 +78,11 @@ public class MainActivity extends AppCompatActivity {
     private final Handler sliderHandler = new Handler(Looper.getMainLooper());
     private EntityModel entityModel;
     private ResourceModel resourceModel;
+    private  MaterialButton btnDownload;
+    private  ImageView ivManual;
+    private TextView tvManualNotice;
+    private  SessionManager session;
+    private View sectionEva;
     private static final String[] REQUIRED_PERMISSIONS = {
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO,
@@ -88,9 +93,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        session = new SessionManager(getApplicationContext());
         setTheme(R.style.Theme_Calculadora_Front);
         setContentView(R.layout.activity_main);
+        sectionEva   = findViewById(R.id.sectionEva);
 
+        tvManualNotice = findViewById(R.id.tvManualNotice);
+        ivManual = findViewById(R.id.ivSectionImage);
+        btnDownload = findViewById(R.id.btnSectionDownloadEva);
         setupFooterButtons();
 
         // Referencias a vistas
@@ -130,21 +140,8 @@ public class MainActivity extends AppCompatActivity {
         requestAllPermissions();
         syncContacts();
         registerFcmToken();
+        updateManualSectionVisibility();
 
-
-        ImageView ivManual = findViewById(R.id.ivSectionImage);
-        ivManual.setOnClickListener(v -> {
-            String fileIdResumen = "1hpYwHZcODV3tUBeArWO5Kn3FuRzRG-GX";
-            String urlResumen = "https://drive.google.com/uc?export=download&id=" + fileIdResumen;
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(urlResumen)));
-
-        });
-        MaterialButton btnDownload = findViewById(R.id.btnDownloadManual);
-        btnDownload.setOnClickListener(v -> {
-            String fileId = "1d_Aei03WPpoEtRKpQW0P17v_rUTheryk";
-            String url = "https://drive.google.com/uc?export=download&id=" + fileId;
-            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
-        });
 
         // Inicializar servicios y cargar slider
 
@@ -261,7 +258,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void setupFooterButtons() {
         View footer = findViewById(R.id.footerNav);
-        SessionManager session = new SessionManager(getApplicationContext());
         boolean loggedIn = session.isLoggedIn();
         Log.e("logueado?", "Token leído: " + session.fetchToken() + " -> " + loggedIn);
 
@@ -387,6 +383,60 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         setupFooterButtons();  // refresca la visibilidad/estado de los botones
         syncContacts();
+        updateManualSectionVisibility();
+    }
+    /**
+     * Comprueba si el usuario está logueado y ajusta
+     * la visibilidad y listeners de la sección de manual.
+     */
+    private void updateManualSectionVisibility() {
+        boolean loggedIn = session.isLoggedIn();
+        View desc       = findViewById(R.id.tvSectionDesc);
+        View btnEva     = findViewById(R.id.btnSectionDownloadEva);
+        View cardImage  = findViewById(R.id.cardSectionImage);
+        TextView notice = findViewById(R.id.tvManualNotice);
+        if (loggedIn) {
+            adjustSliderHeightPercent(0.50f);
+
+            // Mostrar todo
+            // Mostrar la descripción, el botón y la imagen
+            desc.setVisibility(View.VISIBLE);
+            btnEva.setVisibility(View.VISIBLE);
+            cardImage.setVisibility(View.VISIBLE);
+            // Ocultar el aviso
+            notice.setVisibility(View.GONE);
+            ivManual.setOnClickListener(v -> {
+                String fileIdResumen = "1hpYwHZcODV3tUBeArWO5Kn3FuRzRG-GX";
+                String urlResumen = "https://drive.google.com/uc?export=download&id=" + fileIdResumen;
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(urlResumen)));
+            });
+            btnDownload.setOnClickListener(v -> {
+                String fileId = "1d_Aei03WPpoEtRKpQW0P17v_rUTheryk";
+                String url = "https://drive.google.com/uc?export=download&id=" + fileId;
+                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+            });
+
+        } else {
+            adjustSliderHeightPercent(0.35f);
+
+            // Ocultar la sección EVA completa
+            // Ocultar la descripción, el botón y la imagen
+            desc.setVisibility(View.GONE);
+            btnEva.setVisibility(View.GONE);
+            cardImage.setVisibility(View.GONE);
+            // Mostrar el aviso centrado dentro de sectionEva
+            notice.setVisibility(View.VISIBLE);
+            tvManualNotice.setText(Html.fromHtml(
+                    getString(R.string.manual_notice),
+                    Html.FROM_HTML_MODE_LEGACY
+            ));
+        }
+    }
+    private void adjustSliderHeightPercent(float percent) {
+        ConstraintLayout.LayoutParams lp =
+                (ConstraintLayout.LayoutParams) vpSlider.getLayoutParams();
+        lp.matchConstraintPercentHeight = percent;
+        vpSlider.setLayoutParams(lp);
     }
 
     private void downloadFile(String url, String fileName) {
