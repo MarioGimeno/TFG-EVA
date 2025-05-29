@@ -1,0 +1,42 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: SSH & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            #––– Loguear la conexión en syslog –––
+            logger -t GH-Deploy "Connected via GitHub Actions on $(date)"
+
+            #––– Directorio de la app –––
+            cd /home/${{ secrets.EC2_USER }}/TFG-Somos-M-s/Back-end
+
+            #––– Detener servicio existente (si lo hubiera) –––
+            pm2 stop tfg-backend || true
+
+            #––– Actualizar código –––
+            git pull origin main
+
+            #––– Instalar dependencias –––
+            npm install --production
+
+            #––– (Re)arrancar servicio PM2 –––
+            pm2 start server.js --name tfg-backend
+            pm2 restart tfg-backend
