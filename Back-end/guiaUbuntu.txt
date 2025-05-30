@@ -82,3 +82,10 @@ instalr docker
 sudo apt update
 sudo apt install -y docker.io
 sudo usermod -aG docker ubuntu
+
+ver logs docker
+# Ver el contenedor en ejecución
+sudo docker ps | grep tfg-backend 
+
+# Ver sus últimos logs
+sudo docker logs tfg-backend 
