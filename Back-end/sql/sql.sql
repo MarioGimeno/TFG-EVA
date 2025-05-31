@@ -381,7 +381,7 @@ CREATE TABLE subida (
 );
 
 
-Triggers
+--Triggers
 
 -- 1. Validar categoría al insertar en recurso
 CREATE OR REPLACE FUNCTION validar_categoria_recurso()
@@ -419,8 +419,8 @@ EXECUTE FUNCTION validar_entidad_recurso();
 CREATE OR REPLACE FUNCTION validar_users_subida()
 RETURNS trigger AS $$
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM users WHERE id = NEW.id_users) THEN
-    RAISE EXCEPTION 'El users asociado a la subida no existe.';
+  IF NOT EXISTS (SELECT 1 FROM users WHERE id = NEW.id_usuario) THEN
+    RAISE EXCEPTION 'El usuario asociado a la subida no existe.';
   END IF;
   RETURN NEW;
 END;
@@ -437,9 +437,9 @@ RETURNS trigger AS $$
 BEGIN
   IF EXISTS (
     SELECT 1 FROM contacts 
-    WHERE users_id = NEW.users_id AND email = NEW.email
+    WHERE user_id = NEW.user_id AND email = NEW.email
   ) THEN
-    RAISE EXCEPTION 'Este contacts ya está registrado.';
+    RAISE EXCEPTION 'Ya has agregado a este contacto.';
   END IF;
   RETURN NEW;
 END;
@@ -460,7 +460,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER borrar_tokens_users
-AFTER DELETE ON users
+BEFORE DELETE ON users
 FOR EACH ROW
 EXECUTE FUNCTION borrar_tokens_users();
 
@@ -487,9 +487,9 @@ RETURNS trigger AS $$
 DECLARE
   user_email TEXT;
 BEGIN
-  SELECT email INTO user_email FROM users WHERE id = NEW.users_id;
+  SELECT email INTO user_email FROM users WHERE id = NEW.user_id;
   IF NEW.email = user_email THEN
-    RAISE EXCEPTION 'No puedes agregarte a ti misma como contacts.';
+    RAISE EXCEPTION 'No puedes agregarte a ti mismo como contacto.';
   END IF;
   RETURN NEW;
 END;
@@ -515,3 +515,25 @@ CREATE TRIGGER evitar_eliminacion_entidad_con_recursos
 BEFORE DELETE ON entidad
 FOR EACH ROW
 EXECUTE FUNCTION evitar_eliminacion_entidad_con_recursos();
+
+--Eliminar Triggers
+-- Borrar el trigger
+DROP TRIGGER IF EXISTS evitar_contacts_duplicados ON contacts;
+
+-- Borrar la función
+DROP FUNCTION IF EXISTS evitar_contacts_duplicados();
+-- Borrar el trigger
+DROP TRIGGER IF EXISTS borrar_tokens_users ON users;
+
+-- Borrar la función
+DROP FUNCTION IF EXISTS borrar_tokens_users();
+-- Borrar el trigger
+DROP TRIGGER IF EXISTS evitar_autocontacts ON contacts;
+
+-- Borrar la función
+DROP FUNCTION IF EXISTS evitar_autocontacts();
+-- Borrar el trigger
+DROP TRIGGER IF EXISTS validar_users_subida ON subida;
+
+-- Borrar la función
+DROP FUNCTION IF EXISTS validar_users_subida();

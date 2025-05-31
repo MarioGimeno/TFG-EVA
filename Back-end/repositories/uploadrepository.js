@@ -2,6 +2,7 @@
 const fs   = require('fs');
 const path = require('path');
 const { TMPDIR } = require('../config/Pool');
+const { pool } = require('../config/Pool');
 
 class UploadRepository {
   getChunkDir(userId, fileId) {
@@ -28,6 +29,13 @@ class UploadRepository {
       .filter(name => name.startsWith('chunk_'))
       .length;
   }
+  async  insertSubida(userId) {
+  const query = `
+    INSERT INTO subida (id_usuario)
+    VALUES ($1)
+  `;
+  await pool.query(query, [userId]);
+}
 }
 
 module.exports = new UploadRepository();

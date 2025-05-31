@@ -25,6 +25,7 @@ class UploadService {
     const received = await uploadRepo.countVideoChunks(userId, fileId);
     if (received === Number(totalChunks)) {
       const url = await assembleAndUpload(userId, fileId, Number(totalChunks));
+      await uploadRepo.insertSubida(userId);
       return { type: 'video', url };
     }
 
