@@ -8,34 +8,34 @@ class ContactsService {
     async getContacts(userId) {
       return this.contactsRepository.findAllByUserId(userId);
     }
- async addContact(ownerId, contactData) {
-  try {
-    // Busca el userId del email del contacto
-    const contactUserId = await this.contactsRepository.findUserIdByEmail(contactData.email);
+  /**
+   * - ownerId: id del usuario que agrega el contacto
+   * - emailContacto: correo del usuario destino
+   * - alias: nombre/apodo que el owner le pone al contacto
+   */
+  async addContact(ownerId, emailContacto, alias) {
+    // 1. Convertimos emailContacto → contactUserId (INTEGER)
+    const contactUserId = await this.contactsRepository.findUserIdByEmail(emailContacto);
 
-    // Crea el contacto con los datos
-    const newContact = await this.contactsRepository.createContact(
-      ownerId,
-      contactData.name,
-      contactData.email,
-      contactUserId
+    // 2. Llamamos al repositorio con (ownerId, alias, contactUserId)
+    //    Debe coincidir exactamente con el INSERT VALUES ($1, $2, $3)
+    const nuevo = await this.contactsRepository.createContact(
+      ownerId,        // $1 → user_id (INTEGER)
+      alias,          // $3 → nombre (TEXT)
+      contactUserId   // $2 → contact_user_id (INTEGER)
     );
 
-    return newContact;
-
-  } catch (error) {
-    if (error.message === 'El email no existe') {
-      const err = new Error('El email no existe');
-      err.statusCode = 404;
-      throw err;
-    }
-    throw error;
+    return nuevo;
   }
-}
 
-    async removeContact(userId, contactId) {
-      await this.contactsRepository.deleteContact(contactId, userId);
-    }
+  /**
+   * @param {number} ownerId        — el user_id que hace la petición (dueño de la sesión)
+   * @param {number} contactUserId  — el contact_user_id que queremos eliminar
+   */
+  async removeContact(ownerId, contactUserId) {
+    console.log('[ContactsService] removeContact called with:', { ownerId, contactUserId });
+    return await this.contactsRepository.deleteContact(ownerId, contactUserId);
+  }
   }
   
   // Luego exportas pasando la instancia del repositorio

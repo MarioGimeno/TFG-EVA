@@ -1,23 +1,59 @@
 -- migrations/001_create_users_table.sql
 CREATE TABLE IF NOT EXISTS users (
-  id SERIAL PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
+  id SERIAL,
+  email TEXT NOT NULL,
   password TEXT NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+
+  CONSTRAINT PK_USERS PRIMARY KEY (id),
+  CONSTRAINT UQ_USERS_EMAIL UNIQUE (email)
 );
--- Crea la tabla contacts en PostgreSQL
+
+-- migrations/002_create_contacts_table.sql
 CREATE TABLE IF NOT EXISTS contacts (
-  id SERIAL PRIMARY KEY,
-  user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  id SERIAL,
+  user_id INTEGER NOT NULL,
   name TEXT NOT NULL,
-  phone TEXT NOT NULL
+  phone TEXT NOT NULL,
+
+  CONSTRAINT PK_CONTACTS PRIMARY KEY (id),
+  CONSTRAINT FK_CONTACTS_USER_ID FOREIGN KEY (user_id) REFERENCES users(id)
 );
--- Tabla de categorías
-CREATE TABLE categoria (
-    id_categoria SERIAL PRIMARY KEY,
-    img_categoria TEXT,
-    nombre TEXT NOT NULL
+
+CREATE TABLE CONTACTS (
+  user_id   INTEGER NOT NULL,
+  contact_user_id  INTEGER NOT NULL,
+  nombre        TEXT,  -- opcional: nombre/apodo que asigne el dueño
+
+  CONSTRAINT pk_usuario_contacto
+    PRIMARY KEY (user_id, contact_user_id),
+
+  CONSTRAINT fk_usuario_contactousuario
+    FOREIGN KEY (user_id)
+    REFERENCES USERS (Id)
+    ON DELETE CASCADE,
+
+  CONSTRAINT fk_usuario_contactocontacto
+    FOREIGN KEY (user_id)
+    REFERENCES USERS (Id)
+    ON DELETE CASCADE,
+
+  CONSTRAINT chk_no_self_contact
+    CHECK (user_id <> contact_user_id)
 );
+
+
+
+-- migrations/003_create_categoria_table.sql
+CREATE TABLE IF NOT EXISTS categoria (
+  id_categoria SERIAL,
+  img_categoria TEXT,
+  nombre TEXT,
+
+  CONSTRAINT PK_CATEGORIA PRIMARY KEY (id_categoria),
+  CONSTRAINT NN_CATEGORIA_NOMBRE CHECK (nombre IS NOT NULL)
+);
+
 
 INSERT INTO categoria (img_categoria, nombre) VALUES ('https://evaespacioseguro.s3.us-east-1.amazonaws.com/juridicos.png','Juridicos'); 
 INSERT INTO categoria (img_categoria, nombre) VALUES ('https://evaespacioseguro.s3.us-east-1.amazonaws.com/laboral.png','Laboral y formación'); 
@@ -30,15 +66,23 @@ INSERT INTO categoria (img_categoria, nombre) VALUES ('https://evaespacioseguro.
 -- + Gratuitos x +Problemas auditivos x +Todos x +Entidades
 
 -- Tabla de entidades
-CREATE TABLE entidad (
-    id_entidad SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS entidad (
+    id_entidad SERIAL,
     imagen TEXT,
     email TEXT,
     telefono TEXT,
     pagina_web TEXT,
     direccion TEXT,
-    horario TEXT
+    horario TEXT,
+
+    CONSTRAINT PK_ENTIDAD PRIMARY KEY (id_entidad),
+    CONSTRAINT UQ_ENTIDAD_EMAIL UNIQUE (email),
+    CONSTRAINT UQ_ENTIDAD_TELEFONO UNIQUE (telefono),
+    CONSTRAINT NN_ENTIDAD_EMAIL CHECK (email IS NOT NULL),
+    CONSTRAINT NN_ENTIDAD_TELEFONO CHECK (telefono IS NOT NULL),
+    CONSTRAINT NN_ENTIDAD_DIRECCION CHECK (direccion IS NOT NULL)
 );
+
 
 INSERT INTO entidad (imagen, email, telefono, pagina_web, direccion, horario) VALUES ('https://evaespacioseguro.s3.us-east-1.amazonaws.com/CasaDeLaMujer.png', 'casamujer@zaragoza.es', '976 726 040', 'www.zaragoza.es/sede/portal/servicios-sociales/mujer/conocenos/', 'Calle Don Juan de Aragón, 2,  50001 Zaragoza', 'Lunes a viernes de 9 a 14 h, lunes y miércoles de 16:30 a 19h.
 En verano (del 1 de julio al 31 de agosto) de Lunes a Viernes de 9 a 14 h.');
@@ -75,10 +119,10 @@ INSERT INTO entidad (
 );
 
 -- Tabla de recursos
-CREATE TABLE recurso (
-    id SERIAL PRIMARY KEY,
-    id_entidad INTEGER NOT NULL,
-    id_categoria INTEGER NOT NULL,
+CREATE TABLE IF NOT EXISTS recurso (
+    id SERIAL,
+    id_entidad INTEGER,
+    id_categoria INTEGER,
     imagen TEXT,
     email TEXT,
     telefono TEXT,
@@ -90,8 +134,13 @@ CREATE TABLE recurso (
     gratuito BOOLEAN,
     web TEXT,
     accesible BOOLEAN,
-    CONSTRAINT fk_entidad FOREIGN KEY (id_entidad) REFERENCES entidad(id_entidad) ON DELETE CASCADE,
-    CONSTRAINT fk_categoria FOREIGN KEY (id_categoria) REFERENCES categoria(id_categoria) ON DELETE CASCADE
+
+    CONSTRAINT PK_RECURSO PRIMARY KEY (id),
+    CONSTRAINT FK_RECURSO_ENTIDAD FOREIGN KEY (id_entidad) REFERENCES entidad(id_entidad) ON DELETE CASCADE,
+    CONSTRAINT FK_RECURSO_CATEGORIA FOREIGN KEY (id_categoria) REFERENCES categoria(id_categoria) ON DELETE CASCADE,
+    CONSTRAINT NN_RECURSO_ID_ENTIDAD CHECK (id_entidad IS NOT NULL),
+    CONSTRAINT NN_RECURSO_ID_CATEGORIA CHECK (id_categoria IS NOT NULL),
+    CONSTRAINT NN_RECURSO_SERVICIO CHECK (servicio IS NOT NULL)
 );
 
 INSERT INTO recurso (id_entidad, id_categoria, imagen, email, telefono, direccion, horario, servicio, descripcion, requisitos, gratuito, web, accesible) VALUES (1, 5, 'https://evaespacioseguro.s3.us-east-1.amazonaws.com/InformacionAcogida.png', 'casamujer@zaragoza.es', '976 726 040', 'Calle Don Juan de Aragón, 2,  50001 Zaragoza', 'De Lunes a Viernes de 9 a 14 h y Lunes y Miércoles de 16:30 a 19h.
@@ -373,11 +422,14 @@ Durante todo el proceso se ofrece atención especializada y confidencial por par
 
 
 
-CREATE TABLE subida (
-    id_subida SERIAL PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS subida (
+    id_subida SERIAL,
     fecha_subida TIMESTAMPTZ DEFAULT NOW(),
-    id_usuario INTEGER NOT NULL,
-    CONSTRAINT fk_usuario_subida FOREIGN KEY (id_usuario) REFERENCES users(id) ON DELETE CASCADE
+    id_usuario INTEGER,
+
+    CONSTRAINT PK_SUBIDA PRIMARY KEY (id_subida),
+    CONSTRAINT FK_SUBIDA_USUARIO FOREIGN KEY (id_usuario) REFERENCES users(id) ON DELETE CASCADE,
+    CONSTRAINT NN_SUBIDA_ID_USUARIO CHECK (id_usuario IS NOT NULL)
 );
 
 

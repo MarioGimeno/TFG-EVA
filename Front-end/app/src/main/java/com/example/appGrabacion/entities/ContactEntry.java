@@ -1,13 +1,11 @@
-// ContactEntry.java
 package com.example.appGrabacion.entities;
 
 import com.google.gson.annotations.SerializedName;
 
 public class ContactEntry {
-    /** ID del contacto (viene siempre lleno) */
-    private int id;
+    /** Este id ya no se usa para pintar, solo necesitamos contactUserId, name y email */
+    //private int id;
 
-    /** Puede ser null, así que envoltorio Integer */
     @SerializedName("contact_user_id")
     private Integer contactUserId;
 
@@ -16,19 +14,10 @@ public class ContactEntry {
 
     public ContactEntry() { }
 
-    public ContactEntry(int id, Integer contactUserId, String name, String email) {
-        this.id = id;
+    public ContactEntry(Integer contactUserId, String name, String email) {
         this.contactUserId = contactUserId;
         this.name = name;
         this.email = email;
-    }
-
-    // getters y setters
-    public int getId() {
-        return id;
-    }
-    public void setId(int id) {
-        this.id = id;
     }
 
     public Integer getContactUserId() {
@@ -50,15 +39,5 @@ public class ContactEntry {
     }
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    @Override
-    public String toString() {
-        return "ContactEntry{" +
-                "id=" + id +
-                ", contactUserId=" + contactUserId +
-                ", name='" + name + '\'' +
-                ", email='" + email + '\'' +
-                '}';
     }
 }

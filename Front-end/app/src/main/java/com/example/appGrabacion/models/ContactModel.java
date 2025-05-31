@@ -8,6 +8,7 @@ import com.example.appGrabacion.utils.RetrofitClient;
 
 import org.json.JSONObject;
 
+import java.util.Collections;
 import java.util.List;
 
 import retrofit2.Call;
@@ -33,8 +34,12 @@ public class ContactModel {
             @Override
             public void onResponse(Call<List<ContactEntry>> call, Response<List<ContactEntry>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    callback.onSuccess(response.body());
-                } else {
+                    List<ContactEntry> contacts = response.body();
+
+                    // Invertimos el orden de la lista
+                    Collections.reverse(contacts);
+
+                    callback.onSuccess(contacts);                } else {
                     callback.onError(new Exception("Error cargando contactos: " + response.code()));
                 }
             }
