@@ -54,7 +54,7 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.VH> {
 
         // Botón de borrar
         h.btnDelete.setOnClickListener(v ->
-                deleteListener.onDeleteClick(c.getId())
+                deleteListener.onDeleteClick(c.getContactUserId())
         );
     }
 

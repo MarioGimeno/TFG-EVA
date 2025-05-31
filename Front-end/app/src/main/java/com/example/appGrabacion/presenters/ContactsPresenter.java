@@ -53,7 +53,7 @@ public class ContactsPresenter implements ContactsContract.Presenter {
         if (view == null) return;
         view.showLoading();
 
-        ContactEntry newEntry = new ContactEntry(0, 0, name, email);
+        ContactEntry newEntry = new ContactEntry( 0, name, email);
         service.addContact(newEntry, new ContactModel.ContactCallback<ContactEntry>() {
             @Override
             public void onSuccess(ContactEntry result) {
