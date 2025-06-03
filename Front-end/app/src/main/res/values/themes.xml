@@ -3,10 +3,15 @@
     <style name="Base.Theme.IntentoAndroid" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="android:fontFamily">@font/poppins</item>
+        <item name="fontFamily">@font/poppins</item>
 
     </style>
 
-    <style name="Theme.IntentoAndroid" parent="Base.Theme.IntentoAndroid" />
+    <style name="Theme.IntentoAndroid" parent="Base.Theme.IntentoAndroid" >
+        <item name="android:fontFamily">@font/poppins</item>
+        <item name="fontFamily">@font/poppins</item>
+    </style>
     <style name="Theme.SplashScreen" parent="Theme.Calculadora_Front">
         <item name="android:windowBackground">@android:color/black</item> <!-- Fondo negro -->
 

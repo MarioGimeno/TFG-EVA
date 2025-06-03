@@ -76,7 +76,7 @@
         <activity
             android:name="com.example.appGrabacion.MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.Calculadora_Front"
+            android:theme="@style/AppTheme"
             android:screenOrientation="portrait">
 
         </activity>
@@ -89,45 +89,61 @@
         <activity
             android:name=".screens.LoginActivity"
             android:screenOrientation="portrait"
+            android:theme="@style/AppTheme"
             android:windowSoftInputMode="stateHidden|adjustNothing">
         </activity>
 
         <activity
             android:name=".screens.RegisterActivity"
             android:screenOrientation="portrait"
+            android:theme="@style/AppTheme"
             android:windowSoftInputMode="stateHidden|adjustNothing">
         </activity>
 
 
         <activity android:name=".screens.FolderActivity"
+            android:theme="@style/AppTheme"
             android:screenOrientation="portrait"/>
         <activity android:name=".screens.VideoPlayerActivity"
+            android:theme="@style/AppTheme"
             android:screenOrientation="portrait"/>
         <activity android:name=".screens.TextViewerActivity"
+            android:theme="@style/AppTheme"
             android:screenOrientation="portrait"/>
         <activity android:name=".screens.ImageViewerActivity"
+            android:theme="@style/AppTheme"
             android:screenOrientation="portrait"/>
         <activity android:name=".screens.PdfViewerActivity"
+            android:theme="@style/AppTheme"
             android:screenOrientation="portrait"/>
         <activity android:name=".screens.ContactsActivity"
+            android:theme="@style/AppTheme"
             android:screenOrientation="portrait"/>
         <activity android:name=".screens.MapsActivity"
+            android:theme="@style/AppTheme"
             android:screenOrientation="portrait"
             android:launchMode="singleTop"
         />
         <activity android:name=".screens.EntidadesActivity"
+            android:theme="@style/AppTheme"
             android:screenOrientation="portrait"/>
         <activity android:name=".screens.RecursosActivity"
+            android:theme="@style/AppTheme"
             android:screenOrientation="portrait"/>
         <activity android:name=".screens.EntidadDetailActivity"
+            android:theme="@style/AppTheme"
             android:screenOrientation="portrait"/>
         <activity android:name=".screens.RecursoDetailActivity"
+            android:theme="@style/AppTheme"
             android:screenOrientation="portrait"/>
         <activity android:name=".screens.CategoriasActivity"
+            android:theme="@style/AppTheme"
             android:screenOrientation="portrait"/>
         <activity android:name=".screens.CategoriaDetailActivity"
+            android:theme="@style/AppTheme"
             android:screenOrientation="portrait"/>
         <activity android:name=".screens.GenericListActivity"
+            android:theme="@style/AppTheme"
             android:screenOrientation="portrait"/>
 
         <service
