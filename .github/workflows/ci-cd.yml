@@ -29,12 +29,16 @@ jobs:
             logger -t GH-Deploy "Construyendo imagen Docker"
             docker build -t tfg-backend:latest .
 
-            # Para y elimina el contenedor viejo
+            # Detiene y elimina el contenedor viejo (si existe)
             logger -t GH-Deploy "Deteniendo contenedor existente"
             docker rm -f tfg-backend || true
 
+            # Mata cualquier proceso que esté ocupando el puerto 3000 en el host
+            logger -t GH-Deploy "Deteniendo proceso en puerto 3000 si existe"
+            sudo lsof -ti tcp:3000 | xargs -r kill -9 || true
+
             # Inicia el contenedor nuevo mapeando al puerto 3000
-            logger -t GH-Deploy "Iniciando contenedor Docker"
+            logger -t GH-Deploy "Iniciando contenedor Docker (3000:3000)"
             docker run -d \
               --name tfg-backend \
               -p 3000:3000 \
