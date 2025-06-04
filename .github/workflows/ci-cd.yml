@@ -25,24 +25,28 @@ jobs:
             logger -t GH-Deploy "=== Iniciando despliegue Docker ==="
             cd /home/${{ secrets.EC2_USER }}/TFG-Somos-M-s/Back-end
 
-            # 1) Asegúrate de estar en la rama main y traer los últimos cambios
+            # 1) Asegúrate de estar en la rama main y trae los últimos cambios
             logger -t GH-Deploy "Actualizando código en EC2"
             git fetch origin main
             git reset --hard origin/main
 
-            # 2) Construye la imagen con el código recién actualizado
-            logger -t GH-Deploy "Construyendo imagen Docker"
-            docker build -t tfg-backend:latest .
+            # 2) Borra la imagen antigua si existiera (para evitar usar cache)
+            logger -t GH-Deploy "Eliminando imagen Docker anterior"
+            docker rmi -f tfg-backend:latest || true
 
-            # 3) Detiene y elimina el contenedor viejo (si existía)
+            # 3) Construye la imagen limpia sin cache
+            logger -t GH-Deploy "Construyendo imagen Docker sin cache"
+            docker build --no-cache -t tfg-backend:latest .
+
+            # 4) Detiene y elimina el contenedor viejo (si existe)
             logger -t GH-Deploy "Deteniendo contenedor existente"
             docker rm -f tfg-backend || true
 
-            # 4) Mata cualquier proceso ocupando el puerto 3000 en el host
+            # 5) Mata cualquier proceso ocupando el puerto 3000 en el host
             logger -t GH-Deploy "Liberando puerto 3000 si está en uso"
             sudo lsof -ti tcp:3000 | xargs -r kill -9 || true
 
-            # 5) Inicia el contenedor nuevo mapeando al puerto 3000
+            # 6) Inicia el contenedor nuevo mapeando al puerto 3000
             logger -t GH-Deploy "Iniciando contenedor Docker (3000:3000)"
             docker run -d \
               --name tfg-backend \
