@@ -288,6 +288,12 @@ public class CalculadoraScreen extends AppCompatActivity implements TextureView.
             return df.format(num);
         }
     }
+    @Override
+    public void onBackPressed() {
+        // En lugar de super.onBackPressed(), movemos la app al fondo
+        moveTaskToBack(true);
+        // NO llamamos a super.onBackPressed() ni a finish()
+    }
 
 
     // Métodos del TextureView.SurfaceTextureListener
