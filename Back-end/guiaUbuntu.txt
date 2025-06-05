@@ -13,7 +13,7 @@ node -v
 npm -v
 
 token github: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
-git clone https://MarioGimeno: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@github.com/MarioGimeno/TFG-Somos-M-s.git
+git clone https://MarioGimeno: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@github.com/MarioGimeno/TFG-Somos-M-s.git
 
 Disco duro 
 
