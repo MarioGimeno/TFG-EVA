@@ -22,35 +22,45 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
-            logger -t GH-Deploy "=== Iniciando despliegue Docker ==="
             cd /home/${{ secrets.EC2_USER }}/TFG-Somos-M-s/Back-end
 
-            # 1) Asegúrate de estar en la rama main y trae los últimos cambios
-            logger -t GH-Deploy "Actualizando código en EC2"
-            git fetch origin main
-            git reset --hard origin/main
+            # 1) Asegúrate de que en EC2 tenemos el keys.json (contenido del Service Account de Google)
+            #    Supongamos que en GitHub Actions tienes un secret GCP_CREDENTIALS_JSON que contiene TODO el JSON.
+            echo "${{ secrets.GCP_CREDENTIALS_JSON }}" > keys.json
+            chmod 600 keys.json
 
-            # 2) Borra la imagen antigua si existiera (para evitar usar cache)
-            logger -t GH-Deploy "Eliminando imagen Docker anterior"
+            # 2) Crea (o actualiza) el keys.env con variables adicionales
+            cat <<EOF > keys.env
+            GOOGLE_APPLICATION_CREDENTIALS=/usr/src/app/keys.json
+            PGHOST=tu_host_postgres
+            PGUSER=tu_usuario
+            PGPASSWORD=tu_password
+            PGDATABASE=tu_db
+            PGPORT=5432
+            JWT_SECRET=tu_secreto_jwt
+            EOF
+
+            # 3) Elimina la imagen antigua (por si existe)
             docker rmi -f tfg-backend:latest || true
 
-            # 3) Construye la imagen limpia sin cache
-            logger -t GH-Deploy "Construyendo imagen Docker sin cache"
+            # 4) Limpia Docker (contenedores, imágenes y volúmenes huérfanos) para liberar espacio
+            docker system prune --volumes -f || true
+
+            # 5) Reconstruye la imagen sin usar cache
             docker build --no-cache -t tfg-backend:latest .
 
-            # 4) Detiene y elimina el contenedor viejo (si existe)
-            logger -t GH-Deploy "Deteniendo contenedor existente"
+            # 6) Para y elimina cualquier contenedor viejo
             docker rm -f tfg-backend || true
 
-            # 5) Mata cualquier proceso ocupando el puerto 3000 en el host
-            logger -t GH-Deploy "Liberando puerto 3000 si está en uso"
+            # 7) Libera el puerto 3000 en el host (por si estuviera ocupado)
             sudo lsof -ti tcp:3000 | xargs -r kill -9 || true
 
-            # 6) Inicia el contenedor nuevo mapeando al puerto 3000
-            logger -t GH-Deploy "Iniciando contenedor Docker (3000:3000)"
+            # 8) Arranca el contenedor, montando keys.json y cargando keys.env
             docker run -d \
               --name tfg-backend \
               -p 3000:3000 \
+              --env-file /home/${{ secrets.EC2_USER }}/TFG-Somos-M-s/Back-end/keys.env \
+              -v /home/${{ secrets.EC2_USER }}/TFG-Somos-M-s/Back-end/keys.json:/usr/src/app/keys.json:ro \
               --restart unless-stopped \
               tfg-backend:latest
 
