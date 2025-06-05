@@ -12,8 +12,6 @@ sudo apt install -y nodejs
 node -v
 npm -v
 
-token github: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
-git clone https://MarioGimeno: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@github.com/MarioGimeno/TFG-Somos-M-s.git
 
 Disco duro 
 
@@ -91,87 +89,3 @@ sudo docker ps | grep tfg-backend
 sudo docker logs tfg-backend 
 
 
-
-
-
-cd ~/TFG-Somos-M-s/Back-end
-
-# Reemplaza completamente el contenido de keys.env con las variables deseadas:
-cat <<EOF > keys.env
-GOOGLE_APPLICATION_CREDENTIALS=/usr/src/app/dulcet-antler-439110-u5-5c1bc6f8def6.json
-BUCKET_NAME=pruebabucketsomosmas
-IV_SIZE=12
-TAG_SIZE=16
-SECRET_KEY=1234567890123456
-MAGIC=CHNK
-PGHOST=postgres.c5wcm68cai75.eu-north-1.rds.amazonaws.com
-PGPORT=5432
-PGUSER=postgres
-PGPASSWORD=postgres
-PGDATABASE=postgres
-JWT_SECRET=123456789
-JWT_EXPIRES=30d
-REFRESH_EXPIRES=60d
-TMPDIR=/mnt/uploads
-SMTP_HOST=outlook
-SMTP_PORT=587
-SMTP_SECURE=false
-SMTP_USER=evaapptfg@outlook.com
-SMTP_PASS=iurpsxrtilduleox
-AWS_REGION=eu-north-1
-AWS_ACCESS_KEY_ID=AKIA23KDBW7R3YDGRJMD
-AWS_SECRET_ACCESS_KEY=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
-SMTP_FROM=evaapptfg@outlook.com
-EOF
-
-
-
-
-
-
-
-cd ~/TFG-Somos-M-s/Back-end
-
-# 1) Detén y borra cualquier contenedor ‘tfg-backend’ que exista
-docker stop tfg-backend || true
-docker rm -f tfg-backend || true
-
-# 2) Borra la imagen antigua (por si existiera)
-docker rmi -f tfg-backend:latest || true
-
-# 3) Limpia Docker (contenedores parados, imágenes y volúmenes huérfanos)
-docker system prune --volumes -f || true
-
-# 4) Asegúrate de que Dockerfile y keys.env están en esta carpeta
-if [ ! -f Dockerfile ]; then
-  echo "ERROR: No se encuentra el Dockerfile en ~/TFG-Somos-M-s/Back-end"
-  exit 1
-fi
-if [ ! -f keys.env ]; then
-  echo "ERROR: No se encuentra keys.env en ~/TFG-Somos-M-s/Back-end"
-  exit 1
-fi
-
-# 5) Reconstruye la imagen sin usar caché
-docker build --no-cache -t tfg-backend:latest .
-
-# 6) Libera el puerto 3000 (por si estuviera ocupado)
-sudo lsof -ti tcp:3000 | xargs -r kill -9 || true
-
-# 7) Inicia el contenedor en modo “detached”, cargando keys.env y montando el JSON de credenciales
-docker run -d \
-  --name tfg-backend \
-  -p 3000:3000 \
-  --env-file /home/ubuntu/TFG-Somos-M-s/Back-end/keys.env \
-  -v /home/ubuntu/TFG-Somos-M-s/Back-end/dulcet-antler-439110-u5-5c1bc6f8def6.json:/usr/src/app/dulcet-antler-439110-u5-5c1bc6f8def6.json:ro \
-  --restart unless-stopped \
-  tfg-backend:latest
-
-# 8) Verifica que el contenedor está “Up”
-docker ps | grep tfg-backend
-
-# 9) Muestra las últimas 50 líneas de logs para comprobar que arrancó sin errores
-docker logs --tail 50 tfg-backend
-
-# 10) (Opcional) Sigue los logs en tiempo real
-docker logs -f tfg-backend
