@@ -1,6 +1,7 @@
 package com.example.appGrabacion.models;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.example.appGrabacion.entities.ContactEntry;
 import com.example.appGrabacion.utils.ContactsApi;
@@ -60,10 +61,22 @@ public class ContactModel {
                     try {
                         String errorBody = response.errorBody().string();
                         JSONObject jsonObject = new JSONObject(errorBody);
-                        String message = jsonObject.optString("message", "Error desconocido");
-                        callback.onError(new Exception(message)); // Pasar como Exception
+                        String message = jsonObject.optString("message", "");
+
+                        if (message.contains("pk_usuario_contacto")) {
+                            // Violación de clave única → usuario ya agregado
+                            callback.onError(new Exception("Este usuario ya está agregado."));
+                        }
+                        else if (message.contains("chk_no_self_contact")) {
+                            // Violación de check → intento de agregarse a sí mismo
+                            callback.onError(new Exception("No puedes agregarte a ti mismo."));
+                        }
+                        else {
+                            // Cualquier otro error
+                            callback.onError(new Exception("Error al agregar un contacto. Inténtalo de nuevo."));
+                        }
                     } catch (Exception e) {
-                        callback.onError(new Exception("Error desconocido"));
+                        callback.onError(new Exception("Error desconocido al procesar la respuesta."));
                     }
                 }
             }
@@ -74,6 +87,7 @@ public class ContactModel {
             }
         });
     }
+
 
 
 

@@ -186,16 +186,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /** Inicializa el slider cuando ambos servicios han cargado */
+    /** Inicializa el slider cuando ambos servicios han cargado */
     private void tryInitSlider() {
         if (!entLoaded || !recLoaded) return;
+
         List<SliderAdapter.Item> mixed = new ArrayList<>();
-        int max = Math.max(entidades.size(), recursos.size());
-        for (int i = 0; i < max; i++) {
-            if (i < entidades.size())
+        int i = 0;
+        // Mezclamos entidades y recursos intercalados,
+        // pero cortamos en cuanto tengamos 10 ítems.
+        while (mixed.size() < 10 && (i < entidades.size() || i < recursos.size())) {
+            if (i < entidades.size()) {
                 mixed.add(new SliderAdapter.EntidadItem(entidades.get(i)));
-            if (i < recursos.size())
+                if (mixed.size() >= 10) break;
+            }
+            if (i < recursos.size()) {
                 mixed.add(new SliderAdapter.RecursoItem(recursos.get(i)));
+            }
+            i++;
         }
+
         sliderAdapter = new SliderAdapter(mixed, item -> {
             if (item instanceof SliderAdapter.EntidadItem) {
                 Entidad e = ((SliderAdapter.EntidadItem) item).getEntidad();
@@ -209,6 +218,7 @@ public class MainActivity extends AppCompatActivity {
         });
         vpSlider.setAdapter(sliderAdapter);
 
+        // Ajustes estéticos
         vpSlider.setClipToPadding(false);
         vpSlider.setClipChildren(false);
         ((ViewGroup) vpSlider.getParent()).setClipChildren(false);
@@ -224,8 +234,6 @@ public class MainActivity extends AppCompatActivity {
         pbLoader.setVisibility(View.GONE);
         vpSlider.setVisibility(View.VISIBLE);
     }
-
-    /** Muestra el diálogo de huella o PIN del sistema */
     private void showAuthenticationPrompt() {
         Executor executor = ContextCompat.getMainExecutor(this);
         BiometricPrompt.AuthenticationCallback callback =
